@@ -1,0 +1,39 @@
+https://www.math.ucla.edu/~anderson/270e.1.08f/FFTW/ObtainingFFTW3.html
+
+Obtaining FFTW3 Libraries
+
+-------------------
+
+
+The reference for this information is the fftw home page http://www.fftw.org/
+
+Windows Machines:
+
+Download and unzip the fftw pre-compiled dll's (dll = Dynamically Linked Library) fftw-3.1.2-dll.zip.
+This file is a local copy obtained from http://www.fftw.org/install/windows.html).
+
+You'll need to have two additional files libfftw3-3.lib and libfftw3-3.exp in order to use the fftw routines. You can try and use the ones that I've created for my use libfftw3-3.lib, libfftw3-3.exp -- download these and save them in the file containing the dll's., or you will have to create them yourself.
+
+Brief instructions on creating these additional files are given at http://www.fftw.org/install/windows.html. Below are instructions based upon my experience with creating these files.
+
+Open up a DOS comand window, cd to the fftw3 folder containing the dll's and create an import library (*.lib) file for the dll by running the command
+
+lib /machine:i386 /def:libfftw3-3.def
+
+If, when trying to run this command you discover that your machine can't find the "lib" executable, you'll need to set the Visual Studio environment variables first. This is done by executing the vcvarsall.bat file before executing the lib command. To execute this batch file, you will probably have to use a full path name --- the batch file is located in the VC directory of your Visual Studio installation. For example, in order to execute this batch file on my PC I had to execute the command
+
+"C:\Program Files\Microsoft Visual Studio 8\VC\vcvarsall.bat"
+
+The quotes are necessary since there are spaces in the path to the batch file. Also, the settings that are created by this batch file apply only to the current DOS window session, so you'll need to execute this batch file in the same DOS window that you are using to create the .lib file.
+
+UCLA Math Unix/Linux machines and possibly other Unix/Linux machines:
+
+The fftw3 libraries are already installed. To use the libraries, you just need to link to the fftw3 library, e.g. add -lfftw3 to your compliation/linking command. (It's a small "ell" and not a 1, before fftw3).
+
+Linux/Unix Machines where fftw3 libraries have not been installed:
+
+Either install the fftw3 libraries using a suitable package manager, or download the source from http://www.fftw.org/download.html and build the libraries yourself. I followed the latter procedure. After unpacking the files (using the tar -xzvf command) I cd'd to the source directory and executed the configure command specifying an installation prefix. The prefix was specified so that the installation would be made to a non-system directory. For example, to install the include files and library files in the directory /home/username/FFTW3_Libs, the command would be
+
+./configure --prefix=/home/username/FFTW3_Libs
+
+This was then followed by executing make, and then make install. 
