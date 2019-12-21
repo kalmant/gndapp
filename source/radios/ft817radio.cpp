@@ -1,4 +1,5 @@
 #include "ft817radio.h"
+#include <cmath>
 
 FT817Radio::FT817Radio(PredicterController *predicter) : Radio(predicter, 300) {
     frequencyStep_priv = 5000;
@@ -56,8 +57,11 @@ void FT817Radio::setCLARto(int frequencyHz) {
         qWarning() << "Invalid CLAR value, should be less than 10kHz";
         return;
     }
+
     char sign = frequencyHz > 0 ? 0x00 : 0x01; // CLAR sign
-    int truncated = frequencyHz / 10;          // CLAR supports 10 Hz accuracy
+    int truncated = 10 * std::floor(frequencyHz / 10.0 + 0.5);     // CLAR supports 10 Hz accuracy
+    qInfo() << "CLAR set to " << frequencyHz << ", rounded to " << truncated << " Hz";
+
     unsigned char first = static_cast<unsigned char>(truncated / 100);
     unsigned char second = static_cast<unsigned char>(truncated % 100);
     emit newCommand(command5BytesFrom5Chars(
