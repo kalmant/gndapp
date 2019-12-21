@@ -17,22 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifndef RA_DECODER_H
+#define RA_DECODER_H
 
-#ifndef RA_LFSR_H
-#define RA_LFSR_H
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
 
-#include "ra_config.h"
+void ra_decode(const uint8_t *inputBytes, uint8_t *outputBytes, size_t length);
 
-#ifdef __cplusplus
-extern "C" {
 #endif
-
-void ra_lfsr_init(uint8_t seqno);
-ra_index_t ra_lfsr_next(void);
-ra_index_t ra_lfsr_prev(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // RA_LFSR_H

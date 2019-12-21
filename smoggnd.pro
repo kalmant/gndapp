@@ -31,8 +31,7 @@ QMAKE_CXXFLAGS += -Wall -Wextra -Wpedantic -Wunreachable-code #-Wshadow  #-Wswit
 win32 {
     LIBS += -L"$$_PRO_FILE_PWD_/dependencies/3rdparty/fftw3" -lfftw3 \
             -L$$PWD/dependencies/3rdparty/libusb -lusb-1.0 \
-            -L$$PWD/dependencies/3rdparty/openssl -lcrypto-1_1 \ # You need to acquire this on your own
-            -L$$PWD/dependencies/racoder -lracoder
+            -L$$PWD/dependencies/3rdparty/openssl -lcrypto-1_1 # You need to acquire this on your own
 
     INCLUDEPATH +=  "$$_PRO_FILE_PWD_/dependencies/3rdparty/fftw3" \
                     "$$PWD/dependencies/3rdparty/libusb" \
@@ -49,12 +48,6 @@ RC_FILE = "icon/smoggnd.rc"
 linux {
     CONFIG += link_pkgconfig #32bit # uncomment 32 bit if you are on 32 bit linux
     PKGCONFIG += libusb-1.0 fftw3 libudev openssl
-
-    CONFIG(32bit) {
-        LIBS += -L$$PWD/dependencies/racoder -lracoder_32
-    } else {
-        LIBS += -L$$PWD/dependencies/racoder -lracoder_64
-    }
 }
 
 linux-g++ {
@@ -77,8 +70,7 @@ ICON = $$PWD/icon/smoggnd.icns
 #packages installed with Homebrew
     LIBS += -L/usr/local/Cellar/libusb/1.0.23/lib -lusb-1.0 \
             -L/usr/local/Cellar/fftw/3.3.8_1/lib -lfftw3 \
-            -L/usr/local/Cellar/openssl@1.1/1.1.1d/lib -lssl \
-            -L$$PWD/dependencies/racoder -lracoder
+            -L/usr/local/Cellar/openssl@1.1/1.1.1d/lib -lssl 
 
     INCLUDEPATH +=  "$$_PRO_FILE_PWD_/dependencies/3rdparty/fftw3" \
                     "$$PWD/dependencies/3rdparty/libusb"
@@ -205,3 +197,7 @@ SOURCES += \
     dependencies/FEC-AO40/ao40/decode/ao40_spiral-vit_scalar.c \
     dependencies/FEC-AO40/ao40/decode/ao40_decode_rs.c \
     dependencies/obc-packet-helpers/packethelper.cpp \
+    dependencies/racoder/ra_config.c \
+    dependencies/racoder/ra_decoder.c \
+    dependencies/racoder/ra_decoder_gen.c \
+    dependencies/racoder/ra_lfsr.c \

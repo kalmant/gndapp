@@ -17,22 +17,30 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#include "ra_decoder.h"
+#include "ra_decoder_gen.h"
 
-#ifndef RA_LFSR_H
-#define RA_LFSR_H
+void ra_decode(const uint8_t *inputBytes, uint8_t *outputBytes, size_t length) {
 
-#include "ra_config.h"
+	ra_length_init(length/2);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	float * ra_bits = malloc(sizeof(float) * ra_code_length * RA_BITCOUNT);
+	ra_word_t *ra_input = (ra_word_t*)(inputBytes);
+	ra_word_t *ra_output = (ra_word_t*)(outputBytes);
+	memset(ra_bits, 0, ra_code_length * RA_BITCOUNT);
+	ra_index_t i;
+	int j;
 
-void ra_lfsr_init(uint8_t seqno);
-ra_index_t ra_lfsr_next(void);
-ra_index_t ra_lfsr_prev(void);
+	for (i = 0; i < (ra_code_length); i++) {
+		for (j = 0; j < RA_BITCOUNT; j++){
+			if ((ra_input[i] & (1 << j)) == 0) {
+				ra_bits[RA_BITCOUNT * i + j] = 1.0;
+			} else {
+				ra_bits[RA_BITCOUNT * i + j] = -1.0;
+			}
+		}
+	}
 
-#ifdef __cplusplus
+	ra_decoder_gen(ra_bits, ra_output, 20);
+	free(ra_bits);
 }
-#endif
-
-#endif // RA_LFSR_H

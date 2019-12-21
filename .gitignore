@@ -120,3 +120,7 @@ Thumbs.db
 
 # OpenSSL DLLs
 dependencies/3rdparty/openssl
+# runtime files
+logs/
+smoggnd
+
