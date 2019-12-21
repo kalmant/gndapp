@@ -652,7 +652,7 @@ ScrollView {
                         }
 
                         Label {
-                            text: qsTr("Elevation [m]")
+                            text: qsTr("Altitude [m]")
                         }
 
                         TextField {
@@ -709,7 +709,7 @@ ScrollView {
                         }
 
                         Label {
-                            text: qsTr("Doppler@" + (baseFreq / 1000000) + "Mhz [Hz]:")
+                            text: qsTr("Doppler@" + (baseFreq / 1000000) + " MHz [Hz]:")
                         }
 
                         Label {

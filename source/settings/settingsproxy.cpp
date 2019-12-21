@@ -116,7 +116,7 @@ bool SettingsProxy::loadSettings(bool emits) {
     settings.endGroup();
 
     settings.beginGroup("Tracking");
-    sh->set_tsi(settings.value("satelliteId", 22825).toLongLong());
+    sh->set_tsi(settings.value("satelliteId", 44832).toLongLong());
     sh->set_tsla(settings.value("stationLat", "47,48675").toString());
     sh->set_tslo(settings.value("stationLon", "-19,04804").toString());
     sh->set_tse(settings.value("stationElev", 275).toInt());

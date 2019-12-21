@@ -25,12 +25,12 @@ class PredicterWorker : public QObject {
     Q_OBJECT
 public:
     // The object loads TLE data(from file or web) and emits calculated tracking data
-    // We are tracking AO-27 at the moment! (satId is 22825)
+    // We are tracking SMOG-P at the moment! (satId is 44832)
 
     // Liberty Statue, Budapest is the default location for the station
     PredicterWorker(QThread *thread,
         QString dirString,
-        long satID = 22825,
+        long satID = 44832,
         double stationLat = 47.48675,
         double stationLon = -19.04804,
         int stationAlt = 275,
