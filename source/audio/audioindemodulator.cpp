@@ -20,10 +20,11 @@ void AudioInDemodulator::process_samples(int16_t *samples, int len) {
             rational_resample(resample_input_buffer, resample_output_buffer);
             for (int j = 0; j < S1DEM_AUDIO_SAMPLING_FREQ; j++){
                 auto cncod = cnco(&variables_priv->cnco_vars, resample_output_buffer[j]);
-                auto avgd = average(variables_priv, cncod);
-                std::complex<float> demod_output;
-                auto demod_success = smog_atl_demodulate(variables_priv, avgd, S1DEM_AUDIO_SAMPLING_FREQ, S1DEM_AUDIO_BPS, &demod_output);
-                if (demod_success){
+                auto avgd = average(&variables_priv->avg_vars, cncod);
+                std::complex<float> avg_dec_output;
+                bool avg_dec_performed = average_dec(&variables_priv->avg_dec_vars, avgd, &avg_dec_output);
+                if (avg_dec_performed){
+                    auto demod_output = smog_atl_demodulate(&variables_priv->demod_vars, avg_dec_output, S1DEM_AUDIO_SAMPLING_FREQ, S1DEM_AUDIO_BPS);
                     if (dem_a_set){
                         dem_b = demod_output;
                         dem_a_set = false;
@@ -35,10 +36,6 @@ void AudioInDemodulator::process_samples(int16_t *samples, int len) {
                                 QString source = QString("Audio 1250 BPS");
                                 QString packetUpperHexString = QString(QByteArray(reinterpret_cast<char *>(packet_characters.data()), packet_length_priv).toHex()).toUpper();
                                 emit dataReady(timestamp, source, packetUpperHexString);
-                                // Reset demod internal state after receiving an RX sync (!!sync length, with RX ending!!)
-                                if (packetUpperHexString.length() == 140 && packetUpperHexString.endsWith("000000")){
-                                    reset_internal_state(variables_priv);
-                                }
                                 packet_characters.clear();
                             }
                         }

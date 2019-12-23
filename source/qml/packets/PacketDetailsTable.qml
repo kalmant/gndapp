@@ -34,6 +34,7 @@ ScrollView {
         delegate: Rectangle {
             width: table.width
             height: delegateContainer.height + cellPadding * 2
+            color: "#00000000"
 
             Row {
                 id: delegateContainer

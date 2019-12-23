@@ -12,9 +12,8 @@
 #define S1DEM_AUDIO_BPS 1250
 #define S1DEM_AUDIO_SAMPLING_FREQ 42500
 #define S1DEM_SYNC 0x2dd4
-#define S1DEM_AVG_N (S1DEM_AUDIO_SAMPLING_FREQ/S1DEM_AUDIO_BPS/2)
 #define S1DEM_AUDIO_FREQ_CENTER_OFFSET 1500
-#define S1DEM_LPF 32
+#define S1DEM_LL 64
 
 struct CncoStruct{
     long fs;
@@ -30,12 +29,15 @@ struct AveragingStruct{
     int index;
 };
 
+struct AveragingDecStruct{
+    int n;
+    std::complex<float> *buf;
+    int index;
+};
+
 struct DemodulationStruct{
-    unsigned long bpsindex;
-    std::complex<float> integral;
-    std::complex<float> m; // memory for the prev integral value - differential
-    std::complex<float> decmem; // decimated signal prev sample (MSK demodulation)
-    float lpf; // IIR type low pass filter - freq error!
+    std::complex<float> m;
+    float x;
 };
 
 struct DecisionStruct{
@@ -49,12 +51,14 @@ struct DecisionStruct{
 
 typedef struct CncoStruct CncoVariables;
 typedef struct AveragingStruct AveragingVariables;
+typedef struct AveragingDecStruct AveragingDecVariables;
 typedef struct DemodulationStruct DemodulationVariables;
 typedef struct DecisionStruct DecisionVariables;
 
 struct DEMStruct{
     CncoVariables cnco_vars;
     AveragingVariables avg_vars;
+    AveragingDecVariables avg_dec_vars;
     DemodulationVariables demod_vars;
     DecisionVariables dec_vars;
 };
@@ -66,15 +70,14 @@ DEMVariables* create_and_initialize_audio_variables();
 void free_dem_variables(DEMVariables *sdr_vars);
 void SDR_set_doppler_frequency(DEMVariables *sdr_vars, long doppler_freq);
 void SDR_set_datarate(DEMVariables *sdr_vars, long datarate);
-void reset_avg_state(AveragingVariables *avg_vars);
-void reset_demod_state(DemodulationVariables *demod_vars);
-void reset_internal_state(DEMVariables* dem_vars);
+
 
 std::complex<float> s16le2cf(int16_t input);
 void rational_resample(std::complex<float> input[], std::complex<float> output[]);
 std::complex<float> cnco(CncoVariables *cnco_vars, std::complex<float> input);
-std::complex<float> average(DEMVariables *dem_vars, std::complex<float> input);
-bool smog_atl_demodulate(DEMVariables *dem_vars, std::complex<float> input, unsigned long sampling_freq, unsigned long datarate, std::complex<float> *output);
+std::complex<float> average(AveragingVariables *avg_vars, std::complex<float> input);
+bool average_dec(AveragingDecVariables *avg_dec_vars, std::complex<float> input, std::complex<float> *output);
+std::complex<float> smog_atl_demodulate(DemodulationVariables *demod_vars, std::complex<float> input, unsigned long sampling_freq, unsigned long datarate);
 int make_hard_decision(DecisionVariables *dec_vars, std::complex<float> input_a, std::complex<float> input_b, unsigned long packet_length);
 
 #endif

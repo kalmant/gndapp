@@ -34,10 +34,11 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
         for (int i = 0; i < (long) len; i += 2) {
             std::complex<float> input(static_cast<int8_t>(static_cast<uint8_t>(buf[i])-128), static_cast<int8_t>(static_cast<uint8_t>(buf[i+1])-128)); // Removing DC
             auto cncod = cnco(&worker->vars->cnco_vars, input);
-            auto avgd = average(worker->vars, cncod);
-            std::complex<float> demod_output;
-            auto demod_success = smog_atl_demodulate(worker->vars, avgd, S1DEM_SDR_SAMPLING_FREQ, worker->datarate, &demod_output);
-            if (demod_success){
+            auto avgd = average(&worker->vars->avg_vars, cncod);
+            std::complex<float> avg_dec_output;
+            bool avg_dec_performed = average_dec(&worker->vars->avg_dec_vars, avgd, &avg_dec_output);
+            if (avg_dec_performed){
+                auto demod_output = smog_atl_demodulate(&worker->vars->demod_vars, avg_dec_output, S1DEM_SDR_SAMPLING_FREQ, worker->datarate);
                 if (worker->dem_a_set){
                     worker->dem_b = demod_output;
                     worker->dem_a_set = false;
@@ -49,10 +50,6 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
                             QString source = QString("SDR %1 BPS").arg(worker->datarate);
                             QString packetUpperHexString = QString(QByteArray(reinterpret_cast<char *>(worker->packet_characters.data()), worker->packet_length).toHex()).toUpper();
                             emit worker->dataReady(timestamp, source, packetUpperHexString);
-                            // Reset demod internal state after receiving an RX sync (!!sync length, with RX ending!!)
-                            if (packetUpperHexString.length() == 140 && packetUpperHexString.endsWith("000000")){
-                                reset_internal_state(worker->vars);
-                            }
                             worker->packet_characters.clear();
                         }
                     }
