@@ -22,7 +22,7 @@ DEMVariables *create_and_initialize_sdr_variables(long doppler_freq, long datara
     }
     if (sdr_vars->cnco_vars.f < 0) {sdr_vars->cnco_vars.f *= -1;}
     sdr_vars->cnco_vars.loi = 0;
-    sdr_vars->avg_vars.n = S1DEM_SDR_SAMPLING_FREQ / datarate / 2;
+    sdr_vars->avg_vars.n = S1DEM_SDR_SAMPLING_FREQ / datarate;
     sdr_vars->avg_vars.buf = (std::complex<float>*)malloc(sizeof(std::complex<float>)*sdr_vars->avg_vars.n);
     if (sdr_vars->avg_vars.buf == nullptr) {
         printf("COULD NOT ALLOCATE MEMORY FOR SDR AVG");
@@ -33,11 +33,15 @@ DEMVariables *create_and_initialize_sdr_variables(long doppler_freq, long datara
     }
     sdr_vars->avg_vars.index = 0;
     sdr_vars->avg_vars.out = std::complex<float>(0,0);
-    sdr_vars->demod_vars.bpsindex = 0;
-    sdr_vars->demod_vars.integral = std::complex<float>(0, 0);
+    sdr_vars->avg_dec_vars.n = S1DEM_SDR_SAMPLING_FREQ / datarate / 2;
+    sdr_vars->avg_dec_vars.buf = (std::complex<float>*)malloc(sizeof(std::complex<float>)*sdr_vars->avg_dec_vars.n);
+    if (sdr_vars->avg_dec_vars.buf == nullptr) {
+        printf("COULD NOT ALLOCATE MEMORY FOR SDR AVG DEC");
+        exit(1);
+    }
+    sdr_vars->avg_dec_vars.index = 0;
     sdr_vars->demod_vars.m = std::complex<float>(0, 0);
-    sdr_vars->demod_vars.decmem = std::complex<float>(0, 0);
-    sdr_vars->demod_vars.lpf = 0;
+    sdr_vars->demod_vars.x = 0;
     sdr_vars->dec_vars.a = 0;
     sdr_vars->dec_vars.b = 0;
     sdr_vars->dec_vars.sm = 0;
@@ -67,7 +71,7 @@ DEMVariables *create_and_initialize_audio_variables(){
     }
     if (audio_vars->cnco_vars.f < 0) {audio_vars->cnco_vars.f *= -1;}
     audio_vars->cnco_vars.loi = 0;
-    audio_vars->avg_vars.n = S1DEM_AVG_N;
+    audio_vars->avg_vars.n = S1DEM_AUDIO_SAMPLING_FREQ / S1DEM_AUDIO_BPS;
     audio_vars->avg_vars.buf = (std::complex<float>*)malloc(sizeof(std::complex<float>)*audio_vars->avg_vars.n);
     if (audio_vars->avg_vars.buf == nullptr) {
         printf("COULD NOT ALLOCATE MEMORY FOR AUDIO AVG");
@@ -78,11 +82,15 @@ DEMVariables *create_and_initialize_audio_variables(){
     }
     audio_vars->avg_vars.index = 0;
     audio_vars->avg_vars.out = std::complex<float>(0,0);
-    audio_vars->demod_vars.bpsindex = 0;
-    audio_vars->demod_vars.integral = std::complex<float>(0, 0);
+    audio_vars->avg_dec_vars.n = S1DEM_AUDIO_SAMPLING_FREQ / S1DEM_AUDIO_BPS/2;
+    audio_vars->avg_dec_vars.buf = (std::complex<float>*)malloc(sizeof(std::complex<float>)*audio_vars->avg_dec_vars.n);
+    if (audio_vars->avg_dec_vars.buf == nullptr) {
+        printf("COULD NOT ALLOCATE MEMORY FOR AUDIO AVG DEC");
+        exit(1);
+    }
+    audio_vars->avg_dec_vars.index = 0;
     audio_vars->demod_vars.m = std::complex<float>(0, 0);
-    audio_vars->demod_vars.decmem = std::complex<float>(0, 0);
-    audio_vars->demod_vars.lpf = 0;
+    audio_vars->demod_vars.x = 0;
     audio_vars->dec_vars.a = 0;
     audio_vars->dec_vars.b = 0;
     audio_vars->dec_vars.sm = 0;
@@ -95,6 +103,7 @@ DEMVariables *create_and_initialize_audio_variables(){
 void free_dem_variables(DEMVariables *dem_vars){
     free(dem_vars->cnco_vars.lo);
     free(dem_vars->avg_vars.buf);
+    free(dem_vars->avg_dec_vars.buf);
     free(dem_vars);
 }
 
@@ -113,7 +122,7 @@ void SDR_set_doppler_frequency(DEMVariables *sdr_vars, long doppler_freq){
 }
 
 void SDR_set_datarate(DEMVariables *sdr_vars, long datarate){
-    sdr_vars->avg_vars.n = S1DEM_SDR_SAMPLING_FREQ / datarate / 2;
+    sdr_vars->avg_vars.n = S1DEM_SDR_SAMPLING_FREQ / datarate;
     if (sdr_vars->avg_vars.buf != nullptr){
         free(sdr_vars->avg_vars.buf);
     }
@@ -125,37 +134,16 @@ void SDR_set_datarate(DEMVariables *sdr_vars, long datarate){
     for (int i = 0; i < sdr_vars->avg_vars.n; i++){
         sdr_vars->avg_vars.buf[i] = std::complex<float>(0, 0);
     }
-}
-
-void reset_internal_state(DEMVariables* dem_vars){
-    dem_vars->cnco_vars.loi = 0;
-
-    reset_avg_state(&dem_vars->avg_vars);
-
-    reset_demod_state(&dem_vars->demod_vars);
-
-    dem_vars->dec_vars.a = 0;
-    dem_vars->dec_vars.b = 0;
-    dem_vars->dec_vars.sm = 0;
-    dem_vars->dec_vars.ca = 0;
-    dem_vars->dec_vars.cb = 0;
-    dem_vars->dec_vars.d = 0;
-}
-
-void reset_avg_state(AveragingVariables *avg_vars){
-    for (int i = 0; i < avg_vars->n; i++){
-        avg_vars->buf[i] = std::complex<float>(0, 0);
+    sdr_vars->avg_dec_vars.n = S1DEM_SDR_SAMPLING_FREQ / datarate / 2;
+    sdr_vars->avg_dec_vars.index = 0;
+    if (sdr_vars->avg_dec_vars.buf != nullptr){
+        free(sdr_vars->avg_dec_vars.buf);
     }
-    avg_vars->index = 0;
-    avg_vars->out = std::complex<float>(0,0);
-}
-
-void reset_demod_state(DemodulationVariables *demod_vars){
-    demod_vars->bpsindex = 0;
-    demod_vars->integral = std::complex<float>(0, 0);
-    demod_vars->m = std::complex<float>(0, 0);
-    demod_vars->decmem = std::complex<float>(0, 0);
-    demod_vars->lpf = 0;
+    sdr_vars->avg_dec_vars.buf = (std::complex<float>*)malloc(sizeof(std::complex<float>)*sdr_vars->avg_dec_vars.n);
+    if (sdr_vars->avg_dec_vars.buf == nullptr) {
+        printf("COULD NOT ALLOCATE MEMORY FOR SDR AVG DEC");
+        exit(1);
+    }
 }
 
 std::complex<float> s16le2cf(int16_t input){
@@ -182,46 +170,35 @@ std::complex<float> cnco(CncoVariables *cnco_vars, std::complex<float> input){
     return out;
 }
 
-std::complex<float> average(DEMVariables *dem_vars, std::complex<float> input){
-    dem_vars->avg_vars.out -= dem_vars->avg_vars.buf[dem_vars->avg_vars.index];
-    dem_vars->avg_vars.buf[dem_vars->avg_vars.index]=input;
-    dem_vars->avg_vars.out += dem_vars->avg_vars.buf[dem_vars->avg_vars.index];
-    dem_vars->avg_vars.index=((dem_vars->avg_vars.index)+1)%dem_vars->avg_vars.n;
-    return dem_vars->avg_vars.out;
+std::complex<float> average(AveragingVariables *avg_vars, std::complex<float> input){
+    avg_vars->out -= avg_vars->buf[avg_vars->index];
+    avg_vars->buf[avg_vars->index]=input;
+    avg_vars->out += avg_vars->buf[avg_vars->index];
+    avg_vars->index=((avg_vars->index)+1)%avg_vars->n;
+    return avg_vars->out;
 }
 
-/* SMOG & ATL GMSK (MSK) demodulator by ha7wen
-// Input: complex sample with sampling_freq sampling frequency
-// Audio and RTL-SDR sampling_freq/datarate must be integer!
-// Output: 2 complex number / databit (Shannon-theorem)
-// If creal(out)>cimag(out) = 1 else 0
-// output is set if we demodulated successfully
-// Return value is true if we demodulated, false otherwise
-*/
-bool smog_atl_demodulate(DEMVariables *dem_vars, std::complex<float> input, unsigned long sampling_freq, unsigned long datarate, std::complex<float> *output){
-    // derivate the resampled signal: decimated signal
-    std::complex<float> dec=std::complex<float>(0, 0);
-    float t=0;
-    // integrate the incoming complex signal
-    dem_vars->demod_vars.integral+=input;
-    bool demodulated = false;
-    // decimate
-    if(dem_vars->demod_vars.bpsindex==0){
-        // derive
-        dec=dem_vars->demod_vars.integral-dem_vars->demod_vars.m;
-        dem_vars->demod_vars.m=dem_vars->demod_vars.integral;
-        // MSK demod
-        t=imag(dec*conj(dem_vars->demod_vars.decmem));
-        dem_vars->demod_vars.decmem=dec;
-        // low pass filtering
-        dem_vars->demod_vars.lpf=1.0/S1DEM_LPF*t+(1.0-1.0/S1DEM_LPF)*dem_vars->demod_vars.lpf;
-        // output complex sample: if creal()>cimag() means 1, else 0 bit
-        *output=std::complex<float>(t,dem_vars->demod_vars.lpf);
-        demodulated = true;
+bool average_dec(AveragingDecVariables *avg_dec_vars, std::complex<float> input, std::complex<float> *output){
+    bool performed = false;
+    if (avg_dec_vars->index == avg_dec_vars->n){
+        avg_dec_vars->index = 0;
+        auto out = std::complex<float>(0,0);
+        for (int i = 0; i < avg_dec_vars->n; i++){
+            out += avg_dec_vars->buf[i];
+        }
+        *output=out;
+        performed = true;
     }
-    // index increment for decimation
-    dem_vars->demod_vars.bpsindex=(dem_vars->demod_vars.bpsindex+1)%(sampling_freq/datarate/2);
-    return demodulated;
+    avg_dec_vars->buf[avg_dec_vars->index] = input;
+    avg_dec_vars->index++;
+    return performed;
+}
+
+std::complex<float> smog_atl_demodulate(DemodulationVariables *demod_vars, std::complex<float> input, unsigned long sampling_freq, unsigned long datarate) {
+    float t = imag(input * conj(demod_vars->m));
+    demod_vars->m = input;
+    demod_vars->x = 1./S1DEM_LL*t+(S1DEM_LL-1.0)/S1DEM_LL*demod_vars->x;
+    return std::complex<float>(t, demod_vars->x);
 }
 
 /* Hard-decision by ha7wen
