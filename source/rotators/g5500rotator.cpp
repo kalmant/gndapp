@@ -5,7 +5,7 @@ G5500Rotator::G5500Rotator(PredicterController *predicter) : Rotator(predicter, 
 
 void G5500Rotator::setAZEL(unsigned int azimuth, unsigned int elevation) {
     emit newCommand(
-        QString("W%1 %2\r\n").arg(azimuth, 3, 10, QChar('0')).arg(elevation, 3, 10, QChar('0')).toLocal8Bit());
+        QString("W%1 %2\n").arg(azimuth, 3, 10, QChar('0')).arg(elevation, 3, 10, QChar('0')).toLocal8Bit());
 }
 
 void G5500Rotator::setPortSettingsBasedOnBaudRate(int baudRate) {
