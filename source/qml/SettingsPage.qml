@@ -589,7 +589,7 @@ ScrollView {
                     }
                 }
 
-                Column {
+                Row {
                     spacing: parent.spacing
                     x: trackingSwitch.indicator.width + trackingSwitch.padding * 2
 
@@ -652,7 +652,7 @@ ScrollView {
                         }
 
                         Label {
-                            text: qsTr("Elevation [m]")
+                            text: qsTr("Altitude [m]")
                         }
 
                         TextField {
@@ -686,53 +686,74 @@ ScrollView {
                         }
                     }
 
-                    Row {
+                    Column {
                         spacing: parent.spacing
                         enabled: predicterController.tracking
 
-                        Label {
-                            text: qsTr("Azimuth [°]:")
-                        }
+                        Grid{
+                            spacing: compactLayout ? parent.spacing : 30
+                            columns: compactLayout ? 1 : 2
+                            verticalItemAlignment: Grid.AlignVCenter
 
-                        Label {
-                            id: predictAzText
-                            text: qsTr("N/A")
+                            Row {
+                                spacing: 5
+                                Label {
+                                    font.pixelSize: 20
+                                    text: qsTr("Azimuth [°]:")
+                                }
+                                Label {
+                                    id: predictAzText
+                                    font.pixelSize: 20
+                                    text: qsTr("N/A")
+                                }
+                            }
+                            Row{
+                                spacing: 5
+                                Label {
+                                    font.pixelSize: 20
+                                    text: qsTr("Elevation [°]:")
+                                }
+                                Label {
+                                    font.pixelSize: 20
+                                    text: qsTr("N/A")
+                                    id: predictElText
+                                }
+                            }
                         }
-
-                        Label {
-                            text: qsTr("Elevation [°]:")
+                        Row{
+                            spacing: 5
+                            Label {
+                                font.pixelSize: 20
+                                text: qsTr("Doppler@" + (baseFreq / 1000000) + " Mhz [Hz]:")
+                            }
+                            Label {
+                                font.pixelSize: 20
+                                id: predictDoppText
+                                text: qsTr("N/A")
+                            }
                         }
-
-                        Label {
-                            id: predictElText
-                            text: qsTr("N/A")
-                        }
-
-                        Label {
-                            text: qsTr("Doppler@" + (baseFreq / 1000000) + "Mhz [Hz]:")
-                        }
-
-                        Label {
-                            id: predictDoppText
-                            text: qsTr("N/A")
-                        }
-
-                        Label {
-                            text: qsTr("AOS:")
-                        }
-
-                        Label {
-                            id: predictAOSText
-                            text: qsTr("N/A")
-                        }
-
-                        Label {
-                            text: qsTr("LOS:")
-                        }
-
-                        Label {
-                            id: predictLOSText
-                            text: qsTr("N/A")
+                        Row{
+                            spacing: 50
+                            Row{
+                                spacing: 5
+                                Label {
+                                    text: qsTr("AOS:")
+                                }
+                                Label {
+                                    id: predictAOSText
+                                    text: qsTr("N/A")
+                                }
+                            }
+                            Row{
+                                spacing: 5
+                                Label {
+                                    text: qsTr("LOS:")
+                                }
+                                Label {
+                                    id: predictLOSText
+                                    text: qsTr("N/A")
+                                }
+                            }
                         }
                     }
                 }
