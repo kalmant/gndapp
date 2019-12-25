@@ -91,6 +91,8 @@ ScrollView {
         settingsHolder.msatidx = satelliteSelectorCombo.currentIndex
 
         settingsHolder.uu = uploadUsernameTF.text.trim();
+        settingsHolder.up = uploadPasswordTF.text;
+        settingsHolder.ual = autoLoginSwitch.checked;
         settingsHolder.uauf = uploaderAUFSB.value;
 
         settingsHandler.saveSettings();
@@ -334,7 +336,11 @@ ScrollView {
         }
         onLoadUploadSettings:{
             uploadUsernameTF.text = username;
+            uploadPasswordTF.text = password;
+            autoLoginSwitch.checked = automaticLogin;
             uploaderAUFSB.value = automaticUploadFrequency;
+            if (automaticLogin && !uploader.isLoggedIn && !uploader.isCurrentlyLoggingIn && username.length > 0 && password.length > 0)
+                uploader.login(username, password);
         }
     }
 
@@ -1224,17 +1230,11 @@ ScrollView {
 
                     TextField {
                         id: uploadPasswordTF
-                        text: "password"
                         enabled: !uploader.isLoggedIn && !uploader.isCurrentlyLoggingIn
                         maximumLength: 128
                         anchors.verticalCenter: parent.verticalCenter
                         selectByMouse: true
                         echoMode: TextInput.PasswordEchoOnEdit
-
-                        ToolTip.delay: 1000
-                        ToolTip.timeout: 5000
-                        ToolTip.visible: hovered
-                        ToolTip.text: qsTr("Your password is not stored when you save your settings!")
                     }
 
                     Button {
@@ -1245,11 +1245,22 @@ ScrollView {
                             uploader.login(uploadUsernameTF.text.trim(), uploadPasswordTF.text)
                         }
                         anchors.verticalCenter: parent.verticalCenter
-                        ToolTip.delay: 1000
-                        ToolTip.timeout: 5000
-                        ToolTip.visible: hovered
-                        ToolTip.text: qsTr("Your password is not stored when you save your settings!")
                     }
+                    Button {
+                        id: logoutButton
+                        text: qsTr("Logout")
+                        enabled: uploader.isLoggedIn || uploader.isCurrentlyLoggingIn
+                        onClicked: {
+                            uploader.logout()
+                        }
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    CheckBox {
+                        id: autoLoginSwitch
+                        text: qsTr("Auto login")
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
                     BusyIndicator {
                         running: uploader.isCurrentlyLoggingIn
                         height: loginButton.height + 5

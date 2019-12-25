@@ -1,5 +1,22 @@
 #include "settingsproxy.h"
 
+static QString encrypt(const QString& input) {
+    QByteArray output;
+    output.reserve(input.count());
+    for (auto itr = input.begin(); itr != input.end(); ++itr)
+        output.append(~itr->toLatin1());
+    return output.toBase64();
+}
+
+static QString decrypt(const QString& input) {
+    QByteArray array = QByteArray::fromBase64(input.toLatin1());
+    QString output;
+    output.reserve(array.count());
+    for (auto itr = array.begin(); itr != array.end(); ++itr)
+        output.append(~*itr);
+    return output;
+}
+
 /**
  * @brief Constructor for the class. Initializes \p sh.
  * @param[in] settingsHolder Pointer to the SettingsHolder that allows saving of settings from QML.
@@ -75,6 +92,8 @@ bool SettingsProxy::saveSettings() {
 
     settings.beginGroup("Upload");
     settings.setValue("username", sh->uu());
+    settings.setValue("password", encrypt(sh->up()));
+    settings.setValue("automaticLogin", sh->ual());
     settings.setValue("automaticUploadFrequency", sh->uauf());
     qInfo() << "Successfully saved Upload settings";
     settings.endGroup();
@@ -178,9 +197,11 @@ bool SettingsProxy::loadSettings(bool emits) {
 
     settings.beginGroup("Upload");
     sh->set_uu(settings.value("username", "username").toString());
+    sh->set_up(decrypt(settings.value("password", "password").toString()));
+    sh->set_ual(settings.value("automaticLogin", false).toBool());
     sh->set_uauf(settings.value("automaticUploadFrequency", 5).toInt());
     if (emits) {
-        emit loadUploadSettings(sh->uu(), sh->uauf());
+        emit loadUploadSettings(sh->uu(), sh->up(), sh->ual(), sh->uauf());
         qInfo() << "Emitted Upload settings";
     }
     settings.endGroup();

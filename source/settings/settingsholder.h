@@ -80,8 +80,10 @@ class SettingsHolder : public QObject {
     GENPROPERTY(int, msatidx)
 
     // Upload settings group
-    // settings in order: username, automaticUploadFrequency
+    // settings in order: username, password, automaticLogin, automaticUploadFrequency
     GENPROPERTY(QString, uu)
+    GENPROPERTY(QString, up)
+    GENPROPERTY(bool, ual)
     GENPROPERTY(int, uauf)
 
 public:
