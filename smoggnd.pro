@@ -42,7 +42,7 @@ win32 {
 }
 
 # Windows icon
-RC_FILE = "icon/smoggnd.rc"
+RC_ICONS = "icon/smoggnd.ico"
 
 linux {
     CONFIG += link_pkgconfig
