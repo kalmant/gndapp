@@ -808,26 +808,32 @@ ScrollView {
                     onCheckedChanged: {
                         if (checked){
                             // turning the radio on
-                            if (radioModelCombo.currentIndex === 0){
+                            if (radioModelCombo.currentIndex === 0) {
+                                //ft991
+                                ft991.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                            } else if (radioModelCombo.currentIndex === 1) {
                                 //ft817
                                 ft817.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft817OnOffSwitch.checked);
-                            } else if (radioModelCombo.currentIndex === 1) {
+                            } else if (radioModelCombo.currentIndex === 2) {
                                 //ts2000
                                 ts2000.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
-                            } else if (radioModelCombo.currentIndex === 2) {
+                            } else if (radioModelCombo.currentIndex === 3) {
                                 // smog radio
                                 smogradio.set5VOut(smogRadio5VOutSwitch.checked)
                                 smogradio.start(String(radioCOMCombo.currentText), 115200, radioOffsetSpinbox.value, true);
                             }
                         } else {
                             // turning the radio off
-                            if (radioModelCombo.currentIndex === 0){
+                            if (radioModelCombo.currentIndex === 0) {
+                                //ft991
+                                ft991.stop();
+                            } else if (radioModelCombo.currentIndex === 1) {
                                 //ft817
                                 ft817.stop();
-                            } else if (radioModelCombo.currentIndex === 1) {
+                            } else if (radioModelCombo.currentIndex === 2) {
                                 //ts2000
                                 ts2000.stop();
-                            } else if (radioModelCombo.currentIndex === 2) {
+                            } else if (radioModelCombo.currentIndex === 3) {
                                 // smog radio
                                 smogradio.stop();
                             }
@@ -845,6 +851,7 @@ ScrollView {
                     spacing: parent.spacing
 
                     Grid {
+                        enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                         spacing: parent.spacing
                         columns: 2
                         verticalItemAlignment: Grid.AlignVCenter
@@ -855,7 +862,7 @@ ScrollView {
 
                         ComboBox {
                             id: radioModelCombo
-                            model: ['FT-817','TS-2000','SMOG']
+                            model: ['FT-991','FT-817','TS-2000','SMOG']
                             currentIndex: 0
                         }
 
@@ -881,13 +888,13 @@ ScrollView {
 
                         Label {
                             text: qsTr("Baud rate")
-                            visible: (radioModelCombo.currentIndex !== 2) // smogradio only supports 115200
+                            visible: (radioModelCombo.currentIndex !== 3) // smogradio only supports 115200
                         }
 
                         ComboBox {
                             id: radioBaudRate
-                            model: ['4800','9600']
-                            visible: (radioModelCombo.currentIndex !== 2) // smogradio only supports 115200
+                            model: ['4800','9600','19200']
+                            visible: (radioModelCombo.currentIndex !== 3) // smogradio only supports 115200
                         }
 
                         Label {
@@ -904,7 +911,7 @@ ScrollView {
 
                         CheckBox {
                             id: ft817OnOffSwitch
-                            visible: (radioModelCombo.currentIndex === 0)
+                            visible: (radioModelCombo.currentIndex === 1)
                             enabled: visible && !radioSwitch.checked && (radioCOMCombo.count > 0)
                             text: qsTr("Turn on and off")
                             checked: false
@@ -912,7 +919,7 @@ ScrollView {
 
                         Switch {
                             id: smogRadio5VOutSwitch
-                            visible: (radioModelCombo.currentIndex === 2) // only for smog radio
+                            visible: (radioModelCombo.currentIndex === 3) // only for smog radio
                             text: "5V out"
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
@@ -921,6 +928,15 @@ ScrollView {
 
                         }
                     }
+                }
+            }
+
+            Connections {
+                target: ft991
+                onSerialPortErrorSignal:{
+                    serialErrorRadio.open();
+                    logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
+                    radioSwitch.checked = false;
                 }
             }
 
