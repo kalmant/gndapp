@@ -482,6 +482,7 @@ ScrollView {
                         ComboBox {
                             id: sdrDeviceCombo
                             width: 275
+                            currentIndex: sdrThread.sdrDevices.rowCount() > 0 ? (sdrThread.sdrDevices.rowCount() > 1 ? 1 : 0) : -1
                             model: sdrThread.sdrDevices
                             textRole: "display"
                             enabled: !sdrEnabledSwitch.checked
