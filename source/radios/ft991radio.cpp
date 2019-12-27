@@ -28,6 +28,8 @@ void FT991Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
  * @brief FT991 requires no additional operations during starting up
  */
 void FT991Radio::initialization() {
+    emit newCommand(QString("MD02;").toLocal8Bit());     // set MODE to USB
+    emit newCommand(QString("RC;").toLocal8Bit());       // clear CLAR
 }
 
 /**
@@ -42,7 +44,6 @@ void FT991Radio::setFrequency(unsigned long frequencyHz) {
  * @brief Does not turn the radio off, since there is no way to turn it back on.
  */
 void FT991Radio::turnOff() {
-    // emit newCommand(QString("PS0;").toLocal8Bit());
 }
 
 /**
