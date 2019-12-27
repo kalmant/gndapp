@@ -12,6 +12,7 @@
 #include "source/radios/smogradio.h"
 #include "source/radios/ts2000radio.h"
 #include "source/radios/ft991radio.h"
+#include "source/radios/icomradio.h"
 #include "source/rotators/g5500rotator.h"
 #include "source/sdr/sdrthread.h"
 #include "source/settings/settingsholder.h"
@@ -212,6 +213,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("uploader", &uploadController);
 
     engine.rootContext()->setContextProperty("deviceDiscovery", &deviceDiscovery);
+    ICOMRadio icom(&predicterController);
+    engine.rootContext()->setContextProperty("icom", &icom);
     FT991Radio ft991(&predicterController);
     engine.rootContext()->setContextProperty("ft991", &ft991);
     TS2000Radio ts2000(&predicterController);

@@ -822,6 +822,9 @@ ScrollView {
                                 // smog radio
                                 smogradio.set5VOut(smogRadio5VOutSwitch.checked)
                                 smogradio.start(String(radioCOMCombo.currentText), 115200, radioOffsetSpinbox.value, true);
+                            } else if (radioModelCombo.currentIndex === 4) {
+                                //icom
+                                icom.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
                             }
                         } else {
                             // turning the radio off
@@ -837,6 +840,9 @@ ScrollView {
                             } else if (radioModelCombo.currentIndex === 3) {
                                 // smog radio
                                 smogradio.stop();
+                            } else if (radioModelCombo.currentIndex === 4) {
+                                //icom
+                                icom.stop();
                             }
                         }
                     }
@@ -863,7 +869,7 @@ ScrollView {
 
                         ComboBox {
                             id: radioModelCombo
-                            model: ['FT-991','FT-817','TS-2000','SMOG']
+                            model: ['FT-991','FT-817','TS-2000','SMOG','ICOM']
                             currentIndex: 0
                         }
 
@@ -961,6 +967,15 @@ ScrollView {
 
             Connections {
                 target: smogradio
+                onSerialPortErrorSignal:{
+                    serialErrorRadio.open();
+                    logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
+                    radioSwitch.checked = false;
+                }
+            }
+
+            Connections {
+                target: icom
                 onSerialPortErrorSignal:{
                     serialErrorRadio.open();
                     logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
@@ -1283,6 +1298,7 @@ ScrollView {
                         height: loginButton.height + 5
                         width: height
                     }
+
                 }
 
                 Row {
