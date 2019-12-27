@@ -152,13 +152,14 @@ void Rotator::trackingDataSlot(double azimuth,
         return;
     }
 
-    int elev = static_cast<int>(elevation);
+    int elev = static_cast<int>(elevation+0.5);     // round elevation
+    int azim = static_cast<int>(azimuth+0.5);       // round azimuth
     if (!isCurrentlyFollowing_prot && elev >= 0) {
         isCurrentlyFollowing_prot = true;
     }
 
     if (isCurrentlyFollowing_prot) {
-        if (lastElevation_prot >= -3 && elev <= -3) {
+        if (lastElevation_prot >= -2 && elev <= -2) {
             isCurrentlyFollowing_prot = false;
             if (shouldPark_prot) {
                 park();
@@ -167,20 +168,25 @@ void Rotator::trackingDataSlot(double azimuth,
             emit nextPassDataRequestSignal();
         }
         else {
-            unsigned int el = elev < 0 ? 0 : static_cast<unsigned int>(elev);
-            unsigned int az = static_cast<unsigned int>(azimuth);
-            if (passCrossesStopPoint_prot) {
-                setAZEL((az + 180) % 360, 180 - el);
-            }
-            else {
-                setAZEL(az, el);
+            if (lastAzimuth_prot != azim || lastElevation_prot != elev) {
+                unsigned int el = elev < 0 ? 0 : static_cast<unsigned int>(elev);
+                unsigned int az = static_cast<unsigned int>(azim);
+                if (passCrossesStopPoint_prot) {
+                    setAZEL((az + 180) % 360, 180 - el);
+                }
+                else {
+                    setAZEL(az, el);
+                }
             }
         }
     }
 
     if (lastElevation_prot != elev) {
         lastElevation_prot = elev;
-    };
+    }
+    if (lastAzimuth_prot != azim) {
+        lastAzimuth_prot = azim;
+    }
 }
 
 /**
