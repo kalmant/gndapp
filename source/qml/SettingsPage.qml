@@ -994,7 +994,7 @@ ScrollView {
 
                 Switch{
                     id: rotatorSwitch
-                    enabled: (predicterController.tracking && rotatorCOMCombo.count > 0) || rotatorSwitch.checked
+                    enabled: (predicterController.tracking && rotatorCOMCombo.count > 0)
                     text: enabled? qsTr("Control an antenna rotator"): '<font color="red">Antenna rotator controlling is only allowed if tracking is running and a rotator is connected</font>'
                     checked: false
                     onCheckedChanged: {
