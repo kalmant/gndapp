@@ -9,6 +9,9 @@
 #include "source/packet/spectrumreceiver.h"
 #include "source/predict/predictercontroller.h"
 #include "source/radios/ft817radio.h"
+#include "source/radios/ft847radio.h"
+#include "source/radios/ft991radio.h"
+#include "source/radios/icomradio.h"
 #include "source/radios/smogradio.h"
 #include "source/radios/ts2000radio.h"
 #include "source/rotators/g5500rotator.h"
@@ -203,19 +206,27 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("sdrThread", sdrThread.data());
     engine.rootContext()->setContextProperty("messageProxy", &messageProxy);
 
-    UploadController uploadController(QUrl("https://gnd.bme.hu:8080/api/"),
-        uploadDirString,
-        "upload_queue.txt",
-        "rejected_packets.txt");
+    UploadController uploadController(
+        QUrl("https://gnd.bme.hu:8080/api/"), uploadDirString, "upload_queue.txt", "rejected_packets.txt");
     QObject::connect(&packetDecoder, &PacketDecoder::newPacketMinimal, &uploadController, &UploadController::newPacket);
     engine.rootContext()->setContextProperty("uploader", &uploadController);
 
     engine.rootContext()->setContextProperty("deviceDiscovery", &deviceDiscovery);
-    TS2000Radio ts2000(&predicterController);
-    engine.rootContext()->setContextProperty("ts2000", &ts2000);
     FT817Radio ft817(&predicterController);
     engine.rootContext()->setContextProperty("ft817", &ft817);
     QObject::connect(&satelliteChanger, &SatelliteChanger::newBaseFrequency, &ft817, &Radio::newBaseFrequency);
+    FT847Radio ft847(&predicterController);
+    engine.rootContext()->setContextProperty("ft847", &ft847);
+    QObject::connect(&satelliteChanger, &SatelliteChanger::newBaseFrequency, &ft847, &Radio::newBaseFrequency);
+    FT991Radio ft991(&predicterController);
+    engine.rootContext()->setContextProperty("ft991", &ft991);
+    QObject::connect(&satelliteChanger, &SatelliteChanger::newBaseFrequency, &ft991, &Radio::newBaseFrequency);
+    ICOMRadio icom(&predicterController);
+    engine.rootContext()->setContextProperty("icom", &icom);
+    QObject::connect(&satelliteChanger, &SatelliteChanger::newBaseFrequency, &icom, &Radio::newBaseFrequency);
+    TS2000Radio ts2000(&predicterController);
+    engine.rootContext()->setContextProperty("ts2000", &ts2000);
+    QObject::connect(&satelliteChanger, &SatelliteChanger::newBaseFrequency, &ts2000, &Radio::newBaseFrequency);
     SMOGRadio smogradio(&predicterController, &packetDecoder);
     engine.rootContext()->setContextProperty("smogradio", &smogradio);
     QObject::connect(&satelliteChanger, &SatelliteChanger::newBaseFrequency, &smogradio, &Radio::newBaseFrequency);
