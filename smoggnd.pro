@@ -2,8 +2,8 @@ TEMPLATE = app
 
 QT += qml quick widgets multimedia network serialport charts quickcontrols2
 
-lessThan(QT_MAJOR_VERSION, 5) | lessThan(QT_MINOR_VERSION, 12) {
-    error("Qt 5.12 is the minimum required version.")
+lessThan(QT_MAJOR_VERSION, 5) | lessThan(QT_MINOR_VERSION, 12) | lessThan(QT_PATCH_VERSION, 6) {
+    error("Qt 5.12.6 is the minimum required version.")
 }
 
 CONFIG += c++11 resources_big \
@@ -42,7 +42,7 @@ win32 {
 }
 
 # Windows icon
-RC_FILE = "icon/smoggnd.rc"
+RC_ICONS = "icon/smoggnd.ico"
 
 linux {
     CONFIG += link_pkgconfig
@@ -99,6 +99,9 @@ HEADERS += \
     source/predict/predicterworker.h \
     source/predict/predictmod.h \
     source/radios/ft817radio.h \
+    source/radios/ft847radio.h \
+    source/radios/ft991radio.h \
+    source/radios/icomradio.h \
     source/radios/radio.h \
     source/radios/smogradio.h \
     source/radios/ts2000radio.h \
@@ -166,6 +169,9 @@ SOURCES += \
     source/predict/predicterworker.cpp \
     source/predict/predictmod.cpp \
     source/radios/ft817radio.cpp \
+    source/radios/ft847radio.cpp \
+    source/radios/ft991radio.cpp \
+    source/radios/icomradio.cpp \
     source/radios/radio.cpp \
     source/radios/smogradio.cpp \
     source/radios/ts2000radio.cpp \

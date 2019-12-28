@@ -479,6 +479,7 @@ ScrollView {
                             model: sdrThread.sdrDevices
                             textRole: "display"
                             enabled: !sdrEnabledSwitch.checked
+                            currentIndex: sdrThread.sdrDevices.rowCount() > 0 ? 0 : -1
                         }
                         Button {
                             text: qsTr("Refresh devices")
@@ -812,6 +813,15 @@ ScrollView {
                                 // smog radio
                                 smogradio.set5VOut(smogRadio5VOutSwitch.checked)
                                 smogradio.start(String(radioCOMCombo.currentText), 115200, radioOffsetSpinbox.value, true);
+                            } else if (radioModelCombo.currentIndex === 3) {
+                                //ft847
+                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                            } else if (radioModelCombo.currentIndex === 4) {
+                                //ft991
+                                ft991.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                            } else if (radioModelCombo.currentIndex === 5) {
+                                //icom
+                                icom.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
                             }
                         } else {
                             // turning the radio off
@@ -824,6 +834,15 @@ ScrollView {
                             } else if (radioModelCombo.currentIndex === 2) {
                                 // smog radio
                                 smogradio.stop();
+                            } else if (radioModelCombo.currentIndex === 3) {
+                                // ft847 radio
+                                ft847.stop();
+                            } else if (radioModelCombo.currentIndex === 4) {
+                                // ft991 radio
+                                ft991.stop();
+                            } else if (radioModelCombo.currentIndex === 5) {
+                                // icom radio
+                                icom.stop();
                             }
                         }
                     }
@@ -839,6 +858,7 @@ ScrollView {
                     spacing: parent.spacing
 
                     Grid {
+                        enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                         spacing: parent.spacing
                         columns: 2
                         verticalItemAlignment: Grid.AlignVCenter
@@ -849,7 +869,7 @@ ScrollView {
 
                         ComboBox {
                             id: radioModelCombo
-                            model: ['FT-817','TS-2000','SMOG']
+                            model: ['FT-817','TS-2000','SMOG','FT-847','FT-991','ICOM']
                             currentIndex: 0
                         }
 
@@ -880,7 +900,7 @@ ScrollView {
 
                         ComboBox {
                             id: radioBaudRate
-                            model: ['4800','9600']
+                            model: ['4800','9600','19200','38400']
                             visible: (radioModelCombo.currentIndex !== 2) // smogradio only supports 115200
                         }
 
@@ -928,16 +948,39 @@ ScrollView {
             }
 
             Connections {
-                target: ts2000
+                target: ft847
                 onSerialPortErrorSignal:{
                     serialErrorRadio.open();
                     logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
                     radioSwitch.checked = false;
                 }
             }
-
+            Connections {
+                target: ft991
+                onSerialPortErrorSignal:{
+                    serialErrorRadio.open();
+                    logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
+                    radioSwitch.checked = false;
+                }
+            }
+            Connections {
+                target: icom
+                onSerialPortErrorSignal:{
+                    serialErrorRadio.open();
+                    logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
+                    radioSwitch.checked = false;
+                }
+            }
             Connections {
                 target: smogradio
+                onSerialPortErrorSignal:{
+                    serialErrorRadio.open();
+                    logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
+                    radioSwitch.checked = false;
+                }
+            }
+            Connections {
+                target: ts2000
                 onSerialPortErrorSignal:{
                     serialErrorRadio.open();
                     logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
@@ -956,7 +999,7 @@ ScrollView {
 
                 Switch{
                     id: rotatorSwitch
-                    enabled: (predicterController.tracking && rotatorCOMCombo.count > 0) || rotatorSwitch.checked
+                    enabled: (predicterController.tracking && rotatorCOMCombo.count > 0)
                     text: enabled? qsTr("Control an antenna rotator"): '<font color="red">Antenna rotator controlling is only allowed if tracking is running and a rotator is connected</font>'
                     checked: false
                     onCheckedChanged: {

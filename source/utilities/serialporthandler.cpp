@@ -62,6 +62,10 @@ QSerialPort::SerialPortError SerialPortHandler::initPort(QString portName, const
         else {
             port_priv.open(QSerialPort::WriteOnly);
         }
+        if (settings.FlowControl != QSerialPort::HardwareControl) {
+            port_priv.setRequestToSend(false);
+            port_priv.setDataTerminalReady(false);
+        }
     }
     else {
         return QSerialPort::DeviceNotFoundError;

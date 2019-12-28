@@ -35,6 +35,7 @@ protected:
     bool passCrossesStopPoint_prot = false; //!< True if the next pass crosses \p stoppingPositionAz_prot
     bool isCurrentlyFollowing_prot = false; //!< True if the rotator is following the satellite ATM
     int lastElevation_prot = -181;          //!< Previous elevation received from predicter
+    int lastAzimuth_prot = -361;            //!< Previous azimuth received from predicter
 
     bool isRunning() const;
     void setIsRunning(bool newValue);
