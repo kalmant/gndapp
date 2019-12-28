@@ -825,6 +825,9 @@ ScrollView {
                             } else if (radioModelCombo.currentIndex === 4) {
                                 //icom
                                 icom.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                            } else if (radioModelCombo.currentIndex === 5) {
+                                //ft847
+                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
                             }
                         } else {
                             // turning the radio off
@@ -843,6 +846,9 @@ ScrollView {
                             } else if (radioModelCombo.currentIndex === 4) {
                                 //icom
                                 icom.stop();
+                            } else if (radioModelCombo.currentIndex === 5) {
+                                //ft847
+                                ft847.stop();
                             }
                         }
                     }
@@ -869,7 +875,7 @@ ScrollView {
 
                         ComboBox {
                             id: radioModelCombo
-                            model: ['FT-991','FT-817','TS-2000','SMOG','ICOM']
+                            model: ['FT-991','FT-817','TS-2000','SMOG','ICOM','FT-847']
                             currentIndex: 0
                         }
 
@@ -900,7 +906,7 @@ ScrollView {
 
                         ComboBox {
                             id: radioBaudRate
-                            model: ['4800','9600','19200']
+                            model: ['4800','9600','19200','38400']
                             visible: (radioModelCombo.currentIndex !== 3) // smogradio only supports 115200
                         }
 
@@ -976,6 +982,15 @@ ScrollView {
 
             Connections {
                 target: icom
+                onSerialPortErrorSignal:{
+                    serialErrorRadio.open();
+                    logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");
+                    radioSwitch.checked = false;
+                }
+            }
+
+            Connections {
+                target: ft847
                 onSerialPortErrorSignal:{
                     serialErrorRadio.open();
                     logger.writeToLog("Radio error: An error has occurred during communcation through the COM port.");

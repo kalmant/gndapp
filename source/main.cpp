@@ -13,6 +13,7 @@
 #include "source/radios/ts2000radio.h"
 #include "source/radios/ft991radio.h"
 #include "source/radios/icomradio.h"
+#include "source/radios/ft847radio.h"
 #include "source/rotators/g5500rotator.h"
 #include "source/sdr/sdrthread.h"
 #include "source/settings/settingsholder.h"
@@ -221,6 +222,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("ts2000", &ts2000);
     FT817Radio ft817(&predicterController);
     engine.rootContext()->setContextProperty("ft817", &ft817);
+    FT847Radio ft847(&predicterController);
+    engine.rootContext()->setContextProperty("ft847", &ft847);
     QObject::connect(&satelliteChanger, &SatelliteChanger::newBaseFrequency, &ft817, &Radio::newBaseFrequency);
     SMOGRadio smogradio(&predicterController, &packetDecoder);
     engine.rootContext()->setContextProperty("smogradio", &smogradio);

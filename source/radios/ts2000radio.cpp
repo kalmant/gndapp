@@ -8,8 +8,14 @@ void TS2000Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
     if (baudRate == 4800) {
         portSettings_prot.BaudRate = QSerialPort::Baud4800;
     }
-    else {
+    else if (baudRate == 9600) {
         portSettings_prot.BaudRate = QSerialPort::Baud9600;
+    }
+    else if (baudRate == 19200) {
+        portSettings_prot.BaudRate = QSerialPort::Baud19200;
+    }
+    else {
+        portSettings_prot.BaudRate = QSerialPort::Baud38400;
     }
     portSettings_prot.FlowControl = QSerialPort::HardwareControl;
     portSettings_prot.Parity = QSerialPort::NoParity;
@@ -25,6 +31,7 @@ void TS2000Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
  * @brief TS2000 requires no additional operations during starting up
  */
 void TS2000Radio::initialization() {
+    emit newCommand(QString("MD2;").toLocal8Bit());
 }
 
 /**

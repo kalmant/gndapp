@@ -104,6 +104,7 @@ HEADERS += \
     source/radios/smogradio.h \
     source/radios/ft991radio.h \
     source/radios/ts2000radio.h \
+    source/radios/ft847radio.h \
     source/rotators/g5500rotator.h \
     source/rotators/rotator.h \
     source/sdr/sdrthread.h \
@@ -168,6 +169,7 @@ SOURCES += \
     source/predict/predicterworker.cpp \
     source/predict/predictmod.cpp \
     source/radios/ft817radio.cpp \
+    source/radios/ft847radio.cpp \
     source/radios/ft991radio.cpp \
     source/radios/icomradio.cpp \
     source/radios/radio.cpp \
