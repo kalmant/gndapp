@@ -219,7 +219,8 @@ void SpectrumReceiver::newSpectrumPacket(s1obc::SpectrumPacket spectrumPacket) {
         fillWithNoData();
         nextPacketCounter_priv++;
     }
-    for (uint i = 0; i < dataLength; i++) {
+    auto maxIndex = maxLengthPerPacket < dataLength ? maxLengthPerPacket : dataLength;
+    for (uint i = 0; i < maxIndex; i++) {
         series_priv->append(startFrequency_priv +
                                 nextPacketCounter_priv * (maxLengthPerPacket * measurementStepSize_priv) +
                                 i * measurementStepSize_priv,
