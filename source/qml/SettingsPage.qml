@@ -479,6 +479,7 @@ ScrollView {
                             model: sdrThread.sdrDevices
                             textRole: "display"
                             enabled: !sdrEnabledSwitch.checked
+                            currentIndex: sdrThread.sdrDevices.rowCount() > 0 ? 0 : -1
                         }
                         Button {
                             text: qsTr("Refresh devices")
@@ -857,6 +858,7 @@ ScrollView {
                     spacing: parent.spacing
 
                     Grid {
+                        enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                         spacing: parent.spacing
                         columns: 2
                         verticalItemAlignment: Grid.AlignVCenter
@@ -997,7 +999,7 @@ ScrollView {
 
                 Switch{
                     id: rotatorSwitch
-                    enabled: (predicterController.tracking && rotatorCOMCombo.count > 0) || rotatorSwitch.checked
+                    enabled: (predicterController.tracking && rotatorCOMCombo.count > 0)
                     text: enabled? qsTr("Control an antenna rotator"): '<font color="red">Antenna rotator controlling is only allowed if tracking is running and a rotator is connected</font>'
                     checked: false
                     onCheckedChanged: {
