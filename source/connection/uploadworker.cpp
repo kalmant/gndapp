@@ -29,7 +29,7 @@ UploadWorker::UploadWorker(const QUrl &serverAPIUrl,
     remaining_priv = 0;
     errorsInARow_priv = 0;
     pjw_priv.reset(new PacketsJSONWrapper());
-    QTimer::singleShot(0, [&] { loadUnsentPakcets(); });
+    QTimer::singleShot(0, [&] { loadUnsentPackets(); });
     uploadingTimeoutTimer_priv.setSingleShot(true);
     loginTimeoutTimer_priv.setSingleShot(true);
     QObject::connect(&upload_mgr_priv, &QNetworkAccessManager::finished, [&](QNetworkReply *reply) {
@@ -184,7 +184,7 @@ void UploadWorker::setRandomPrefix() {
     this->prefix = randomString;
 }
 
-void UploadWorker::loadUnsentPakcets() {
+void UploadWorker::loadUnsentPackets() {
     auto directory = QDir(uploadDirString);
     QStringList fileNameFilters = {"*" + this->fileNameEnding};
     auto fileNames = directory.entryList(fileNameFilters, QDir::Files | QDir::Readable | QDir::Writable);
