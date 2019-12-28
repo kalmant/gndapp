@@ -2,7 +2,7 @@ GND Application
 
 Built for SMOG-1, SMOG-P and ATL-1. Find out more about the project on our [website: https://gnd.bme.hu/smog](https://gnd.bme.hu/smog)!
 
-We recommend at least Qt 5.12.5 if you want to build the project.
+We recommend at least Qt 5.12.6 if you want to build the project.
 
 Please note, that OpenSSL dlls are not included. You need to acquire those on your own (at least v.1.1) to build on Windows using OpenSSL.
 
