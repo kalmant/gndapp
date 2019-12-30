@@ -57,6 +57,7 @@ ScrollView {
 
         settingsHolder.sdroffs = sdrOffsetSpinbox.value;
         settingsHolder.sdrppm = sdrPPMSpinbox.value;
+        settingsHolder.sdrgain = sdrGainSpinbox.value;
         settingsHolder.sdradft = sdrDFTrackingSwitch.checked;
         settingsHolder.sdrdf = sdrDFSpinbox.value;
 
@@ -148,6 +149,12 @@ ScrollView {
                 sdrPPMSpinbox.value = PPM;
             } else {
                 sdrPPMSpinbox.value = 0;
+            }
+
+            if (gain>=-50 && gain<=50){
+                sdrGainSpinbox.value = gain;
+            } else {
+                sdrGainSpinbox.value = 0;
             }
 
             // Ask if these 2 can be removed
@@ -427,7 +434,7 @@ ScrollView {
                             return;
                         }
                         if (checked){
-                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.value,sdrOffsetSpinbox.value,sdrDFSpinbox.value,sdrDFTrackingSwitch.checked );
+                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.value, sdrGainSpinbox.value, sdrOffsetSpinbox.value,sdrDFSpinbox.value,sdrDFTrackingSwitch.checked );
                         } else {
                             sdrThread.stopReading();
                         }
@@ -521,6 +528,21 @@ ScrollView {
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Allows you to set the PPM of your particular device.")
+                        }
+
+                        Label {
+                            text: qsTr("Gain [dB]")
+                        }
+
+                        SpinBox {
+                            id: sdrGainSpinbox
+                            from: -50
+                            to: 50
+                            value: 0
+                            ToolTip.delay: 1000
+                            ToolTip.timeout: 5000
+                            ToolTip.visible: hovered
+                            ToolTip.text: qsTr("Allows you to set the gain of your particular device.")
                         }
 
                         Label {

@@ -46,9 +46,10 @@ class SettingsHolder : public QObject {
     GENPROPERTY(int, tse)
 
     // SDR settings group
-    // settings in order: offset, PPM, automaticDFTracking, DF
+    // settings in order: offset, PPM, gain, automaticDFTracking, DF
     GENPROPERTY(int, sdroffs)
     GENPROPERTY(int, sdrppm)
+    GENPROPERTY(int, sdrgain)
     GENPROPERTY(bool, sdradft)
     GENPROPERTY(int, sdrdf)
 

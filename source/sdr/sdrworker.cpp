@@ -113,6 +113,7 @@ void SDRWorker::cleanup() {
  * @param[in] device_index Device index of the SDR.
  * @param[in] samplesPerSecond Samping rate for SDR.
  * @param[in] ppm PPM error for the SDR.
+ * @param[in] gain Gain for the SDR.
  * @param[in] dataRate Data rate of the demodulation.
  * @param[in] df Doppler frequency to start the demodulation with.
  * @param[in] packetLength Length of the packets.
@@ -121,10 +122,14 @@ void SDRWorker::cleanup() {
 bool SDRWorker::readFromSDR(int device_index,
     long samplesPerSecond,
     int ppm,
+    int gain,
     unsigned int dataRate,
     int offset,
     float df,
     unsigned int packetLength) {
+    Q_UNUSED(dataRate);
+    Q_UNUSED(df);
+    Q_UNUSED(packetLength);
     int r;
     uint32_t buflen = 16 * 16384;
     if (device_index < 0) {
@@ -147,7 +152,12 @@ bool SDRWorker::readFromSDR(int device_index,
     }
     verbose_set_frequency(dev_priv, static_cast<uint32_t>(baseFrequency + static_cast<unsigned long>(offset)));
     verbose_set_sample_rate(dev_priv, static_cast<uint32_t>(samplesPerSecond));
-    verbose_auto_gain(dev_priv);
+    if (gain == 0) {
+        verbose_auto_gain(dev_priv);
+    }
+    else {
+        verbose_gain_set(dev_priv, gain * 10);
+    }
     verbose_ppm_set(dev_priv, ppm);
 
     verbose_reset_buffer(dev_priv);
@@ -188,6 +198,7 @@ bool SDRWorker::readFromSDR(int device_index,
  * @param[in] device_index Device index of the SDR.
  * @param[in] samplesPerSecond Samping rate for SDR.
  * @param[in] ppm PPM error for the SDR.
+ * @param[in] gain Gain for the SDR.
  * @param[in] dataRate Data rate of the demodulation.
  * @param[in] offset Offset frequency for the SDR.
  * @param[in] df Doppler frequency to start the demodulation with.
@@ -196,11 +207,12 @@ bool SDRWorker::readFromSDR(int device_index,
 void SDRWorker::start(int device_index,
     long samplesPerSecond,
     int ppm,
+    int gain,
     unsigned int dataRate,
     int offset,
     float df,
     unsigned int packetLength) {
-    bool success = readFromSDR(device_index, samplesPerSecond, ppm, dataRate, offset, df, packetLength);
+    bool success = readFromSDR(device_index, samplesPerSecond, ppm, gain, dataRate, offset, df, packetLength);
     if (!success) {
         *canRun_priv = false;
     }
