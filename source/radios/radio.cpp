@@ -65,9 +65,7 @@ void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff)
  * @brief Turns the radio off if \p turnOnOff_prot and stops controlling it.
  */
 void Radio::stop() {
-    if (turnOnOff_prot) {
-        turnOff();
-    }
+    turnOff();
     QTimer::singleShot(1000, [&](){
         emit closePortSignal();
         setIsRunning(false);

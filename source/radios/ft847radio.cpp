@@ -70,7 +70,21 @@ void FT847Radio::setFrequency(unsigned long frequencyHz) {
 }
 
 void FT847Radio::turnOn() {
+    QByteArray caton; // set CAT ON
+    caton.append(static_cast<char>(0x00));
+    caton.append(static_cast<char>(0x00));
+    caton.append(static_cast<char>(0x00));
+    caton.append(static_cast<char>(0x00));
+    caton.append(static_cast<char>(0x00));
+    emit newCommand(caton);
 }
 
 void FT847Radio::turnOff() {
+    QByteArray catoff; // set CAT OFF
+    catoff.append(static_cast<char>(0x00));
+    catoff.append(static_cast<char>(0x00));
+    catoff.append(static_cast<char>(0x00));
+    catoff.append(static_cast<char>(0x00));
+    catoff.append(static_cast<char>(0x80));
+    emit newCommand(catoff);
 }

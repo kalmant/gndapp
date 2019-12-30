@@ -843,7 +843,7 @@ ScrollView {
                                 smogradio.start(String(radioCOMCombo.currentText), 115200, radioOffsetSpinbox.value, true);
                             } else if (radioModelCombo.currentIndex === 3) {
                                 //ft847
-                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, false);
                             } else if (radioModelCombo.currentIndex === 4) {
                                 //ft991
                                 ft991.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
@@ -867,6 +867,7 @@ ScrollView {
                                 ft847.stop();
                             } else if (radioModelCombo.currentIndex === 4) {
                                 // ft991 radio
+                                turnOnOff = true;
                                 ft991.stop();
                             } else if (radioModelCombo.currentIndex === 5) {
                                 // icom radio
