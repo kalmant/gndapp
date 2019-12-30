@@ -5,7 +5,6 @@
 #include <QString>
 
 class ICOMRadio : public Radio {
-    Q_OBJECT
 public:
     ICOMRadio(PredicterController *predicter);
 

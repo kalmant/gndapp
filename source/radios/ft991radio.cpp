@@ -31,8 +31,8 @@ void FT991Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
  * @brief FT991 requires no additional operations during starting up
  */
 void FT991Radio::initialization() {
-    emit newCommand(QString("MD02;").toLocal8Bit());     // set MODE to USB
-    emit newCommand(QString("RC;").toLocal8Bit());       // clear CLAR
+    emit newCommand(QString("MD02;").toLocal8Bit()); // set MODE to USB
+    emit newCommand(QString("RC;").toLocal8Bit());   // clear CLAR
 }
 
 /**

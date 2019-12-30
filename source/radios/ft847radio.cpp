@@ -11,6 +11,9 @@ void FT847Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
     else if (baudRate == 9600) {
         portSettings_prot.BaudRate = QSerialPort::Baud9600;
     }
+    else if (baudRate == 19200) {
+        portSettings_prot.BaudRate = QSerialPort::Baud19200;
+    }
     else {
         portSettings_prot.BaudRate = QSerialPort::Baud38400;
     }
@@ -23,7 +26,7 @@ void FT847Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
  * @brief Sets mode and other settings for the radio.
  */
 void FT847Radio::initialization() {
-    QByteArray temp;                            // set MODE to DIGI
+    QByteArray temp; // set MODE to DIGI
     temp.append(static_cast<char>(0x0A));
     temp.append(static_cast<char>(0x00));
     temp.append(static_cast<char>(0x00));
@@ -37,7 +40,7 @@ void FT847Radio::initialization() {
  * @param frequencyHz The new freuqncy as Hz
  */
 void FT847Radio::setFrequency(unsigned long frequencyHz) {
-    if (frequencyHz > 500000000) {
+    if (frequencyHz >= 500000000) {
         qWarning() << "Invalid frequency, it should be less than 500 MHz";
         return;
     }

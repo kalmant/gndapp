@@ -31,7 +31,7 @@ void TS2000Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
  * @brief TS2000 requires no additional operations during starting up
  */
 void TS2000Radio::initialization() {
-    emit newCommand(QString("MD2;").toLocal8Bit());
+    emit newCommand(QString("MD2;").toLocal8Bit()); // Based on om3bc's input
 }
 
 /**

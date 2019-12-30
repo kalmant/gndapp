@@ -41,7 +41,7 @@ Subsystem {
         TelemetryObject {
             group: "OBC"
             description: "EPS2-A T2"
-            value: telemetry3packet.obc.eps2PanelATemperature1_C10 / 10.0
+            value: telemetry3packet.obc.eps2PanelATemperature2_C10 / 10.0
             min: -40
             max: 80
             unit: "°C"

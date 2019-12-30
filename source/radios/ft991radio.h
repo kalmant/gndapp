@@ -2,6 +2,7 @@
 #define FT991RADIONEW_H
 
 #include "radio.h"
+#include <QString>
 
 class FT991Radio : public Radio {
 public:

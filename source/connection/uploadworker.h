@@ -43,7 +43,7 @@ private:
     QScopedPointer<PacketsJSONWrapper> pjw_priv;
 
     void setRandomPrefix();
-    void loadUnsentPakcets();
+    void loadUnsentPackets();
     void setIsCurrentlyUploading(bool newValue);
     void setIsCurrentlyLoggingIn(bool newValue);
     void setIsLoggedIn(bool newValue);

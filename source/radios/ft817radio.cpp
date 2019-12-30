@@ -32,6 +32,9 @@ void FT817Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
     else if (baudRate == 9600) {
         portSettings_prot.BaudRate = QSerialPort::Baud9600;
     }
+    else if (baudRate == 19200) {
+        portSettings_prot.BaudRate = QSerialPort::Baud19200;
+    }
     else {
         portSettings_prot.BaudRate = QSerialPort::Baud38400;
     }

@@ -63,6 +63,7 @@ void Rotator::start(QString portName,
     passCrossesStopPoint_prot = false;
     isCurrentlyFollowing_prot = false;
     lastElevation_prot = -181;
+    lastAzimuth_prot = -361;
 
     emit changePortSettings(portName_prot, portSettings_prot);
 
@@ -152,14 +153,14 @@ void Rotator::trackingDataSlot(double azimuth,
         return;
     }
 
-    int elev = static_cast<int>(elevation+0.5);     // round elevation
-    int azim = static_cast<int>(azimuth+0.5);       // round azimuth
-    if (!isCurrentlyFollowing_prot && elev >= 0) {
+    int elev = static_cast<int>(elevation + 0.5); // round elevation
+    int azim = static_cast<int>(azimuth + 0.5);   // round azimuth
+    if (!isCurrentlyFollowing_prot && elev >= -5) {
         isCurrentlyFollowing_prot = true;
     }
 
     if (isCurrentlyFollowing_prot) {
-        if (lastElevation_prot >= -2 && elev <= -2) {
+        if (lastElevation_prot >= -2 && elev < lastElevation_prot) {
             isCurrentlyFollowing_prot = false;
             if (shouldPark_prot) {
                 park();
@@ -167,16 +168,14 @@ void Rotator::trackingDataSlot(double azimuth,
             prePositionTimer_prot.stop();
             emit nextPassDataRequestSignal();
         }
-        else {
-            if (lastAzimuth_prot != azim || lastElevation_prot != elev) {
-                unsigned int el = elev < 0 ? 0 : static_cast<unsigned int>(elev);
-                unsigned int az = static_cast<unsigned int>(azim);
-                if (passCrossesStopPoint_prot) {
-                    setAZEL((az + 180) % 360, 180 - el);
-                }
-                else {
-                    setAZEL(az, el);
-                }
+        else if (lastAzimuth_prot != azim || lastElevation_prot != elev) {
+            unsigned int el = elev < 0 ? 0 : static_cast<unsigned int>(elev);
+            unsigned int az = static_cast<unsigned int>(azim);
+            if (passCrossesStopPoint_prot) {
+                setAZEL((az + 180) % 360, 180 - el);
+            }
+            else {
+                setAZEL(az, el);
             }
         }
     }

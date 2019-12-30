@@ -455,7 +455,9 @@ ApplicationWindow {
         standardButtons: Dialogs1.StandardButton.Ok
         text: qsTr("This program was created for the purpose of tracking and collecting telemetry from SMOG-1, SMOG-P and ATL-1."+
                    "\n\nIf you encounter any issues, please get in contact with us at bmegnd@gnd.bme.hu!"+
-                   "\n\nStay up to date through https://gnd.bme.hu/smog")
+                   "\n\nStay up to date through https://gnd.bme.hu/smog"+
+                   "\n\nThank you to our contributors:\n• OM3BC"+
+                   "\n\nVersion: 1.0.3")
     }
     Loader {
         id: manualPacketInputLoader

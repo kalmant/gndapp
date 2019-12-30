@@ -5,7 +5,6 @@
 #include <QString>
 
 class FT847Radio : public Radio {
-    Q_OBJECT
 public:
     FT847Radio(PredicterController *predicter);
 

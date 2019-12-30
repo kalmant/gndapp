@@ -2,8 +2,8 @@ TEMPLATE = app
 
 QT += qml quick widgets multimedia network serialport charts quickcontrols2
 
-lessThan(QT_MAJOR_VERSION, 5) | lessThan(QT_MINOR_VERSION, 12) {
-    error("Qt 5.12 is the minimum required version.")
+lessThan(QT_MAJOR_VERSION, 5) | lessThan(QT_MINOR_VERSION, 12) | lessThan(QT_PATCH_VERSION, 6) {
+    error("Qt 5.12.6 is the minimum required version.")
 }
 
 CONFIG += c++11 resources_big \
@@ -99,12 +99,12 @@ HEADERS += \
     source/predict/predicterworker.h \
     source/predict/predictmod.h \
     source/radios/ft817radio.h \
+    source/radios/ft847radio.h \
+    source/radios/ft991radio.h \
     source/radios/icomradio.h \
     source/radios/radio.h \
     source/radios/smogradio.h \
-    source/radios/ft991radio.h \
     source/radios/ts2000radio.h \
-    source/radios/ft847radio.h \
     source/rotators/g5500rotator.h \
     source/rotators/rotator.h \
     source/sdr/sdrthread.h \
