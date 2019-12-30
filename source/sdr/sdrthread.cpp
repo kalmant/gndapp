@@ -60,24 +60,26 @@ SDRThread::~SDRThread() {
  *
  * @param[in] device_index The device's index
  * @param[in] ppm PPM error for the SDR.
+ * @param[in] gain Gain for the SDR.
  * @param[in] offset Offset frequency of the SDR
  * @param[in] df Doppler frequency to start the demodulation with.
  * @param[in] automaticDF True if doppler frequency is automatically controlled (through tracking)
  */
-void SDRThread::startReading(int device_index, int ppm, int offset, float df, bool automaticDF) {
+void SDRThread::startReading(int device_index, int ppm, int gain, int offset, float df, bool automaticDF) {
     if (device_index >= sdrDevicesModel.rowCount()){
         emit invalidSdrDeviceIndex();
         return;
     }
     chosenDevice_priv = device_index;
     ppm_priv = ppm;
+    gain_priv = gain;
     offset_priv = offset;
     mut_priv.data()->lock();
     *(df_priv.data()) = static_cast<int>(df);
     df_mirror_priv = static_cast<int>(df);
     mut_priv.data()->unlock();
     automaticDF_priv = automaticDF;
-    emit startSignal(device_index, 250000, ppm, dataRateBPS_priv, offset, df, packetLengthBytes_priv);
+    emit startSignal(device_index, 250000, ppm, gain, dataRateBPS_priv, offset, df, packetLengthBytes_priv);
     canRun_mirror_priv = true;
 }
 

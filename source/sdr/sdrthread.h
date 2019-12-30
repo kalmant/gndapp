@@ -22,7 +22,7 @@ public:
 
     Q_PROPERTY(QStringListModel *sdrDevices READ sdrDevices NOTIFY sdrDevicesChanged)
 
-    Q_INVOKABLE void startReading(int device_index, int ppm, int offset, float df, bool automaticDF);
+    Q_INVOKABLE void startReading(int device_index, int ppm, int gain, int offset, float df, bool automaticDF);
     Q_INVOKABLE void stopReading();
     void terminateWorker();
     Q_INVOKABLE void setDopplerFrequency(int newDF);
@@ -44,6 +44,7 @@ private:
     unsigned int packetLengthBytes_priv = 0; //!< Current packet length [bytes]
     int offset_priv = 0;                     //!< Current offset [Hz]
     int ppm_priv = 0;                        //!< Current PPM
+    int gain_priv = 0;                       //!< Current Gain
     bool canRun_mirror_priv;                 //!< Stores whether the SDRWorker is currently running
     bool automaticDF_priv;            //!< True if doppler frequency is automatically controlled (through tracking)
     unsigned long baseFrequency_priv; //!< The base frequency for the communication
@@ -68,6 +69,7 @@ signals:
      * @param[in] device_index Device index of the SDR.
      * @param[in] samplesPerSecond Samping rate for SDR.
      * @param[in] ppm PPM error for the SDR.
+     * @param[in] gain Gain for the SDR.
      * @param[in] dataRate Data rate of the demodulation.
      * @param[in] offset Offset frequency of the SDR
      * @param[in] df Doppler frequency to start the demodulation with.
@@ -76,6 +78,7 @@ signals:
     void startSignal(int device_index,
         unsigned int samplesPerSecond,
         int ppm,
+        int gain,
         unsigned int dataRate,
         int offset,
         float df,
