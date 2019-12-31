@@ -1238,10 +1238,14 @@ ScrollView {
                             case model.indexOf(smogp):
                                 satelliteChanger.changeToSMOGP()
                                 mainWindow.title = "SMOG-P GND Client Software"
+                                satIdInput.text = "44832"
+                                predicterController.changeSatID(44832)
                                 break;
                             case model.indexOf(atl1):
                                 satelliteChanger.changeToATL1()
                                 mainWindow.title = "ATL-1 GND Client Software"
+                                satIdInput.text = "44830"
+                                predicterController.changeSatID(44830)
                                 break;
                             }
                         }
