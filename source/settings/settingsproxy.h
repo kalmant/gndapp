@@ -43,12 +43,13 @@ signals:
 
     /**
      * @brief Signal, that emits the tracking settings after loading it from persistent storage.
-     * @param qlonglong The ID of the satellite
+     * @param satelliteId The ID of the satellite
+     * @param baseFrequencyHz The base frequency of the satellite
      * @param stationLat The station's location's latitude in degrees.
      * @param stationLong The station's location's longitude in degrees.
      * @param stationElev The station's location's altitude in meters.
      */
-    void loadTrackingSettings(qlonglong satelliteId, QString stationLat, QString stationLong, int stationElev);
+    void loadTrackingSettings(qlonglong satelliteId, qlonglong baseFrequencyHz, QString stationLat, QString stationLong, int stationElev);
 
     /**
      * @brief Signal, that emits the radio settings after loading it from persistent storage.

@@ -39,8 +39,9 @@ class SettingsHolder : public QObject {
     GENPROPERTY(bool, sswos)
 
     // Tracking settings group
-    // settings in order: satelliteId, stationLat, stationLon, stationElev
+    // settings in order: satelliteId, baseFrequency, stationLat, stationLon, stationElev
     GENPROPERTY(qlonglong, tsi)
+    GENPROPERTY(qlonglong, tbf)
     GENPROPERTY(QString, tsla)
     GENPROPERTY(QString, tslo)
     GENPROPERTY(int, tse)

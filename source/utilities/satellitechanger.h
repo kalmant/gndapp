@@ -23,6 +23,7 @@ public:
     Q_INVOKABLE void changeToSMOG1();
     Q_INVOKABLE void changeToSMOGP();
     Q_INVOKABLE void changeToATL1();
+    Q_INVOKABLE void changeToOther();
 
 private:
     Satellites currentSatellite_priv;
@@ -35,6 +36,8 @@ signals:
      * @param newFrequencyHz The new base frequency
      */
     void newBaseFrequency(unsigned long newFrequencyHz);
+
+    void newSatelliteId(unsigned int newSatelliteId);
 
     /**
      * @brief The signal that is used to communicate that the satellite filename prefix has changed

@@ -34,6 +34,7 @@ ScrollView {
         settingsHolder.sswos = waterfallDiagramSwitch.checked;
 
         settingsHolder.tsi = parseInt(satIdInput.text);
+        settingsHolder.tbf = baseFreq;
         if (!latitudeInput.acceptableInput){
             latitudeInput.text = "0"
         }
@@ -168,6 +169,8 @@ ScrollView {
         }
         onLoadTrackingSettings:{
             satIdInput.text = satelliteId;
+            baseFreq = baseFrequencyHz;
+            baseFreqInput.text = Number(baseFreq / 1e6).toLocaleString(Qt.locale(), "f", 6);
             var sLaFloat = Number.fromLocaleString(Qt.locale(), stationLat);
             if (sLaFloat>=-90 && sLaFloat<=0){
                 latitudeInput.text = Number(-sLaFloat).toLocaleString(Qt.locale(), "f", 5);
@@ -195,6 +198,9 @@ ScrollView {
             } else {
                 elevationInput.text = "0";
             }
+
+            predicterController.changeSatID(satelliteId);
+            predicterController.newBaseFrequency(baseFrequencyHz);
 
             stationApplyButtonClicked();
         }
@@ -691,28 +697,6 @@ ScrollView {
                                 bottom: -10000
                             }
                         }
-
-                        // Spacer for the grid
-                        Item {
-                            width: 10
-                            height: 10
-                        }
-
-                        Label {
-                            text: qsTr("Satellite ID")
-                        }
-
-                        TextField {
-                            id: satIdInput
-                            maximumLength: 6
-                            validator: IntValidator{
-                                bottom: 0
-                                top: 999999
-                            }
-                            onEditingFinished: {
-                                predicterController.changeSatID(parseInt(satIdInput.text))
-                            }
-                        }
                     }
 
                     Column {
@@ -1162,6 +1146,102 @@ ScrollView {
         }
 
         GroupBox {
+            id: satelliteGroupBox
+            title: qsTr("Satellite")
+            width: parent.width
+
+            Column {
+                spacing: 10
+
+                Row {
+                    enabled: !soundcardInReceivePackets.checked && !sdrEnabledSwitch.checked && !trackingSwitch.checked
+                    spacing: parent.spacing
+
+                    Label {
+                        text: qsTr("Name")
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    ComboBox {
+                        id: satelliteSelectorCombo
+                        model: ["SMOG-1", "SMOG-P", "ATL-1", "Other"]
+                        onCurrentIndexChanged: {
+                            mainWindow.currentSatellite = currentIndex
+                            switch (currentIndex){
+                            case 0:
+                                satelliteChanger.changeToSMOG1();
+                                break;
+                            case 1:
+                                satelliteChanger.changeToSMOGP();
+                                break;
+                            case 2:
+                                satelliteChanger.changeToATL1();
+                                break;
+                            default:
+                                satelliteChanger.changeToOther();
+                                break;
+                            }
+                        }
+
+                        Connections {
+                            target: satelliteChanger
+                            onNewBaseFrequency:{
+                                baseFreq = newFrequencyHz;
+                                baseFreqInput.text = Number(baseFreq / 1e6).toLocaleString(Qt.locale(), "f", 6);
+                                console.log("Base frequency has been changed to " + baseFreq + " Hz.");
+                            }
+                            onNewSatelliteId:{
+                                satIdInput.text = newSatelliteId;
+                            }
+                            onNewSpectrumTitle:{
+                                mainWindow.title = satelliteName + " GND Client Software";
+                            }
+                        }
+                    }
+
+                    Label {
+                        text: qsTr("ID")
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    TextField {
+                        id: satIdInput
+                        enabled: satelliteSelectorCombo.currentIndex === satelliteSelectorCombo.count - 1
+                        maximumLength: 6
+                        validator: IntValidator{
+                            bottom: 0
+                            top: 999999
+                        }
+                        onEditingFinished: {
+                            predicterController.changeSatID(parseInt(satIdInput.text));
+                        }
+                    }
+
+                    Label {
+                        text: qsTr("Base frequency [MHz]")
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    TextField {
+                        id: baseFreqInput
+                        enabled: satelliteSelectorCombo.currentIndex === satelliteSelectorCombo.count - 1
+                        maximumLength: 12
+                        validator: DoubleValidator {
+                            bottom: 0
+                            top: 10e3
+                            decimals: 6
+                            notation: DoubleValidator.StandardNotation
+                        }
+                        onEditingFinished: {
+                            baseFreq = Number.fromLocaleString(Qt.locale(), baseFreqInput.text) * 1e6;
+                            predicterController.newBaseFrequency(baseFreq);
+                        }
+                    }
+                }
+            }
+        }
+
+        GroupBox {
             title: qsTr("Miscellaneous")
             width: parent.width
 
@@ -1217,53 +1297,6 @@ ScrollView {
                         text: qsTr("Ask")
                         checked: true
                         onCheckedChanged : if (checked) saveSettingsOnExit = 2;
-                    }
-                }
-
-                Row {
-                    spacing: parent.spacing
-
-                    Label {
-                        text: qsTr("Satellite")
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    ComboBox {
-                        readonly property string smog1: "SMOG-1"
-                        readonly property string smogp: "SMOG-P"
-                        readonly property string atl1: "ATL-1"
-                        id: satelliteSelectorCombo
-                        enabled:  !soundcardInReceivePackets.checked && !sdrEnabledSwitch.checked && !trackingSwitch.checked
-                        model: [smog1, smogp, atl1]
-                        onCurrentIndexChanged: {
-                            mainWindow.currentSatellite = currentIndex
-                            switch (currentIndex){
-                            case model.indexOf(smog1):
-                                satelliteChanger.changeToSMOG1()
-                                mainWindow.title = "SMOG-1 GND Client Software"
-                                break;
-                            case model.indexOf(smogp):
-                                satelliteChanger.changeToSMOGP()
-                                mainWindow.title = "SMOG-P GND Client Software"
-                                satIdInput.text = "44832"
-                                predicterController.changeSatID(44832)
-                                break;
-                            case model.indexOf(atl1):
-                                satelliteChanger.changeToATL1()
-                                mainWindow.title = "ATL-1 GND Client Software"
-                                satIdInput.text = "44830"
-                                predicterController.changeSatID(44830)
-                                break;
-                            }
-                        }
-
-                        Connections {
-                            target: satelliteChanger
-                            onNewBaseFrequency:{
-                                baseFreq = newFrequencyHz
-                                console.log("Base frequency has been changed to " + baseFreq + " Hz.")
-                            }
-                        }
                     }
                 }
             }

@@ -195,6 +195,10 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
         &SatelliteChanger::newBaseFrequency,
         &predicterController,
         &PredicterController::newBaseFrequency);
+    QObject::connect(&satelliteChanger,
+        &SatelliteChanger::newSatelliteId,
+        &predicterController,
+        &PredicterController::changeSatID);
     QObject::connect(
         &satelliteChanger, &SatelliteChanger::newFilePrefix, &predicterController, &PredicterController::changePrefix);
     engine.rootContext()->setContextProperty("predicterController", &predicterController);
