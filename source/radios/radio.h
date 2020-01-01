@@ -27,6 +27,7 @@ protected:
     long baseOffset_prot = 0;                   //!< Additional offset (e.g. 1500 Hz for FT817 & TS2000)
     bool turnOnOff_prot;                        //!< True if the radio should be turned on and off between passes.
     int previousElevation_prot;                 //!< Previous elevation for the satellite
+    unsigned long previousFrequency_prot = 0;   //!< Previous frequency for the satellite
     unsigned long baseFrequency_prot = INITIALBASEFREQUENCY; //!< The base frequency for the satellite
 
     bool isRunning() const;

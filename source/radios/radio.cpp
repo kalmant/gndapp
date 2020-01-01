@@ -42,6 +42,7 @@ void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff)
 
     portName_prot = portName;
     setPortSettingsBasedOnBaudRate(baudRate);
+    previousFrequency_prot = 0;
     previousElevation_prot = -181;
     turnOnOff_prot = turnOnOff;
     offsetHz_prot = offsetHz;
@@ -140,7 +141,11 @@ void Radio::trackingDataSlot(double azimuth,
         previousElevation_prot = elev;
     }
     if (elev >= -5) {
-        setFrequency(static_cast<unsigned long>(downlink_freq + offsetHz_prot + baseOffset_prot));
+        unsigned long frequency = static_cast<unsigned long>(downlink_freq + offsetHz_prot + baseOffset_prot);
+        if (abs(static_cast<long>(previousFrequency_prot) - static_cast<long>(frequency)) >= 10) {
+            previousFrequency_prot = frequency;
+            setFrequency(frequency);
+        }
     }
 }
 
