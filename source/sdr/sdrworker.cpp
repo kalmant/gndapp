@@ -156,7 +156,7 @@ bool SDRWorker::readFromSDR(int device_index,
         verbose_auto_gain(dev_priv);
     }
     else {
-        verbose_gain_set(dev_priv, gain * 10);
+        verbose_gain_set(dev_priv, nearest_gain(dev_priv, gain * 10));
     }
     verbose_ppm_set(dev_priv, ppm);
 
