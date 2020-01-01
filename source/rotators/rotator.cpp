@@ -155,12 +155,12 @@ void Rotator::trackingDataSlot(double azimuth,
 
     int elev = static_cast<int>(elevation + 0.5); // round elevation
     int azim = static_cast<int>(azimuth + 0.5);   // round azimuth
-    if (!isCurrentlyFollowing_prot && elev >= -5) {
+    if (!isCurrentlyFollowing_prot && ((elev > -5 && elev > lastElevation_prot) || elev >=0)) {
         isCurrentlyFollowing_prot = true;
     }
 
     if (isCurrentlyFollowing_prot) {
-        if (lastElevation_prot >= -2 && elev < lastElevation_prot) {
+        if (lastElevation_prot <= -1 && elev < lastElevation_prot) {
             isCurrentlyFollowing_prot = false;
             if (shouldPark_prot) {
                 park();
