@@ -67,6 +67,7 @@ bool SettingsProxy::saveSettings() {
     settings.setValue("COMPort", sh->racp());
     settings.setValue("baudRate", sh->rabr());
     settings.setValue("offset", sh->raoffs());
+    settings.setValue("refresh", sh->raref());
     settings.setValue("model", sh->ram());
     settings.setValue("shouldRadioTurnOn", sh->rasrto());
     settings.setValue("smogRadio5VOutSwitchOn", sh->rasr5voso());
@@ -164,11 +165,12 @@ bool SettingsProxy::loadSettings(bool emits) {
     sh->set_racp(settings.value("COMPort", "COM 6").toString());
     sh->set_rabr(settings.value("baudRate", 4800).toInt());
     sh->set_raoffs(settings.value("offset", 0).toInt());
+    sh->set_raref(settings.value("refresh", 0).toInt());
     sh->set_ram(settings.value("model", "FT-817").toString());
     sh->set_rasrto(settings.value("shouldRadioTurnOn", false).toBool());
     sh->set_rasr5voso(settings.value("smogRadio5VOutSwitchOn", false).toBool());
     if (emits) {
-        emit loadRadioSettings(sh->racp(), sh->rabr(), sh->raoffs(), sh->ram(), sh->rasrto(), sh->rasr5voso());
+        emit loadRadioSettings(sh->racp(), sh->rabr(), sh->raoffs(), sh->ram(), sh->rasrto(), sh->rasr5voso(), sh->raref());
         qInfo() << "Emitted Radio settings";
     }
     settings.endGroup();

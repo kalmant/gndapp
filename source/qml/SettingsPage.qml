@@ -70,6 +70,7 @@ ScrollView {
         }
         settingsHolder.rabr = radioBaudRate.model[radioBaudRate.currentIndex];
         settingsHolder.raoffs = radioOffsetSpinbox.value;
+        settingsHolder.raref = radioRefreshSpinbox.value;
         settingsHolder.ram = radioModelCombo.model[radioModelCombo.currentIndex];
         settingsHolder.rasrto = ft817OnOffSwitch.checked;
         settingsHolder.rasr5voso = smogRadio5VOutSwitch.checked;
@@ -221,6 +222,12 @@ ScrollView {
                 radioOffsetSpinbox.value = offset;
             } else {
                 radioOffsetSpinbox.value = 0;
+            }
+
+            if (refresh>=1 && refresh<=1000){
+                radioRefreshSpinbox.value = refresh;
+            } else {
+                radioRefreshSpinbox.value = 10;
             }
 
             var mIndex = radioModelCombo.model.indexOf(""+model);
@@ -817,23 +824,23 @@ ScrollView {
                             // turning the radio on
                             if (radioModelCombo.currentIndex === 0) {
                                 //ft817
-                                ft817.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft817OnOffSwitch.checked);
+                                ft817.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft817OnOffSwitch.checked, radioRefreshSpinbox.value);
                             } else if (radioModelCombo.currentIndex === 1) {
                                 //ts2000
-                                ts2000.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                                ts2000.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, true, radioRefreshSpinbox.value);
                             } else if (radioModelCombo.currentIndex === 2) {
                                 // smog radio
                                 smogradio.set5VOut(smogRadio5VOutSwitch.checked)
-                                smogradio.start(String(radioCOMCombo.currentText), 115200, radioOffsetSpinbox.value, true);
+                                smogradio.start(String(radioCOMCombo.currentText), 115200, radioOffsetSpinbox.value, true, 1);
                             } else if (radioModelCombo.currentIndex === 3) {
                                 //ft847
-                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, false);
+                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, false, radioRefreshSpinbox.value);
                             } else if (radioModelCombo.currentIndex === 4) {
                                 //ft991
-                                ft991.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                                ft991.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, true, radioRefreshSpinbox.value);
                             } else if (radioModelCombo.currentIndex === 5) {
                                 //icom
-                                icom.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                                icom.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, true, radioRefreshSpinbox.value);
                             }
                         } else {
                             // turning the radio off
@@ -884,6 +891,11 @@ ScrollView {
                             id: radioModelCombo
                             model: ['FT-817','TS-2000','SMOG','FT-847','FT-991','ICOM']
                             currentIndex: 0
+                            onCurrentIndexChanged: {
+                                if ((currentIndex === 0) || (currentIndex === 3)) {
+                                    radioRefreshSpinbox.value = (radioRefreshSpinbox.value / 10).toFixed(0) * 10;
+                                }
+                            }
                         }
 
 
@@ -927,6 +939,20 @@ ScrollView {
                             to: 25000
                             value: 0
                             stepSize: 10
+                        }
+
+                        Label {
+                            text: qsTr("Refresh every [Hz]")
+                            visible: (radioModelCombo.currentIndex !== 2)
+                        }
+
+                        SpinBox {
+                            id:  radioRefreshSpinbox
+                            from: ((radioModelCombo.currentIndex !== 0) && (radioModelCombo.currentIndex !== 3)) ? 1 : 10
+                            to: 1000
+                            value: 10
+                            stepSize: ((radioModelCombo.currentIndex !== 0) && (radioModelCombo.currentIndex !== 3)) ? 1 : 10
+                            visible: (radioModelCombo.currentIndex !== 2)
                         }
 
                         CheckBox {

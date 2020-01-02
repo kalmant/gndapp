@@ -62,7 +62,7 @@ signals:
      * @param smogRadio5VOutSwitchOn True, if smogRadio5VOutSwitch should be on
      */
     void loadRadioSettings(
-        QString COMPort, int baudRate, int offset, QString model, bool shouldRadioTurnOn, bool smogRadio5VOutSwitchOn);
+        QString COMPort, int baudRate, int offset, QString model, bool shouldRadioTurnOn, bool smogRadio5VOutSwitchOn, int refresh);
 
     /**
      * @brief Signal, that emits the rotator settings after loading it from persistent storage.

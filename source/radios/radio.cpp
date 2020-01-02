@@ -35,9 +35,10 @@ Radio::Radio(PredicterController *predicter, int msecsBetweenCommands, bool read
  * @param portName Name of the serial port
  * @param baudRate Baud rate as a number
  * @param offsetHz Manual offset as Hz
+ * @param refreshRate Manual refresh as Hz
  * @param turnOnOff True if the radio should turn on and off during operation.
  */
-void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff) {
+void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff, int refreshRate) {
     emit clearCommandList();
 
     portName_prot = portName;
@@ -46,6 +47,7 @@ void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff)
     previousElevation_prot = -181;
     turnOnOff_prot = turnOnOff;
     offsetHz_prot = offsetHz;
+    refreshRate_prot = refreshRate;
 
     emit changePortSettings(portName_prot, portSettings_prot);
 
@@ -142,7 +144,7 @@ void Radio::trackingDataSlot(double azimuth,
     }
     if (elev >= -5) {
         unsigned long frequency = static_cast<unsigned long>(downlink_freq + offsetHz_prot + baseOffset_prot);
-        if (abs(static_cast<long>(previousFrequency_prot) - static_cast<long>(frequency)) >= 10) {
+        if (abs(static_cast<long>(previousFrequency_prot) - static_cast<long>(frequency)) >= refreshRate_prot) {
             previousFrequency_prot = frequency;
             setFrequency(frequency);
         }

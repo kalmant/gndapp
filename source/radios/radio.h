@@ -14,7 +14,7 @@ public:
         bool readsFromSerialPort = false,
         QObject *parent = nullptr);
 
-    Q_INVOKABLE void start(QString portName, int baudRate, long offsetHz, bool turnOnOff = true);
+    Q_INVOKABLE void start(QString portName, int baudRate, long offsetHz, bool turnOnOff = true, int refreshRate = 10);
     Q_INVOKABLE void stop();
     Q_INVOKABLE void sendCustomCommand(QByteArray command);
 
@@ -24,6 +24,7 @@ protected:
     QString portName_prot;                      //!< Name of the currently used serial port
     bool isRunning_prot = false;                //!< Variable that holds whether the radio is running
     long offsetHz_prot = 0;                     //!< Manual offset for the radio
+    int refreshRate_prot = 10;                  //!< Manual refresh for the radio
     long baseOffset_prot = 0;                   //!< Additional offset (e.g. 1500 Hz for FT817 & TS2000)
     bool turnOnOff_prot;                        //!< True if the radio should be turned on and off between passes.
     int previousElevation_prot;                 //!< Previous elevation for the satellite

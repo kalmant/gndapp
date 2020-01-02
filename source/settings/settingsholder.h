@@ -59,6 +59,7 @@ class SettingsHolder : public QObject {
     GENPROPERTY(QString, racp)
     GENPROPERTY(int, rabr)
     GENPROPERTY(int, raoffs)
+    GENPROPERTY(int, raref)
     GENPROPERTY(QString, ram)
     GENPROPERTY(bool, rasrto)
     GENPROPERTY(bool, rasr5voso)
