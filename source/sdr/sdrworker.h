@@ -51,10 +51,7 @@ public:
         long samplesPerSecond,
         int ppm,
         int gain,
-        unsigned int dataRate,
-        int offset,
-        float df,
-        unsigned int packetLength);
+        int offset);
 
 signals:
     /**
@@ -86,10 +83,7 @@ public slots:
         long samplesPerSecond,
         int ppm,
         int gain,
-        unsigned int dataRate,
-        int offset,
-        float df,
-        unsigned int packetLength);
+        int offset);
     void stop();
     void terminate();
     void newBaseFrequency(unsigned long frequencyHz);

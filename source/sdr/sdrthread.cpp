@@ -70,16 +70,12 @@ void SDRThread::startReading(int device_index, int ppm, int gain, int offset, fl
         emit invalidSdrDeviceIndex();
         return;
     }
-    chosenDevice_priv = device_index;
-    ppm_priv = ppm;
-    gain_priv = gain;
-    offset_priv = offset;
     mut_priv.data()->lock();
     *(df_priv.data()) = static_cast<int>(df);
     df_mirror_priv = static_cast<int>(df);
     mut_priv.data()->unlock();
     automaticDF_priv = automaticDF;
-    emit startSignal(device_index, 250000, ppm, gain, dataRateBPS_priv, offset, df, packetLengthBytes_priv);
+    emit startSignal(device_index, 250000, ppm, gain, offset);
     canRun_mirror_priv = true;
 }
 

@@ -114,22 +114,14 @@ void SDRWorker::cleanup() {
  * @param[in] samplesPerSecond Samping rate for SDR.
  * @param[in] ppm PPM error for the SDR.
  * @param[in] gain Gain for the SDR.
- * @param[in] dataRate Data rate of the demodulation.
- * @param[in] df Doppler frequency to start the demodulation with.
- * @param[in] packetLength Length of the packets.
+ * @param[in] offset Offset for the SDR.
  * @return Returns false if there was a problem with the operation.
  */
 bool SDRWorker::readFromSDR(int device_index,
     long samplesPerSecond,
     int ppm,
     int gain,
-    unsigned int dataRate,
-    int offset,
-    float df,
-    unsigned int packetLength) {
-    Q_UNUSED(dataRate);
-    Q_UNUSED(df);
-    Q_UNUSED(packetLength);
+    int offset) {
     int r;
     uint32_t buflen = 16 * 16384;
     if (device_index < 0) {
@@ -199,20 +191,14 @@ bool SDRWorker::readFromSDR(int device_index,
  * @param[in] samplesPerSecond Samping rate for SDR.
  * @param[in] ppm PPM error for the SDR.
  * @param[in] gain Gain for the SDR.
- * @param[in] dataRate Data rate of the demodulation.
  * @param[in] offset Offset frequency for the SDR.
- * @param[in] df Doppler frequency to start the demodulation with.
- * @param[in] packetLength Length of the packets.
  */
 void SDRWorker::start(int device_index,
     long samplesPerSecond,
     int ppm,
     int gain,
-    unsigned int dataRate,
-    int offset,
-    float df,
-    unsigned int packetLength) {
-    bool success = readFromSDR(device_index, samplesPerSecond, ppm, gain, dataRate, offset, df, packetLength);
+    int offset) {
+    bool success = readFromSDR(device_index, samplesPerSecond, ppm, gain, offset);
     if (!success) {
         *canRun_priv = false;
     }
