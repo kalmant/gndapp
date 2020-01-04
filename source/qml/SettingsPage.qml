@@ -507,7 +507,7 @@ ScrollView {
                         enabled: !sdrEnabledSwitch.checked
                         spacing: parent.spacing
                         verticalItemAlignment: Grid.AlignVCenter
-                        columns: compactLayout ? 4 : 6
+                        columns: compactLayout ? 4 : 8
 
                         Label {
                             text: qsTr("Error [PPM]")
@@ -536,7 +536,7 @@ ScrollView {
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Allows you to set the gain of your particular device.")
+                            ToolTip.text: qsTr("Allows you to set the gain of your particular device. Setting it to 0 results in AGC.")
                         }
 
                         Label {
