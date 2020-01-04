@@ -70,7 +70,7 @@ ScrollView {
         settingsHolder.rabr = radioBaudRate.model[radioBaudRate.currentIndex];
         settingsHolder.raoffs = radioOffsetSpinbox.value;
         settingsHolder.ram = radioModelCombo.model[radioModelCombo.currentIndex];
-        settingsHolder.rasrto = ft817OnOffSwitch.checked;
+        settingsHolder.rasrto = ft8x7OnOffSwitch.checked;
         settingsHolder.rasr5voso = smogRadio5VOutSwitch.checked;
 
         var roCOMName = rotatorCOMCombo.model[rotatorCOMCombo.currentIndex];
@@ -218,7 +218,7 @@ ScrollView {
             var mIndex = radioModelCombo.model.indexOf(""+model);
             radioModelCombo.currentIndex = mIndex >= 0 ? mIndex: 0;
 
-            ft817OnOffSwitch.checked = shouldRadioTurnOn;
+            ft8x7OnOffSwitch.checked = shouldRadioTurnOn;
 
             smogRadio5VOutSwitch.checked = smogRadio5VOutSwitchOn;
         }
@@ -827,7 +827,7 @@ ScrollView {
                             // turning the radio on
                             if (radioModelCombo.currentIndex === 0){
                                 //ft817
-                                ft817.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft817OnOffSwitch.checked);
+                                ft817.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft8x7OnOffSwitch.checked);
                             } else if (radioModelCombo.currentIndex === 1) {
                                 //ts2000
                                 ts2000.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
@@ -837,7 +837,7 @@ ScrollView {
                                 smogradio.start(String(radioCOMCombo.currentText), 115200, radioOffsetSpinbox.value, true);
                             } else if (radioModelCombo.currentIndex === 3) {
                                 //ft847
-                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft8x7OnOffSwitch.checked);
                             } else if (radioModelCombo.currentIndex === 4) {
                                 //ft991
                                 ft991.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
@@ -939,10 +939,10 @@ ScrollView {
                         }
 
                         CheckBox {
-                            id: ft817OnOffSwitch
-                            visible: (radioModelCombo.currentIndex === 0)
+                            id: ft8x7OnOffSwitch
+                            visible: (radioModelCombo.currentIndex === 0) || (radioModelCombo.currentIndex === 3)
                             enabled: visible && !radioSwitch.checked && (radioCOMCombo.count > 0)
-                            text: qsTr("Turn on and off")
+                            text: radioModelCombo.currentIndex === 0 ? qsTr("Turn on and off") : qsTr("Turn CAT on and off")
                             checked: false
                         }
 
