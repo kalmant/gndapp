@@ -922,7 +922,7 @@ ScrollView {
 
                         ComboBox {
                             id: radioBaudRate
-                            model: ['4800','9600','19200','38400']
+                            model: radioModelCombo.currentIndex !== 5 ? ['4800','9600','19200','38400'] : ['4800','9600','19200']
                             visible: (radioModelCombo.currentIndex !== 2) // smogradio only supports 115200
                         }
 
