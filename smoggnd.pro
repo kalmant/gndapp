@@ -2,8 +2,17 @@ TEMPLATE = app
 
 QT += qml quick widgets multimedia network serialport charts quickcontrols2
 
-lessThan(QT_MAJOR_VERSION, 5) | lessThan(QT_MINOR_VERSION, 12) | lessThan(QT_PATCH_VERSION, 6) {
-    error("Qt 5.12.6 is the minimum required version.")
+equals(QT_MAJOR_VERSION, 5) {} else {
+    error("5 is the required major version.")
+}
+lessThan(QT_MINOR_VERSION, 12) {
+    error("Minor version 12 is the minimum required version.")
+}
+equals(QT_MINOR_VERSION, 12):lessThan(QT_PATCH_VERSION, 6) {
+    error("Patch version 6 is the minimum required version for 5.12.")
+}
+equals(QT_MINOR_VERSION, 13):lessThan(QT_PATCH_VERSION, 2) {
+    error("Patch version 2 is the minimum required version for 5.13.")
 }
 
 CONFIG += c++11 resources_big \

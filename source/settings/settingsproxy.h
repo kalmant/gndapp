@@ -35,10 +35,11 @@ signals:
      * @brief Signal, that emits the SDR settings after loading it from persistent storage.
      * @param offset The offset frequency for the SDR.
      * @param PPM The PPM setting for the SDR.
+     * @param gain The gain setting for the SDR.
      * @param autoDFTrack True, if the automatic doppler frequency correction should be enabled.
      * @param DF The doppler frequency to set.
      */
-    void loadSDRSettings(int offset, int PPM, bool autoDFTrack, int DF);
+    void loadSDRSettings(int offset, int PPM, int gain, bool autoDFTrack, int DF);
 
     /**
      * @brief Signal, that emits the tracking settings after loading it from persistent storage.

@@ -57,6 +57,7 @@ ScrollView {
 
         settingsHolder.sdroffs = sdrOffsetSpinbox.value;
         settingsHolder.sdrppm = sdrPPMSpinbox.value;
+        settingsHolder.sdrgain = sdrGainSpinbox.value;
         settingsHolder.sdradft = sdrDFTrackingSwitch.checked;
         settingsHolder.sdrdf = sdrDFSpinbox.value;
 
@@ -69,7 +70,7 @@ ScrollView {
         settingsHolder.rabr = radioBaudRate.model[radioBaudRate.currentIndex];
         settingsHolder.raoffs = radioOffsetSpinbox.value;
         settingsHolder.ram = radioModelCombo.model[radioModelCombo.currentIndex];
-        settingsHolder.rasrto = ft817OnOffSwitch.checked;
+        settingsHolder.rasrto = ft8x7OnOffSwitch.checked;
         settingsHolder.rasr5voso = smogRadio5VOutSwitch.checked;
 
         var roCOMName = rotatorCOMCombo.model[rotatorCOMCombo.currentIndex];
@@ -148,6 +149,12 @@ ScrollView {
                 sdrPPMSpinbox.value = 0;
             }
 
+            if (gain>=-50 && gain<=50){
+                sdrGainSpinbox.value = gain;
+            } else {
+                sdrGainSpinbox.value = 0;
+            }
+
             // Ask if these 2 can be removed
             if (DF>=-25000 && DF<=25000){
                 sdrDFSpinbox.value = DF;
@@ -211,7 +218,7 @@ ScrollView {
             var mIndex = radioModelCombo.model.indexOf(""+model);
             radioModelCombo.currentIndex = mIndex >= 0 ? mIndex: 0;
 
-            ft817OnOffSwitch.checked = shouldRadioTurnOn;
+            ft8x7OnOffSwitch.checked = shouldRadioTurnOn;
 
             smogRadio5VOutSwitch.checked = smogRadio5VOutSwitchOn;
         }
@@ -421,7 +428,7 @@ ScrollView {
                             return;
                         }
                         if (checked){
-                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.value,sdrOffsetSpinbox.value,sdrDFSpinbox.value,sdrDFTrackingSwitch.checked );
+                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.value, sdrGainSpinbox.value, sdrOffsetSpinbox.value,sdrDFSpinbox.value,sdrDFTrackingSwitch.checked );
                         } else {
                             sdrThread.stopReading();
                         }
@@ -500,7 +507,7 @@ ScrollView {
                         enabled: !sdrEnabledSwitch.checked
                         spacing: parent.spacing
                         verticalItemAlignment: Grid.AlignVCenter
-                        columns: compactLayout ? 4 : 6
+                        columns: compactLayout ? 4 : 8
 
                         Label {
                             text: qsTr("Error [PPM]")
@@ -515,6 +522,21 @@ ScrollView {
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Allows you to set the PPM of your particular device.")
+                        }
+
+                        Label {
+                            text: qsTr("Gain [dB]")
+                        }
+
+                        SpinBox {
+                            id: sdrGainSpinbox
+                            from: -50
+                            to: 50
+                            value: 0
+                            ToolTip.delay: 1000
+                            ToolTip.timeout: 5000
+                            ToolTip.visible: hovered
+                            ToolTip.text: qsTr("Allows you to set the gain of your particular device. Setting it to 0 results in AGC.")
                         }
 
                         Label {
@@ -805,7 +827,7 @@ ScrollView {
                             // turning the radio on
                             if (radioModelCombo.currentIndex === 0){
                                 //ft817
-                                ft817.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft817OnOffSwitch.checked);
+                                ft817.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft8x7OnOffSwitch.checked);
                             } else if (radioModelCombo.currentIndex === 1) {
                                 //ts2000
                                 ts2000.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
@@ -815,7 +837,7 @@ ScrollView {
                                 smogradio.start(String(radioCOMCombo.currentText), 115200, radioOffsetSpinbox.value, true);
                             } else if (radioModelCombo.currentIndex === 3) {
                                 //ft847
-                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
+                                ft847.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value, ft8x7OnOffSwitch.checked);
                             } else if (radioModelCombo.currentIndex === 4) {
                                 //ft991
                                 ft991.start(String(radioCOMCombo.currentText), radioBaudRate.currentText, radioOffsetSpinbox.value);
@@ -900,7 +922,7 @@ ScrollView {
 
                         ComboBox {
                             id: radioBaudRate
-                            model: ['4800','9600','19200','38400']
+                            model: radioModelCombo.currentIndex !== 5 ? ['4800','9600','19200','38400'] : ['4800','9600','19200']
                             visible: (radioModelCombo.currentIndex !== 2) // smogradio only supports 115200
                         }
 
@@ -917,10 +939,10 @@ ScrollView {
                         }
 
                         CheckBox {
-                            id: ft817OnOffSwitch
-                            visible: (radioModelCombo.currentIndex === 0)
+                            id: ft8x7OnOffSwitch
+                            visible: (radioModelCombo.currentIndex === 0) || (radioModelCombo.currentIndex === 3)
                             enabled: visible && !radioSwitch.checked && (radioCOMCombo.count > 0)
-                            text: qsTr("Turn on and off")
+                            text: radioModelCombo.currentIndex === 0 ? qsTr("Turn on and off") : qsTr("Turn CAT on and off")
                             checked: false
                         }
 
@@ -1216,10 +1238,14 @@ ScrollView {
                             case model.indexOf(smogp):
                                 satelliteChanger.changeToSMOGP()
                                 mainWindow.title = "SMOG-P GND Client Software"
+                                satIdInput.text = "44832"
+                                predicterController.changeSatID(44832)
                                 break;
                             case model.indexOf(atl1):
                                 satelliteChanger.changeToATL1()
                                 mainWindow.title = "ATL-1 GND Client Software"
+                                satIdInput.text = "44830"
+                                predicterController.changeSatID(44830)
                                 break;
                             }
                         }

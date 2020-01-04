@@ -26,7 +26,7 @@ void FT847Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
  * @brief Sets mode and other settings for the radio.
  */
 void FT847Radio::initialization() {
-    QByteArray temp; // set MODE to DIGI
+    QByteArray temp; // set MODE to USB
     temp.append(static_cast<char>(0x0A));
     temp.append(static_cast<char>(0x00));
     temp.append(static_cast<char>(0x00));
@@ -63,7 +63,21 @@ void FT847Radio::setFrequency(unsigned long frequencyHz) {
 }
 
 void FT847Radio::turnOn() {
+    QByteArray caton; // set CAT ON
+    caton.append(static_cast<char>(0x00));
+    caton.append(static_cast<char>(0x00));
+    caton.append(static_cast<char>(0x00));
+    caton.append(static_cast<char>(0x00));
+    caton.append(static_cast<char>(0x00));
+    emit newCommand(caton);
 }
 
 void FT847Radio::turnOff() {
+    QByteArray catoff; // set CAT OFF
+    catoff.append(static_cast<char>(0x00));
+    catoff.append(static_cast<char>(0x00));
+    catoff.append(static_cast<char>(0x00));
+    catoff.append(static_cast<char>(0x00));
+    catoff.append(static_cast<char>(0x80));
+    emit newCommand(catoff);
 }

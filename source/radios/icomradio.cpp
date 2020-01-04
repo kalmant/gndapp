@@ -11,11 +11,8 @@ void ICOMRadio::setPortSettingsBasedOnBaudRate(int baudRate) {
     else if (baudRate == 9600) {
         portSettings_prot.BaudRate = QSerialPort::Baud9600;
     }
-    else if (baudRate == 19200) {
-        portSettings_prot.BaudRate = QSerialPort::Baud19200;
-    }
     else {
-        portSettings_prot.BaudRate = QSerialPort::Baud38400;
+        portSettings_prot.BaudRate = QSerialPort::Baud19200;
     }
     portSettings_prot.FlowControl = QSerialPort::NoFlowControl;
     portSettings_prot.Parity = QSerialPort::NoParity;
@@ -58,11 +55,11 @@ void ICOMRadio::setFrequency(unsigned long frequencyHz) {
     temp.append(static_cast<char>(0x00));
     temp.append(static_cast<char>(0xE0));
     temp.append(0x05);
-    temp.append((first / 10) * 16 + (first % 10));
-    temp.append((second / 10) * 16 + (second % 10));
-    temp.append((third / 10) * 16 + (third % 10));
-    temp.append((fourth / 10) * 16 + (fourth % 10));
     temp.append((fifth / 10) * 16 + (fifth % 10));
+    temp.append((fourth / 10) * 16 + (fourth % 10));
+    temp.append((third / 10) * 16 + (third % 10));
+    temp.append((second / 10) * 16 + (second % 10));
+    temp.append((first / 10) * 16 + (first % 10));
     temp.append(static_cast<char>(0xFD));
     emit newCommand(temp);
 }
