@@ -910,22 +910,22 @@ ScrollView {
                                     // Setting offset
                                     if (radioModelCombo.currentIndex === 0){
                                         //ft817
-                                        ft817.setOffset(sdrOffsetSpinbox.value);
+                                        ft817.setOffset(radioOffsetSpinbox.value);
                                     } else if (radioModelCombo.currentIndex === 1) {
                                         //ts2000
-                                        ts2000.setOffset(sdrOffsetSpinbox.value);
+                                        ts2000.setOffset(radioOffsetSpinbox.value);
                                     } else if (radioModelCombo.currentIndex === 2) {
                                         // smog radio
-                                        smogradio.setOffset(sdrOffsetSpinbox.value);
+                                        smogradio.setOffset(radioOffsetSpinbox.value);
                                     } else if (radioModelCombo.currentIndex === 3) {
                                         // ft847 radio
-                                        ft847.setOffset(sdrOffsetSpinbox.value);
+                                        ft847.setOffset(radioOffsetSpinbox.value);
                                     } else if (radioModelCombo.currentIndex === 4) {
                                         // ft991 radio
-                                        ft991.setOffset(sdrOffsetSpinbox.value);
+                                        ft991.setOffset(radioOffsetSpinbox.value);
                                     } else if (radioModelCombo.currentIndex === 5) {
                                         // icom radio
-                                        icom.setOffset(sdrOffsetSpinbox.value);
+                                        icom.setOffset(radioOffsetSpinbox.value);
                                     }
                                 }
                             }
