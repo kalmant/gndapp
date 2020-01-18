@@ -1431,7 +1431,7 @@ ScrollView {
             id: trackingNOTLE
             icon: Dialogs1.StandardIcon.Critical
             title: qsTr("Error with tracking the satellite")
-            text: qsTr("We load the satellite's TLE from http://www.celestrak.com/NORAD/elements/active.txt and couldn't load from a local file either."+
+            text: qsTr("We couldn't load the satellite's TLE from http://www.celestrak.com/NORAD/elements/active.txt and couldn't load from a local file either."+
                        "\nIf the server is unreachable, rename one of the previous TLE files to \"manual.txt\" and try enabling tracking."+
                        "\n\nIt is possible that the satellite ID currently in use is not be valid. Set a new value, if that is the case!")
         }
