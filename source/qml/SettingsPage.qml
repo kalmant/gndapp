@@ -564,7 +564,7 @@ ScrollView {
                             from: -25000
                             to: 25000
                             value: 0
-                            stepSize: 5
+                            stepSize: 10
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
@@ -903,7 +903,7 @@ ScrollView {
                             from: -25000
                             to: 25000
                             value: 0
-                            stepSize: 5
+                            stepSize: 10
 
                             onValueChanged: {
                                 if (radioSwitch.checked){
