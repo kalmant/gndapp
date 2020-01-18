@@ -15,6 +15,7 @@ public:
         QObject *parent = nullptr);
 
     Q_INVOKABLE void start(QString portName, int baudRate, long offsetHz, bool turnOnOff = true);
+    Q_INVOKABLE void setOffset(int offset);
     Q_INVOKABLE void stop();
     Q_INVOKABLE void sendCustomCommand(QByteArray command);
 
@@ -28,6 +29,7 @@ protected:
     bool turnOnOff_prot;                        //!< True if the radio should be turned on and off between passes.
     int previousElevation_prot;                 //!< Previous elevation for the satellite
     unsigned long baseFrequency_prot = INITIALBASEFREQUENCY; //!< The base frequency for the satellite
+    double previous_downlink_freq = INITIALBASEFREQUENCY; //!< The previously received downlink_freq
 
     bool isRunning() const;
     void setIsRunning(bool newValue);

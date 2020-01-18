@@ -878,19 +878,57 @@ ScrollView {
                     spacing: parent.spacing
 
                     Grid {
-                        enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                         spacing: parent.spacing
-                        columns: 2
+                        columns: 4
                         verticalItemAlignment: Grid.AlignVCenter
 
                         Label {
+                            enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                             text: qsTr("Model")
                         }
 
                         ComboBox {
                             id: radioModelCombo
+                            enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                             model: ['FT-817','TS-2000','SMOG','FT-847','FT-991','ICOM']
                             currentIndex: 0
+                        }
+
+                        Label {
+                            text: qsTr("Offset [Hz]")
+                        }
+
+                        SpinBox {
+                            id:  radioOffsetSpinbox
+                            from: -25000
+                            to: 25000
+                            value: 0
+                            stepSize: 5
+
+                            onValueChanged: {
+                                if (radioSwitch.checked){
+                                    // Setting offset
+                                    if (radioModelCombo.currentIndex === 0){
+                                        //ft817
+                                        ft817.setOffset(sdrOffsetSpinbox.value);
+                                    } else if (radioModelCombo.currentIndex === 1) {
+                                        //ts2000
+                                        ts2000.setOffset(sdrOffsetSpinbox.value);
+                                    } else if (radioModelCombo.currentIndex === 2) {
+                                        // smog radio
+                                        smogradio.setOffset(sdrOffsetSpinbox.value);
+                                    } else if (radioModelCombo.currentIndex === 3) {
+                                        // ft847 radio
+                                        ft847.setOffset(sdrOffsetSpinbox.value);
+                                    } else if (radioModelCombo.currentIndex === 4) {
+                                        // ft991 radio
+                                        ft991.setOffset(sdrOffsetSpinbox.value);
+                                    } else if (radioModelCombo.currentIndex === 5) {
+                                        // icom radio
+                                        icom.setOffset(sdrOffsetSpinbox.value);
+                                    }
+                                }
+                            }
                         }
 
 
@@ -899,7 +937,7 @@ ScrollView {
                     Grid {
                         enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                         spacing: parent.spacing
-                        columns: compactLayout ? 4 : 8
+                        columns: 6
                         verticalItemAlignment: Grid.AlignVCenter
 
 
@@ -922,18 +960,6 @@ ScrollView {
                             id: radioBaudRate
                             model: radioModelCombo.currentIndex !== 5 ? ['4800','9600','19200','38400'] : ['4800','9600','19200']
                             visible: (radioModelCombo.currentIndex !== 2) // smogradio only supports 115200
-                        }
-
-                        Label {
-                            text: qsTr("Offset [Hz]")
-                        }
-
-                        SpinBox {
-                            id:  radioOffsetSpinbox
-                            from: -25000
-                            to: 25000
-                            value: 0
-                            stepSize: 5
                         }
 
                         CheckBox {

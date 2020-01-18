@@ -45,6 +45,7 @@ void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff)
     previousElevation_prot = -181;
     turnOnOff_prot = turnOnOff;
     offsetHz_prot = offsetHz;
+    previous_downlink_freq = baseFrequency_prot;
 
     emit changePortSettings(portName_prot, portSettings_prot);
 
@@ -59,6 +60,16 @@ void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff)
     }
 
     setIsRunning(true);
+}
+
+void Radio::setOffset(int offset)
+{
+    if (offset != offsetHz_prot){
+        offsetHz_prot = offset;
+        if (isRunning()){
+            setFrequency(static_cast<unsigned long>(previous_downlink_freq + offsetHz_prot + baseOffset_prot));
+        }
+    }
 }
 
 /**
@@ -126,7 +137,6 @@ void Radio::trackingDataSlot(double azimuth,
     (void) doppler100;
     (void) nextAOSQS;
     (void) nextLOSQS;
-
     if (!isRunning()) {
         return;
     }
@@ -142,6 +152,7 @@ void Radio::trackingDataSlot(double azimuth,
         previousElevation_prot = elev;
     }
     if (elev >= -5) {
+        previous_downlink_freq = downlink_freq;
         setFrequency(static_cast<unsigned long>(downlink_freq + offsetHz_prot + baseOffset_prot));
     }
 }
