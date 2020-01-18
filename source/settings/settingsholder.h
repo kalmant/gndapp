@@ -51,7 +51,6 @@ class SettingsHolder : public QObject {
     GENPROPERTY(int, sdrppm)
     GENPROPERTY(int, sdrgain)
     GENPROPERTY(bool, sdradft)
-    GENPROPERTY(int, sdrdf)
 
     // Radio settings group
     // settings in order: COMPort, baudRate, offset, model, shouldRadioTurnOn, smogRadio5VOutSwitchOn

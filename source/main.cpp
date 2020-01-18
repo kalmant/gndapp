@@ -202,7 +202,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QScopedPointer<SDRThread> sdrThread(new SDRThread(&packetDecoder, &predicterController));
     sdrThread->start();
     QObject::connect(
-        &satelliteChanger, &SatelliteChanger::newBaseFrequency, sdrThread.data(), &SDRThread::newBaseFrequencySlot);
+        &satelliteChanger, &SatelliteChanger::newSDRConfiguration, sdrThread.data(), &SDRThread::newBaseFrequenciesSlot);
     engine.rootContext()->setContextProperty("sdrThread", sdrThread.data());
     engine.rootContext()->setContextProperty("messageProxy", &messageProxy);
 

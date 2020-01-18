@@ -2,10 +2,10 @@
 
 //The initial code was written by HA7WEN
 
-DEMVariables *create_and_initialize_sdr_variables(long doppler_freq, long datarate){
+DEMVariables *create_and_initialize_sdr_variables(long offset_freq, long datarate){
     DEMVariables *sdr_vars = (DEMVariables*) malloc(sizeof(DEMVariables));
     sdr_vars->cnco_vars.fs = S1DEM_SDR_SAMPLING_FREQ;
-    sdr_vars->cnco_vars.f = -doppler_freq;
+    sdr_vars->cnco_vars.f = -offset_freq;
     sdr_vars->cnco_vars.lo = (std::complex<float>*) malloc(sizeof(std::complex<float>)*sdr_vars->cnco_vars.fs);
     if (sdr_vars->cnco_vars.lo == nullptr) {
         printf("COULD NOT ALLOCATE MEMORY FOR SDR CNCO");
@@ -107,8 +107,8 @@ void free_dem_variables(DEMVariables *dem_vars){
     free(dem_vars);
 }
 
-void SDR_set_doppler_frequency(DEMVariables *sdr_vars, long doppler_freq){
-    sdr_vars->cnco_vars.f = -doppler_freq; // If the doppler is +100Hz, we have to apply a -100Hz CNCO
+void SDR_set_offset(DEMVariables *sdr_vars, long offset_freq){
+    sdr_vars->cnco_vars.f = -offset_freq; // If the offset is +100Hz, we have to apply a -100Hz CNCO
     for (int i = 0; i < sdr_vars->cnco_vars.fs; i++) {
         float p=2.0*M_PI/sdr_vars->cnco_vars.fs*i;
             if (sdr_vars->cnco_vars.f > 0){

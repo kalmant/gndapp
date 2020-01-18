@@ -24,6 +24,7 @@ void SatelliteChanger::changeToSMOG1() {
         emit newFilePrefix("smog1");
         emit newSpectrumTitle("SMOG-1");
         emit newSatellite(Satellites::SMOG1);
+        emit newSDRConfiguration(437332500, 12500);
     }
 }
 
@@ -35,6 +36,7 @@ void SatelliteChanger::changeToSMOGP() {
         emit newFilePrefix("smogp");
         emit newSpectrumTitle("SMOG-P");
         emit newSatellite(Satellites::SMOGP);
+        emit newSDRConfiguration(437162500, -12500);
     }
 }
 
@@ -46,5 +48,6 @@ void SatelliteChanger::changeToATL1() {
         emit newFilePrefix("atl1");
         emit newSpectrumTitle("ATL-1");
         emit newSatellite(Satellites::ATL1);
+        emit newSDRConfiguration(437162500, 12500);
     }
 }

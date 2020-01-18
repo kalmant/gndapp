@@ -59,7 +59,6 @@ ScrollView {
         settingsHolder.sdrppm = sdrPPMSpinbox.value;
         settingsHolder.sdrgain = sdrGainSpinbox.value;
         settingsHolder.sdradft = sdrDFTrackingSwitch.checked;
-        settingsHolder.sdrdf = sdrDFSpinbox.value;
 
         var raCOMName = radioCOMCombo.model[radioCOMCombo.currentIndex];
         if (typeof raCOMName != 'undefined'){
@@ -136,7 +135,6 @@ ScrollView {
             waterfallDiagramSwitch.checked = showWaterfallOnStartup;
         }
         onLoadSDRSettings:{
-            //Ask if this can be removed
             if (offset>=-25000 && offset<=25000){
                 sdrOffsetSpinbox.value = offset;
             } else {
@@ -153,13 +151,6 @@ ScrollView {
                 sdrGainSpinbox.value = gain;
             } else {
                 sdrGainSpinbox.value = 0;
-            }
-
-            // Ask if these 2 can be removed
-            if (DF>=-25000 && DF<=25000){
-                sdrDFSpinbox.value = DF;
-            } else {
-                sdrDFSpinbox.value = 0;
             }
 
             sdrDFTrackingSwitch.checked = autoDFTrack;
@@ -428,7 +419,7 @@ ScrollView {
                             return;
                         }
                         if (checked){
-                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.realValue, sdrGainSpinbox.value, sdrOffsetSpinbox.value,sdrDFSpinbox.value,sdrDFTrackingSwitch.checked );
+                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.realValue, sdrGainSpinbox.value, sdrDFTrackingSwitch.checked);
                         } else {
                             sdrThread.stopReading();
                         }
@@ -507,7 +498,7 @@ ScrollView {
                         enabled: !sdrEnabledSwitch.checked
                         spacing: parent.spacing
                         verticalItemAlignment: Grid.AlignVCenter
-                        columns: compactLayout ? 4 : 8
+                        columns: 4
 
                         Label {
                             text: qsTr("Error [PPM]")
@@ -556,6 +547,14 @@ ScrollView {
                             ToolTip.text: qsTr("Allows you to set the gain of your particular device. Setting it to 0 results in AGC.")
                         }
 
+
+                    }
+                    Grid {
+                        enabled: true
+                        spacing: parent.spacing
+                        verticalItemAlignment: Grid.AlignVCenter
+                        columns: 2
+
                         Label {
                             text: qsTr("Offset [Hz]")
                         }
@@ -569,28 +568,10 @@ ScrollView {
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Adds a constant frequency offset to the SDR's frequency.")
-                        }
-
-                        Label {
-                            enabled: !sdrDFTrackingSwitch.checked
-                            text: qsTr("Doppler frequency [Hz]")
-                        }
-
-                        SpinBox {
-                            id: sdrDFSpinbox
-                            enabled: !sdrDFTrackingSwitch.checked
-                            from: -25000
-                            to: 25000
-                            value: 0
-                            stepSize: 5
+                            ToolTip.text: qsTr("Adds a frequency offset to the SDR's frequency.")
                             onValueChanged: {
-                                sdrThread.setDopplerFrequency(value)
+                                sdrThread.setOffset(sdrOffsetSpinbox.value)
                             }
-                            ToolTip.delay: 1000
-                            ToolTip.timeout: 5000
-                            ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Manual doppler input that is enabled when tracking is not on.")
                         }
                     }
                 }

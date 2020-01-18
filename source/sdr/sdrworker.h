@@ -27,11 +27,12 @@ private:
 public:
     QMutex *mutex_priv;     //!< Pointer to the QMmutex that is used to handle multi-thread execution.
     bool *canRun_priv;      //!< Pointer to the bool that indicates whether the reading should stop.
-    int *df_priv;           //!< Pointer to the integer that lets SDRWorker know how much the doppler frequency is.
+    int *ds_priv;           //!< Pointer to the integer that lets SDRWorker know how much the dynamic shift frequency is.
     rtlsdr_dev_t *dev_priv; //!< Pointer to the currently used RTLSDR device.
-    int doppler_freq;
+    int ds_freq; //!< The currently set dynamic shift value
 
     unsigned long baseFrequency;
+    long baseOffset;
     long packet_length;
     long *packet_length_ptr;
     long datarate;
@@ -44,14 +45,13 @@ public:
 
     DEMVariables* vars; //!< Pointer to a  Variables, which store the necessary data for SDR demodulation
 
-    explicit SDRWorker(QMutex *mutex, bool *canRun, int *df, long* pl, long *dr, QObject *parent = 0);
+    explicit SDRWorker(QMutex *mutex, bool *canRun, int *ds, long* pl, long *dr, QObject *parent = 0);
     ~SDRWorker();
 
     bool readFromSDR(int device_index,
         long samplesPerSecond,
         double ppm,
-        int gain,
-        int offset);
+        int gain);
 
 signals:
     /**
@@ -82,11 +82,10 @@ public slots:
     void start(int device_index,
         long samplesPerSecond,
         double ppm,
-        int gain,
-        int offset);
+        int gain);
     void stop();
     void terminate();
-    void newBaseFrequency(unsigned long frequencyHz);
+    void newBaseFrequencies(unsigned long baseFrequency, long baseOffset);
 };
 
 #endif // SDRWORKER_H

@@ -5,8 +5,8 @@
  *
  * This is a callback function called when there is available data from SDR.
  * It checks whether it should stop reading from SDR.
- * It makes sure that demodulation is executed with the currently valid doppler frequency.
- * If multiple bitrates are enabled, it demodulates with every single one.
+ * It makes sure that demodulation is executed with the currently valid shift (base + dynamic) frequency.
+ * If multiple bitrates are enabled, it demodulates with every single one. --- NOT ANYMORE/YET
  *
  * @param[in] buf Array of unsigned characters, that are received from SDR.
  * @param[in] len Twice the number of characters received. This is because the data is stored as 2 bytes.
@@ -21,9 +21,9 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
             worker->mutex_priv->unlock();
             return;
         }
-        if (*worker->df_priv != worker->doppler_freq){
-            worker->doppler_freq = *worker->df_priv;
-            SDR_set_doppler_frequency(worker->vars, worker->doppler_freq);
+        if (*worker->ds_priv != worker->ds_freq){
+            worker->ds_freq = *worker->ds_priv;
+            SDR_set_offset(worker->vars, worker->baseOffset + worker->ds_freq);
         }
         worker->packet_length = *worker->packet_length_ptr;
         if (*worker->datarate_ptr != worker->datarate){
@@ -65,26 +65,27 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
 /**
  * @brief Constructor for the class.
  *
- * Initializes \p mutex_priv to \p mutex, \p canRun_priv to \p canRun, \p df_priv to \p priv.
+ * Initializes \p mutex_priv to \p mutex, \p canRun_priv to \p canRun, \p ds_priv to \p ds.
  * \p dev_index_priv is initialized as -1 to make sure automatic device detection is used.
  * \p dev_priv is set to nullptr, since there is no connection to any device yet.
  *
  * @param[in] mutex Pointer to the QMutex that makes multi-thread execution possible.
  * @param[in] canRun Pointer to the bool that lets us know when reading from the SDR should terminate.
- * @param[in] df Pointer to the float that stores the current value of doppler frequency.
+ * @param[in] ds Pointer to the float that stores the current value of dynamic shift.
  * @param[in] pl Pointer to the float that stores the current value of packet length.
  * @param[in] dr Pointer to the long that stores the current value of datarate.
  * @param[in] parent Pointer to the parent QObject, should be left empty.
  */
-SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *df, long* pl, long* dr, QObject *parent) : QObject(parent) {
+SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long* pl, long* dr, QObject *parent) : QObject(parent) {
     mutex_priv = mutex;
     canRun_priv = canRun;
-    df_priv = df;
+    ds_priv = ds;
     packet_length_ptr = pl;
     datarate_ptr = dr;
     dev_index_priv = -1;
     dev_priv = nullptr;
     baseFrequency = INITIALBASEFREQUENCY;
+    baseOffset = 0;
     vars = nullptr;
 }
 
@@ -114,14 +115,12 @@ void SDRWorker::cleanup() {
  * @param[in] samplesPerSecond Samping rate for SDR.
  * @param[in] ppm PPM error for the SDR.
  * @param[in] gain Gain for the SDR.
- * @param[in] offset Offset for the SDR.
  * @return Returns false if there was a problem with the operation.
  */
 bool SDRWorker::readFromSDR(int device_index,
     long samplesPerSecond,
     double ppm,
-    int gain,
-    int offset) {
+    int gain) {
     int r;
     uint32_t buflen = 16 * 16384;
     if (device_index < 0) {
@@ -142,7 +141,7 @@ bool SDRWorker::readFromSDR(int device_index,
         emit cannotConnectToSDR();
         return false;
     }
-    verbose_set_frequency(dev_priv, static_cast<uint32_t>(baseFrequency + static_cast<unsigned long>(offset)));
+    verbose_set_frequency(dev_priv, static_cast<uint32_t>(baseFrequency));
     verbose_set_sample_rate(dev_priv, static_cast<uint32_t>(samplesPerSecond));
     if (gain == 0) {
         verbose_auto_gain(dev_priv);
@@ -158,9 +157,9 @@ bool SDRWorker::readFromSDR(int device_index,
     cleanup();
 
     datarate = *datarate_ptr;
-    doppler_freq = *df_priv;
+    ds_freq = *ds_priv;
     packet_length = *packet_length_ptr;
-    vars = create_and_initialize_sdr_variables(doppler_freq, datarate);
+    vars = create_and_initialize_sdr_variables(baseOffset + ds_freq, datarate);
 
     *canRun_priv = true;
 
@@ -191,14 +190,12 @@ bool SDRWorker::readFromSDR(int device_index,
  * @param[in] samplesPerSecond Samping rate for SDR.
  * @param[in] ppm PPM error for the SDR.
  * @param[in] gain Gain for the SDR.
- * @param[in] offset Offset frequency for the SDR.
  */
 void SDRWorker::start(int device_index,
     long samplesPerSecond,
     double ppm,
-    int gain,
-    int offset) {
-    bool success = readFromSDR(device_index, samplesPerSecond, ppm, gain, offset);
+    int gain) {
+    bool success = readFromSDR(device_index, samplesPerSecond, ppm, gain);
     if (!success) {
         *canRun_priv = false;
     }
@@ -231,8 +228,11 @@ void SDRWorker::terminate() {
  * @brief Slot that is used to change the base frequency
  * @param frequencyHz new base frequency
  */
-void SDRWorker::newBaseFrequency(unsigned long frequencyHz) {
-    if (baseFrequency != frequencyHz) {
-        baseFrequency = frequencyHz;
+void SDRWorker::newBaseFrequencies(unsigned long baseFrequency, long baseOffset) {
+    if (this->baseFrequency != baseFrequency) {
+        this->baseFrequency = baseFrequency;
+    }
+    if (this->baseOffset != baseOffset) {
+        this->baseOffset = baseOffset;
     }
 }

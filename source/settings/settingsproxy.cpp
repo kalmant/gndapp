@@ -41,7 +41,6 @@ bool SettingsProxy::saveSettings() {
     settings.setValue("PPM", sh->sdrppm());
     settings.setValue("gain", sh->sdrgain());
     settings.setValue("automaticDFTracking", sh->sdradft());
-    settings.setValue("DF", sh->sdrdf());
     qInfo() << "Successfully saved SDR settings";
     settings.endGroup();
 
@@ -132,9 +131,8 @@ bool SettingsProxy::loadSettings(bool emits) {
     sh->set_sdrppm(settings.value("PPM", 0).toInt());
     sh->set_sdrgain(settings.value("gain", 0).toInt());
     sh->set_sdradft(settings.value("automaticDFTracking", false).toBool());
-    sh->set_sdrdf(settings.value("DF", 0).toInt());
     if (emits) {
-        emit loadSDRSettings(sh->sdroffs(), sh->sdrppm(), sh->sdrgain(), sh->sdradft(), sh->sdrdf());
+        emit loadSDRSettings(sh->sdroffs(), sh->sdrppm(), sh->sdrgain(), sh->sdradft());
         qInfo() << "Emitted SDR settings";
     }
     settings.endGroup();
