@@ -65,7 +65,7 @@ SDRThread::~SDRThread() {
  * @param[in] df Doppler frequency to start the demodulation with.
  * @param[in] automaticDF True if doppler frequency is automatically controlled (through tracking)
  */
-void SDRThread::startReading(int device_index, int ppm, int gain, int offset, float df, bool automaticDF) {
+void SDRThread::startReading(int device_index, double ppm, int gain, int offset, float df, bool automaticDF) {
     if (device_index >= sdrDevicesModel.rowCount()){
         emit invalidSdrDeviceIndex();
         return;

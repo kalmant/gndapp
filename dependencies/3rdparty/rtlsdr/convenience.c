@@ -218,7 +218,7 @@ int verbose_gain_set(rtlsdr_dev_t *dev, int gain)
 	return r;
 }
 
-int verbose_ppm_set(rtlsdr_dev_t *dev, int ppm_error)
+int verbose_ppm_set(rtlsdr_dev_t *dev, double ppm_error)
 {
 	int r;
 	if (ppm_error == 0) {
@@ -227,7 +227,7 @@ int verbose_ppm_set(rtlsdr_dev_t *dev, int ppm_error)
 	if (r < 0) {
 		fprintf(stderr, "WARNING: Failed to set ppm error.\n");
 	} else {
-		fprintf(stderr, "Tuner error set to %i ppm.\n", ppm_error);
+        fprintf(stderr, "Tuner error set to %f ppm.\n", ppm_error);
 	}
 	return r;
 }

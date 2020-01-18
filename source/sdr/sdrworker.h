@@ -49,7 +49,7 @@ public:
 
     bool readFromSDR(int device_index,
         long samplesPerSecond,
-        int ppm,
+        double ppm,
         int gain,
         int offset);
 
@@ -81,7 +81,7 @@ signals:
 public slots:
     void start(int device_index,
         long samplesPerSecond,
-        int ppm,
+        double ppm,
         int gain,
         int offset);
     void stop();

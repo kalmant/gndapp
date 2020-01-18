@@ -22,7 +22,7 @@ public:
 
     Q_PROPERTY(QStringListModel *sdrDevices READ sdrDevices NOTIFY sdrDevicesChanged)
 
-    Q_INVOKABLE void startReading(int device_index, int ppm, int gain, int offset, float df, bool automaticDF);
+    Q_INVOKABLE void startReading(int device_index, double ppm, int gain, int offset, float df, bool automaticDF);
     Q_INVOKABLE void stopReading();
     void terminateWorker();
     Q_INVOKABLE void setDopplerFrequency(int newDF);
@@ -70,7 +70,7 @@ signals:
      */
     void startSignal(int device_index,
         unsigned int samplesPerSecond,
-        int ppm,
+        double ppm,
         int gain,
         int offset);
 

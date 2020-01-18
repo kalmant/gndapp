@@ -119,7 +119,7 @@ void SDRWorker::cleanup() {
  */
 bool SDRWorker::readFromSDR(int device_index,
     long samplesPerSecond,
-    int ppm,
+    double ppm,
     int gain,
     int offset) {
     int r;
@@ -195,7 +195,7 @@ bool SDRWorker::readFromSDR(int device_index,
  */
 void SDRWorker::start(int device_index,
     long samplesPerSecond,
-    int ppm,
+    double ppm,
     int gain,
     int offset) {
     bool success = readFromSDR(device_index, samplesPerSecond, ppm, gain, offset);

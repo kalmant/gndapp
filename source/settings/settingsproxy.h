@@ -34,7 +34,7 @@ signals:
     /**
      * @brief Signal, that emits the SDR settings after loading it from persistent storage.
      * @param offset The offset frequency for the SDR.
-     * @param PPM The PPM setting for the SDR.
+     * @param PPM The PPM setting for the SDR. It is saved as PPM hundreths (1.43 -> 143)
      * @param gain The gain setting for the SDR.
      * @param autoDFTrack True, if the automatic doppler frequency correction should be enabled.
      * @param DF The doppler frequency to set.

@@ -143,7 +143,7 @@ ScrollView {
                 sdrOffsetSpinbox.value = 0;
             }
 
-            if (PPM>=-225 && PPM<=225){
+            if (PPM>=-225*100 && PPM<=225*100){
                 sdrPPMSpinbox.value = PPM;
             } else {
                 sdrPPMSpinbox.value = 0;
@@ -428,7 +428,7 @@ ScrollView {
                             return;
                         }
                         if (checked){
-                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.value, sdrGainSpinbox.value, sdrOffsetSpinbox.value,sdrDFSpinbox.value,sdrDFTrackingSwitch.checked );
+                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.realValue, sdrGainSpinbox.value, sdrOffsetSpinbox.value,sdrDFSpinbox.value,sdrDFTrackingSwitch.checked );
                         } else {
                             sdrThread.stopReading();
                         }
@@ -515,9 +515,26 @@ ScrollView {
 
                         SpinBox {
                             id: sdrPPMSpinbox
-                            from: -225
-                            to: 225
+                            from: -225 * 100
+                            to: 225 * 100
+                            stepSize: 50
                             value: 0
+                            editable: true
+
+                            property int decimals: 2
+                            property real realValue: value / 100
+
+                            validator: DoubleValidator {
+                              bottom: Math.min(sdrPPMSpinbox.from, sdrPPMSpinbox.to)
+                              top:  Math.max(sdrPPMSpinbox.from, sdrPPMSpinbox.to)
+                            }
+                            textFromValue: function(value, locale) {
+                              return Number(value / 100).toLocaleString(locale, 'f', sdrPPMSpinbox.decimals)
+                            }
+                            valueFromText: function(text, locale) {
+                              return Number.fromLocaleString(locale, text) * 100
+                            }
+
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
