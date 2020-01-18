@@ -529,7 +529,7 @@ ScrollView {
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Allows you to set the PPM of your particular device.")
+                            ToolTip.text: qsTr("Allows you to set the PPM of your particular device.\nYou can also edit the contents manually by typing in the input.")
                         }
 
                         Label {
