@@ -48,7 +48,7 @@ void FT817Radio::setPortSettingsBasedOnBaudRate(int baudRate) {
  */
 void FT817Radio::initialization() {
     emit newCommand(command5BytesFrom5Chars(0x0A, 0x00, 0x00, 0x00, 0x07));      // DIG MODE
-    setFREQto(baseFrequency_prot + static_cast<unsigned long>(baseOffset_prot)); // setting freq. to baseFrequency_prot
+    setFREQto(baseFrequency_prot + static_cast<unsigned long>(offsetHz_prot + baseOffset_prot)); // setting freq. to baseFrequency_prot
     emit newCommand(command5BytesFrom5Chars(0x00, 0x00, 0x00, 0x00, static_cast<char>(0xF5))); // setting CLAR to +0
     emit newCommand(command5BytesFrom5Chars(0x00, 0x00, 0x00, 0x00, 0x05));                    // turning on CLAR
 }
