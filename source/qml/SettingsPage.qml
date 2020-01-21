@@ -742,6 +742,18 @@ ScrollView {
                             }
                         }
                         Row{
+                         spacing: 5
+                         Label {
+                            font.pixelSize: 20
+                            text: qsTr("Frequency [Hz]:")
+                         }
+                         Label {
+                             font.pixelSize: 20
+                             id: predictFreqText
+                             text: qsTr("N/A")
+                         }
+                        }
+                        Row{
                             spacing: 5
                             Label {
                                 font.pixelSize: 20
@@ -802,6 +814,7 @@ ScrollView {
                     predictAzText.text = azimuth.toFixed(1);
                     predictElText.text = elevation.toFixed(1);
                     predictDoppText.text = (doppler100*baseFreq/100000000).toFixed(0);
+                    predictFreqText.text = downlink_freq.toFixed(0);
                     predictAOSText.text = nextAOSQS;
                     predictLOSText.text = nextLOSQS;
                 }
