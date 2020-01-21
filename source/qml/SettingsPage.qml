@@ -564,6 +564,7 @@ ScrollView {
                             from: -25000
                             to: 25000
                             value: 0
+                            editable: true
                             stepSize: 10
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
@@ -917,6 +918,7 @@ ScrollView {
                             to: 25000
                             value: 0
                             stepSize: 10
+                            editable: true
 
                             onValueChanged: {
                                 if (radioSwitch.checked){
