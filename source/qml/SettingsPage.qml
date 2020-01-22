@@ -546,14 +546,12 @@ ScrollView {
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Allows you to set the gain of your particular device. Setting it to 0 results in AGC.")
                         }
-
-
                     }
                     Grid {
                         enabled: true
                         spacing: parent.spacing
                         verticalItemAlignment: Grid.AlignVCenter
-                        columns: 2
+                        columns: 4
 
                         Label {
                             text: qsTr("Offset [Hz]")
@@ -573,6 +571,16 @@ ScrollView {
                             onValueChanged: {
                                 sdrThread.setOffset(sdrOffsetSpinbox.value)
                             }
+                        }
+                        Label{
+                            enabled: sdrEnabledSwitch.checked
+                            font.pixelSize: 20
+                            text: "Frequency [Hz]:"
+                        }
+                        Label{
+                            enabled: sdrEnabledSwitch.checked
+                            font.pixelSize: 20
+                            text: sdrThread.currentFrequency+""
                         }
                     }
                 }

@@ -43,7 +43,7 @@ SDRThread::SDRThread(PacketDecoder *pd, PredicterController *predicter) : QThrea
     // base frequency change
     QObject::connect(this, &SDRThread::newBaseFrequencies, sdrWorker.data(), &SDRWorker::newBaseFrequencies);
 
-    QTimer::singleShot(150, [&](){refreshSdrDevices();});
+    QTimer::singleShot(150, [&]() { refreshSdrDevices(); });
 }
 
 /**
@@ -67,7 +67,7 @@ SDRThread::~SDRThread() {
  * @param[in] automaticDF True if doppler frequency is automatically controlled (through tracking)
  */
 void SDRThread::startReading(int device_index, double ppm, int gain, bool automaticDF) {
-    if (device_index >= sdrDevicesModel.rowCount()){
+    if (device_index >= sdrDevicesModel.rowCount()) {
         emit invalidSdrDeviceIndex();
         return;
     }
@@ -94,9 +94,8 @@ void SDRThread::stopReading() {
  * @brief Set manual offset
  * @param offset manual offset specified in Hz
  */
-void SDRThread::setOffset(long offset)
-{
-    if (offset_priv != offset){
+void SDRThread::setOffset(long offset) {
+    if (offset_priv != offset) {
         offset_priv = offset;
         refreshDynamicShiftFrequency();
     }
@@ -105,13 +104,13 @@ void SDRThread::setOffset(long offset)
 /**
  * @brief Sets dynamic shift frequency if necessary. When a change is made the worker's ds is changed.
  */
-void SDRThread::refreshDynamicShiftFrequency()
-{
-    if (dynamic_shift_priv != offset_priv + df_priv){
+void SDRThread::refreshDynamicShiftFrequency() {
+    if (dynamic_shift_priv != offset_priv + df_priv) {
         dynamic_shift_priv = offset_priv + df_priv;
         mut_priv.data()->lock();
         *(ds_priv.data()) = dynamic_shift_priv;
         mut_priv.data()->unlock();
+        emit currentFrequencyChanged();
     }
 }
 
@@ -131,22 +130,24 @@ void SDRThread::setDopplerFrequency(int newDF) {
     }
 }
 
-void SDRThread::refreshSdrDevices()
-{
+void SDRThread::refreshSdrDevices() {
     qInfo() << "Updating SDR devices";
     QStringList ret;
     auto device_count = custom_get_device_count();
     qInfo() << device_count << "SDR devices found";
-    for (uint32_t i = 0; i < device_count; i++){
+    for (uint32_t i = 0; i < device_count; i++) {
         ret.append(QString(custom_get_device_name(i)));
     }
     sdrDevicesModel.setStringList(ret);
     emit sdrDevicesChanged();
 }
 
-QStringListModel *SDRThread::sdrDevices()
-{
+QStringListModel *SDRThread::sdrDevices() {
     return &sdrDevicesModel;
+}
+
+long SDRThread::currentFrequency() {
+    return baseFrequency_priv + baseOffset_priv + dynamic_shift_priv;
 }
 
 /**
@@ -205,7 +206,8 @@ void SDRThread::trackingDataSlot(double azimuth,
     (void) nextLOSQS;
 
     if (automaticDF_priv) {
-        setDopplerFrequency(static_cast<int>(doppler100 * (static_cast<double>(baseFrequency_priv+baseOffset_priv) / 100000000)));
+        setDopplerFrequency(
+            static_cast<int>(doppler100 * (static_cast<double>(baseFrequency_priv + baseOffset_priv) / 100000000)));
     }
 }
 
@@ -217,6 +219,7 @@ void SDRThread::newBaseFrequenciesSlot(unsigned long baseFrequency, long baseOff
     baseFrequency_priv = baseFrequency;
     baseOffset_priv = baseOffset;
     emit newBaseFrequencies(baseFrequency_priv, baseOffset_priv);
+    emit currentFrequencyChanged();
 }
 
 /**
