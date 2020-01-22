@@ -495,7 +495,7 @@ ScrollView {
 
 
                     Grid {
-                        enabled: !sdrEnabledSwitch.checked
+                        enabled: sdrThread.sdrDevices.rowCount() > 0 && !sdrEnabledSwitch.checked
                         spacing: parent.spacing
                         verticalItemAlignment: Grid.AlignVCenter
                         columns: 4
@@ -548,7 +548,7 @@ ScrollView {
                         }
                     }
                     Grid {
-                        enabled: true
+                        enabled: sdrThread.sdrDevices.rowCount() > 0
                         spacing: parent.spacing
                         verticalItemAlignment: Grid.AlignVCenter
                         columns: 4
@@ -945,10 +945,12 @@ ScrollView {
                         }
 
                         Label {
+                            enabled: radioCOMCombo.count > 0
                             text: qsTr("Offset [Hz]")
                         }
 
                         SpinBox {
+                            enabled: radioCOMCombo.count > 0
                             id:  radioOffsetSpinbox
                             from: -25000
                             to: 25000
