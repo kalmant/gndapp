@@ -477,7 +477,7 @@ ScrollView {
                             model: sdrThread.sdrDevices
                             textRole: "display"
                             enabled: !sdrEnabledSwitch.checked
-                            currentIndex: sdrThread.sdrDevices.rowCount() > 0 ? 0 : -1
+                            currentIndex: sdrThread.sdrDevices.rowCount() > 1 ? 1 : (sdrThread.sdrDevices.rowCount() > 0 ? 0 : -1)
                         }
                         Button {
                             text: qsTr("Refresh devices")
