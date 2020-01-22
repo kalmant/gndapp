@@ -914,6 +914,27 @@ ScrollView {
                             enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                             model: ['FT-817','TS-2000','SMOG','FT-847','FT-991','ICOM']
                             currentIndex: 0
+                            onCurrentIndexChanged: {
+                                if (radioModelCombo.currentIndex === 0){
+                                    //ft817
+                                    ft817.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 1) {
+                                    //ts2000
+                                    ts2000.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 2) {
+                                    // smog radio
+                                    smogradio.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 3) {
+                                    // ft847 radio
+                                    ft847.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 4) {
+                                    // ft991 radio
+                                    ft991.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 5) {
+                                    // icom radio
+                                    icom.setOffset(radioOffsetSpinbox.value);
+                                }
+                            }
                         }
 
                         Label {
@@ -929,32 +950,28 @@ ScrollView {
                             editable: true
 
                             onValueChanged: {
-                                if (radioSwitch.checked){
-                                    // Setting offset
-                                    if (radioModelCombo.currentIndex === 0){
-                                        //ft817
-                                        ft817.setOffset(radioOffsetSpinbox.value);
-                                    } else if (radioModelCombo.currentIndex === 1) {
-                                        //ts2000
-                                        ts2000.setOffset(radioOffsetSpinbox.value);
-                                    } else if (radioModelCombo.currentIndex === 2) {
-                                        // smog radio
-                                        smogradio.setOffset(radioOffsetSpinbox.value);
-                                    } else if (radioModelCombo.currentIndex === 3) {
-                                        // ft847 radio
-                                        ft847.setOffset(radioOffsetSpinbox.value);
-                                    } else if (radioModelCombo.currentIndex === 4) {
-                                        // ft991 radio
-                                        ft991.setOffset(radioOffsetSpinbox.value);
-                                    } else if (radioModelCombo.currentIndex === 5) {
-                                        // icom radio
-                                        icom.setOffset(radioOffsetSpinbox.value);
-                                    }
+                                // Setting offset
+                                if (radioModelCombo.currentIndex === 0){
+                                    //ft817
+                                    ft817.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 1) {
+                                    //ts2000
+                                    ts2000.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 2) {
+                                    // smog radio
+                                    smogradio.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 3) {
+                                    // ft847 radio
+                                    ft847.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 4) {
+                                    // ft991 radio
+                                    ft991.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 5) {
+                                    // icom radio
+                                    icom.setOffset(radioOffsetSpinbox.value);
                                 }
                             }
                         }
-
-
                     }
 
                     Grid {
