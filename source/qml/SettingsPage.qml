@@ -901,7 +901,7 @@ ScrollView {
 
                     Grid {
                         spacing: parent.spacing
-                        columns: 4
+                        columns: 6
                         verticalItemAlignment: Grid.AlignVCenter
 
                         Label {
@@ -915,24 +915,31 @@ ScrollView {
                             model: ['FT-817','TS-2000','SMOG','FT-847','FT-991','ICOM']
                             currentIndex: 0
                             onCurrentIndexChanged: {
+                                // Setting offset and frequency binding
                                 if (radioModelCombo.currentIndex === 0){
                                     //ft817
                                     ft817.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+ft817.currentFrequency})
                                 } else if (radioModelCombo.currentIndex === 1) {
                                     //ts2000
                                     ts2000.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+ts2000.currentFrequency})
                                 } else if (radioModelCombo.currentIndex === 2) {
                                     // smog radio
                                     smogradio.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+smogradio.currentFrequency})
                                 } else if (radioModelCombo.currentIndex === 3) {
                                     // ft847 radio
                                     ft847.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+ft847.currentFrequency})
                                 } else if (radioModelCombo.currentIndex === 4) {
                                     // ft991 radio
                                     ft991.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+ft991.currentFrequency})
                                 } else if (radioModelCombo.currentIndex === 5) {
                                     // icom radio
                                     icom.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+icom.currentFrequency})
                                 }
                             }
                         }
@@ -971,6 +978,25 @@ ScrollView {
                                     icom.setOffset(radioOffsetSpinbox.value);
                                 }
                             }
+                        }
+                        Label{
+                            enabled: radioSwitch.checked && Number(predictElText.text) >= -5
+                            font.pixelSize: 20
+                            text: "Frequency [Hz]:"
+                            ToolTip.delay: 1000
+                            ToolTip.timeout: 5000
+                            ToolTip.visible: hovered
+                            ToolTip.text: qsTr("Frequency is only sent to the radio periodically, when tracking is enabled and elevation >= -5°")
+                        }
+                        Label{
+                            enabled: radioSwitch.checked && Number(predictElText.text) >= -5
+                            font.pixelSize: 20
+                            id: radioFrequencyLabel
+                            text: "N/A"
+                            ToolTip.delay: 1000
+                            ToolTip.timeout: 5000
+                            ToolTip.visible: hovered
+                            ToolTip.text: qsTr("Frequency is only sent to the radio periodically, when tracking is enabled and elevation >= -5°")
                         }
                     }
 
