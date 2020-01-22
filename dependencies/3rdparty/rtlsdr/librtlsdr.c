@@ -114,7 +114,7 @@ struct rtlsdr_dev {
 	uint32_t freq; /* Hz */
 	uint32_t bw;
 	uint32_t offs_freq; /* Hz */
-	int corr; /* ppm */
+    double corr; /* ppm */
 	int gain; /* tenth dB */
 	struct e4k_state e4k_s;
 	struct r82xx_config r82xx_c;
@@ -710,7 +710,7 @@ static int rtlsdr_set_if_freq(rtlsdr_dev_t *dev, uint32_t freq)
 	return r;
 }
 
-int rtlsdr_set_sample_freq_correction(rtlsdr_dev_t *dev, int ppm)
+int rtlsdr_set_sample_freq_correction(rtlsdr_dev_t *dev, double ppm)
 {
 	int r = 0;
 	uint8_t tmp;
@@ -913,23 +913,23 @@ uint32_t rtlsdr_get_center_freq(rtlsdr_dev_t *dev)
 	return dev->freq;
 }
 
-int rtlsdr_set_freq_correction(rtlsdr_dev_t *dev, int ppm)
+int rtlsdr_set_freq_correction(rtlsdr_dev_t *dev, double ppm)
 {
 	int r = 0;
 
 	if (!dev)
 		return -1;
 
-	if (dev->corr == ppm)
+    if (dev->corr == ppm)
 		return -2;
 
 	dev->corr = ppm;
 
-	r |= rtlsdr_set_sample_freq_correction(dev, ppm);
+    r |= rtlsdr_set_sample_freq_correction(dev, ppm);
 
 	/* read corrected clock value into e4k and r82xx structure */
-	if (rtlsdr_get_xtal_freq(dev, NULL, &dev->e4k_s.vco.fosc) ||
-	    rtlsdr_get_xtal_freq(dev, NULL, &dev->r82xx_c.xtal))
+    if (rtlsdr_get_xtal_freq(dev, NULL, &dev->e4k_s.vco.fosc) ||
+        rtlsdr_get_xtal_freq(dev, NULL, &dev->r82xx_c.xtal))
 		return -3;
 
 	if (dev->freq) /* retune to apply new correction value */
@@ -938,7 +938,7 @@ int rtlsdr_set_freq_correction(rtlsdr_dev_t *dev, int ppm)
 	return r;
 }
 
-int rtlsdr_get_freq_correction(rtlsdr_dev_t *dev)
+double rtlsdr_get_freq_correction(rtlsdr_dev_t *dev)
 {
 	if (!dev)
 		return 0;

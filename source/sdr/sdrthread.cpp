@@ -10,17 +10,20 @@
  * @param[in] predicter Pointer to the \p PredicterController that sends tracking data
  */
 SDRThread::SDRThread(PacketDecoder *pd, PredicterController *predicter) : QThread() {
-    df_priv.reset(new int(0));
-    df_mirror_priv = 0;
+    df_priv = 0;
+    offset_priv = 0;
+    dynamic_shift_priv = 0;
+    ds_priv.reset(new int(0));
     mut_priv.reset(new QMutex());
     canRun_priv.reset(new bool(false));
     pl_priv.reset(new long(70));
     dr_priv.reset(new long(1250));
     canRun_mirror_priv = false;
     baseFrequency_priv = INITIALBASEFREQUENCY;
+    baseOffset_priv = 0;
     dataRateBPS_priv = 1250;
     packetLengthBytes_priv = 70;
-    sdrWorker.reset(new SDRWorker(mut_priv.data(), canRun_priv.data(), df_priv.data(), pl_priv.data(), dr_priv.data()));
+    sdrWorker.reset(new SDRWorker(mut_priv.data(), canRun_priv.data(), ds_priv.data(), pl_priv.data(), dr_priv.data()));
     QObject::connect(sdrWorker.data(), &SDRWorker::dataReady, this, &SDRThread::decodablePacketReceivedSlot);
     QObject::connect(this, &SDRThread::decodablePacketReceivedSignal, pd, &PacketDecoder::decodablePacketReceived);
     sdrWorker->moveToThread(this); // may be unnecessary because the object itself was created on this thread
@@ -38,9 +41,9 @@ SDRThread::SDRThread(PacketDecoder *pd, PredicterController *predicter) : QThrea
         sdrWorker.data(), &SDRWorker::SDRHasBeenDisconnected, this, &SDRThread::SDRHasBeenDisconnectedSlot);
     QObject::connect(sdrWorker.data(), &SDRWorker::SDRWasntStarted, this, &SDRThread::SDRWasntStartedSlot);
     // base frequency change
-    QObject::connect(this, &SDRThread::newBaseFrequency, sdrWorker.data(), &SDRWorker::newBaseFrequency);
+    QObject::connect(this, &SDRThread::newBaseFrequencies, sdrWorker.data(), &SDRWorker::newBaseFrequencies);
 
-    QTimer::singleShot(150, [&](){refreshSdrDevices();});
+    QTimer::singleShot(150, [&]() { refreshSdrDevices(); });
 }
 
 /**
@@ -61,21 +64,15 @@ SDRThread::~SDRThread() {
  * @param[in] device_index The device's index
  * @param[in] ppm PPM error for the SDR.
  * @param[in] gain Gain for the SDR.
- * @param[in] offset Offset frequency of the SDR
- * @param[in] df Doppler frequency to start the demodulation with.
  * @param[in] automaticDF True if doppler frequency is automatically controlled (through tracking)
  */
-void SDRThread::startReading(int device_index, int ppm, int gain, int offset, float df, bool automaticDF) {
-    if (device_index >= sdrDevicesModel.rowCount()){
+void SDRThread::startReading(int device_index, double ppm, int gain, bool automaticDF) {
+    if (device_index >= sdrDevicesModel.rowCount()) {
         emit invalidSdrDeviceIndex();
         return;
     }
-    mut_priv.data()->lock();
-    *(df_priv.data()) = static_cast<int>(df);
-    df_mirror_priv = static_cast<int>(df);
-    mut_priv.data()->unlock();
     automaticDF_priv = automaticDF;
-    emit startSignal(device_index, 250000, ppm, gain, offset);
+    emit startSignal(device_index, 250000, ppm, gain);
     canRun_mirror_priv = true;
 }
 
@@ -93,42 +90,64 @@ void SDRThread::stopReading() {
     emit stopSignal();
 }
 
+/**
+ * @brief Set manual offset
+ * @param offset manual offset specified in Hz
+ */
+void SDRThread::setOffset(long offset) {
+    if (offset_priv != offset) {
+        offset_priv = offset;
+        refreshDynamicShiftFrequency();
+    }
+}
+
+/**
+ * @brief Sets dynamic shift frequency if necessary. When a change is made the worker's ds is changed.
+ */
+void SDRThread::refreshDynamicShiftFrequency() {
+    if (dynamic_shift_priv != offset_priv + df_priv) {
+        dynamic_shift_priv = offset_priv + df_priv;
+        mut_priv.data()->lock();
+        *(ds_priv.data()) = dynamic_shift_priv;
+        mut_priv.data()->unlock();
+        emit currentFrequencyChanged();
+    }
+}
+
 void SDRThread::terminateWorker() {
     *(canRun_priv.data()) = false;
 }
 
 /**
- * @brief Sets the currently used doopler frequency.
- *
- * Involves a locking and unlocking of \p mut_priv.
+ * @brief Sets the currently used doppler frequency.
  *
  * @param[in] newDF New value for the doppler frequency.
  */
 void SDRThread::setDopplerFrequency(int newDF) {
-    if (newDF != df_mirror_priv) {
-        mut_priv.data()->lock();
-        df_mirror_priv = newDF;
-        *(df_priv.data()) = df_mirror_priv;
-        mut_priv.data()->unlock();
+    if (newDF != df_priv) {
+        df_priv = newDF;
+        refreshDynamicShiftFrequency();
     }
 }
 
-void SDRThread::refreshSdrDevices()
-{
+void SDRThread::refreshSdrDevices() {
     qInfo() << "Updating SDR devices";
     QStringList ret;
     auto device_count = custom_get_device_count();
     qInfo() << device_count << "SDR devices found";
-    for (uint32_t i = 0; i < device_count; i++){
+    for (uint32_t i = 0; i < device_count; i++) {
         ret.append(QString(custom_get_device_name(i)));
     }
     sdrDevicesModel.setStringList(ret);
     emit sdrDevicesChanged();
 }
 
-QStringListModel *SDRThread::sdrDevices()
-{
+QStringListModel *SDRThread::sdrDevices() {
     return &sdrDevicesModel;
+}
+
+long SDRThread::currentFrequency() {
+    return baseFrequency_priv + baseOffset_priv + dynamic_shift_priv;
 }
 
 /**
@@ -162,7 +181,7 @@ void SDRThread::SDRWasntStartedSlot() {
 /**
  * @brief Performs the necessary actions upon receiving tracking data.
  *
- * Sets doppler frequency to \p doppler100 * baseFrequency_priv/100000000
+ * Sets doppler frequency to \p doppler100 * (baseFrequency_priv+baseOffset)/100000000
  *
  * @param azimuth UNUSED
  * @param elevation UNUSED
@@ -187,7 +206,8 @@ void SDRThread::trackingDataSlot(double azimuth,
     (void) nextLOSQS;
 
     if (automaticDF_priv) {
-        setDopplerFrequency(static_cast<int>(doppler100 * (static_cast<double>(baseFrequency_priv) / 100000000)));
+        setDopplerFrequency(
+            static_cast<int>(doppler100 * (static_cast<double>(baseFrequency_priv + baseOffset_priv) / 100000000)));
     }
 }
 
@@ -195,9 +215,11 @@ void SDRThread::trackingDataSlot(double azimuth,
  * @brief Slot that receives the new base frequency when it should be changed
  * @param frequencyHz new base frequency
  */
-void SDRThread::newBaseFrequencySlot(unsigned long frequencyHz) {
-    baseFrequency_priv = frequencyHz;
-    emit newBaseFrequency(frequencyHz);
+void SDRThread::newBaseFrequenciesSlot(unsigned long baseFrequency, long baseOffset) {
+    baseFrequency_priv = baseFrequency;
+    baseOffset_priv = baseOffset;
+    emit newBaseFrequencies(baseFrequency_priv, baseOffset_priv);
+    emit currentFrequencyChanged();
 }
 
 /**

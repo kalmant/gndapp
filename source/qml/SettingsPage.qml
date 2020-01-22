@@ -59,7 +59,6 @@ ScrollView {
         settingsHolder.sdrppm = sdrPPMSpinbox.value;
         settingsHolder.sdrgain = sdrGainSpinbox.value;
         settingsHolder.sdradft = sdrDFTrackingSwitch.checked;
-        settingsHolder.sdrdf = sdrDFSpinbox.value;
 
         var raCOMName = radioCOMCombo.model[radioCOMCombo.currentIndex];
         if (typeof raCOMName != 'undefined'){
@@ -136,14 +135,13 @@ ScrollView {
             waterfallDiagramSwitch.checked = showWaterfallOnStartup;
         }
         onLoadSDRSettings:{
-            //Ask if this can be removed
             if (offset>=-25000 && offset<=25000){
                 sdrOffsetSpinbox.value = offset;
             } else {
                 sdrOffsetSpinbox.value = 0;
             }
 
-            if (PPM>=-225 && PPM<=225){
+            if (PPM>=-225*100 && PPM<=225*100){
                 sdrPPMSpinbox.value = PPM;
             } else {
                 sdrPPMSpinbox.value = 0;
@@ -153,13 +151,6 @@ ScrollView {
                 sdrGainSpinbox.value = gain;
             } else {
                 sdrGainSpinbox.value = 0;
-            }
-
-            // Ask if these 2 can be removed
-            if (DF>=-25000 && DF<=25000){
-                sdrDFSpinbox.value = DF;
-            } else {
-                sdrDFSpinbox.value = 0;
             }
 
             sdrDFTrackingSwitch.checked = autoDFTrack;
@@ -428,7 +419,7 @@ ScrollView {
                             return;
                         }
                         if (checked){
-                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.value, sdrGainSpinbox.value, sdrOffsetSpinbox.value,sdrDFSpinbox.value,sdrDFTrackingSwitch.checked );
+                            sdrThread.startReading(sdrDeviceCombo.currentIndex, sdrPPMSpinbox.realValue, sdrGainSpinbox.value, sdrDFTrackingSwitch.checked);
                         } else {
                             sdrThread.stopReading();
                         }
@@ -486,7 +477,7 @@ ScrollView {
                             model: sdrThread.sdrDevices
                             textRole: "display"
                             enabled: !sdrEnabledSwitch.checked
-                            currentIndex: sdrThread.sdrDevices.rowCount() > 0 ? 0 : -1
+                            currentIndex: sdrThread.sdrDevices.rowCount() > 1 ? 1 : (sdrThread.sdrDevices.rowCount() > 0 ? 0 : -1)
                         }
                         Button {
                             text: qsTr("Refresh devices")
@@ -507,7 +498,7 @@ ScrollView {
                         enabled: !sdrEnabledSwitch.checked
                         spacing: parent.spacing
                         verticalItemAlignment: Grid.AlignVCenter
-                        columns: compactLayout ? 4 : 8
+                        columns: 4
 
                         Label {
                             text: qsTr("Error [PPM]")
@@ -515,13 +506,30 @@ ScrollView {
 
                         SpinBox {
                             id: sdrPPMSpinbox
-                            from: -225
-                            to: 225
+                            from: -225 * 100
+                            to: 225 * 100
+                            stepSize: 50
                             value: 0
+                            editable: true
+
+                            property int decimals: 2
+                            property real realValue: value / 100
+
+                            validator: DoubleValidator {
+                              bottom: Math.min(sdrPPMSpinbox.from, sdrPPMSpinbox.to)
+                              top:  Math.max(sdrPPMSpinbox.from, sdrPPMSpinbox.to)
+                            }
+                            textFromValue: function(value, locale) {
+                              return Number(value / 100).toLocaleString(locale, 'f', sdrPPMSpinbox.decimals)
+                            }
+                            valueFromText: function(text, locale) {
+                              return Number.fromLocaleString(locale, text) * 100
+                            }
+
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Allows you to set the PPM of your particular device.")
+                            ToolTip.text: qsTr("Allows you to set the PPM of your particular device.\nYou can also edit the contents manually by typing in the input.")
                         }
 
                         Label {
@@ -538,6 +546,12 @@ ScrollView {
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Allows you to set the gain of your particular device. Setting it to 0 results in AGC.")
                         }
+                    }
+                    Grid {
+                        enabled: true
+                        spacing: parent.spacing
+                        verticalItemAlignment: Grid.AlignVCenter
+                        columns: 4
 
                         Label {
                             text: qsTr("Offset [Hz]")
@@ -548,32 +562,25 @@ ScrollView {
                             from: -25000
                             to: 25000
                             value: 0
-                            stepSize: 5
+                            editable: true
+                            stepSize: 10
                             ToolTip.delay: 1000
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Adds a constant frequency offset to the SDR's frequency.")
-                        }
-
-                        Label {
-                            enabled: !sdrDFTrackingSwitch.checked
-                            text: qsTr("Doppler frequency [Hz]")
-                        }
-
-                        SpinBox {
-                            id: sdrDFSpinbox
-                            enabled: !sdrDFTrackingSwitch.checked
-                            from: -25000
-                            to: 25000
-                            value: 0
-                            stepSize: 5
+                            ToolTip.text: qsTr("Adds a frequency offset to the SDR's frequency.")
                             onValueChanged: {
-                                sdrThread.setDopplerFrequency(value)
+                                sdrThread.setOffset(sdrOffsetSpinbox.value)
                             }
-                            ToolTip.delay: 1000
-                            ToolTip.timeout: 5000
-                            ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Manual doppler input that is enabled when tracking is not on.")
+                        }
+                        Label{
+                            enabled: sdrEnabledSwitch.checked
+                            font.pixelSize: 20
+                            text: "Frequency [Hz]:"
+                        }
+                        Label{
+                            enabled: sdrEnabledSwitch.checked
+                            font.pixelSize: 20
+                            text: sdrThread.currentFrequency+""
                         }
                     }
                 }
@@ -744,6 +751,18 @@ ScrollView {
                             }
                         }
                         Row{
+                         spacing: 5
+                         Label {
+                            font.pixelSize: 20
+                            text: qsTr("Frequency [Hz]:")
+                         }
+                         Label {
+                             font.pixelSize: 20
+                             id: predictFreqText
+                             text: qsTr("N/A")
+                         }
+                        }
+                        Row{
                             spacing: 5
                             Label {
                                 font.pixelSize: 20
@@ -804,6 +823,7 @@ ScrollView {
                     predictAzText.text = azimuth.toFixed(1);
                     predictElText.text = elevation.toFixed(1);
                     predictDoppText.text = (doppler100*baseFreq/100000000).toFixed(0);
+                    predictFreqText.text = downlink_freq.toFixed(0);
                     predictAOSText.text = nextAOSQS;
                     predictLOSText.text = nextLOSQS;
                 }
@@ -880,28 +900,110 @@ ScrollView {
                     spacing: parent.spacing
 
                     Grid {
-                        enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                         spacing: parent.spacing
-                        columns: 2
+                        columns: 6
                         verticalItemAlignment: Grid.AlignVCenter
 
                         Label {
+                            enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                             text: qsTr("Model")
                         }
 
                         ComboBox {
                             id: radioModelCombo
+                            enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                             model: ['FT-817','TS-2000','SMOG','FT-847','FT-991','ICOM']
                             currentIndex: 0
+                            onCurrentIndexChanged: {
+                                // Setting offset and frequency binding
+                                if (radioModelCombo.currentIndex === 0){
+                                    //ft817
+                                    ft817.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+ft817.currentFrequency})
+                                } else if (radioModelCombo.currentIndex === 1) {
+                                    //ts2000
+                                    ts2000.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+ts2000.currentFrequency})
+                                } else if (radioModelCombo.currentIndex === 2) {
+                                    // smog radio
+                                    smogradio.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+smogradio.currentFrequency})
+                                } else if (radioModelCombo.currentIndex === 3) {
+                                    // ft847 radio
+                                    ft847.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+ft847.currentFrequency})
+                                } else if (radioModelCombo.currentIndex === 4) {
+                                    // ft991 radio
+                                    ft991.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+ft991.currentFrequency})
+                                } else if (radioModelCombo.currentIndex === 5) {
+                                    // icom radio
+                                    icom.setOffset(radioOffsetSpinbox.value);
+                                    radioFrequencyLabel.text = Qt.binding(function() {return ""+icom.currentFrequency})
+                                }
+                            }
                         }
 
+                        Label {
+                            text: qsTr("Offset [Hz]")
+                        }
 
+                        SpinBox {
+                            id:  radioOffsetSpinbox
+                            from: -25000
+                            to: 25000
+                            value: 0
+                            stepSize: 10
+                            editable: true
+
+                            onValueChanged: {
+                                // Setting offset
+                                if (radioModelCombo.currentIndex === 0){
+                                    //ft817
+                                    ft817.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 1) {
+                                    //ts2000
+                                    ts2000.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 2) {
+                                    // smog radio
+                                    smogradio.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 3) {
+                                    // ft847 radio
+                                    ft847.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 4) {
+                                    // ft991 radio
+                                    ft991.setOffset(radioOffsetSpinbox.value);
+                                } else if (radioModelCombo.currentIndex === 5) {
+                                    // icom radio
+                                    icom.setOffset(radioOffsetSpinbox.value);
+                                }
+                            }
+                        }
+                        Label{
+                            enabled: radioSwitch.checked && Number(predictElText.text) >= -5
+                            font.pixelSize: 20
+                            text: "Frequency [Hz]:"
+                            ToolTip.delay: 1000
+                            ToolTip.timeout: 5000
+                            ToolTip.visible: hovered
+                            ToolTip.text: qsTr("Frequency is only sent to the radio periodically, when tracking is enabled and elevation >= -5°")
+                        }
+                        Label{
+                            enabled: radioSwitch.checked && Number(predictElText.text) >= -5
+                            font.pixelSize: 20
+                            id: radioFrequencyLabel
+                            text: "N/A"
+                            ToolTip.delay: 1000
+                            ToolTip.timeout: 5000
+                            ToolTip.visible: hovered
+                            ToolTip.text: qsTr("Frequency is only sent to the radio periodically, when tracking is enabled and elevation >= -5°")
+                        }
                     }
 
                     Grid {
                         enabled: !radioSwitch.checked && (radioCOMCombo.count > 0)
                         spacing: parent.spacing
-                        columns: compactLayout ? 4 : 8
+                        columns: 6
                         verticalItemAlignment: Grid.AlignVCenter
 
 
@@ -924,18 +1026,6 @@ ScrollView {
                             id: radioBaudRate
                             model: radioModelCombo.currentIndex !== 5 ? ['4800','9600','19200','38400'] : ['4800','9600','19200']
                             visible: (radioModelCombo.currentIndex !== 2) // smogradio only supports 115200
-                        }
-
-                        Label {
-                            text: qsTr("Offset [Hz]")
-                        }
-
-                        SpinBox {
-                            id:  radioOffsetSpinbox
-                            from: -25000
-                            to: 25000
-                            value: 0
-                            stepSize: 5
                         }
 
                         CheckBox {
@@ -1407,7 +1497,7 @@ ScrollView {
             id: trackingNOTLE
             icon: Dialogs1.StandardIcon.Critical
             title: qsTr("Error with tracking the satellite")
-            text: qsTr("We load the satellite's TLE from http://www.celestrak.com/NORAD/elements/active.txt and couldn't load from a local file either."+
+            text: qsTr("We couldn't load the satellite's TLE from http://www.celestrak.com/NORAD/elements/active.txt and couldn't load from a local file either."+
                        "\nIf the server is unreachable, rename one of the previous TLE files to \"manual.txt\" and try enabling tracking."+
                        "\n\nIt is possible that the satellite ID currently in use is not be valid. Set a new value, if that is the case!")
         }

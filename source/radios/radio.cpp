@@ -45,6 +45,8 @@ void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff)
     previousElevation_prot = -181;
     turnOnOff_prot = turnOnOff;
     offsetHz_prot = offsetHz;
+    previous_downlink_freq = baseFrequency_prot;
+    emit currentFrequencyChanged();
 
     emit changePortSettings(portName_prot, portSettings_prot);
 
@@ -61,6 +63,13 @@ void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff)
     setIsRunning(true);
 }
 
+void Radio::setOffset(int offset) {
+    if (offset != offsetHz_prot) {
+        offsetHz_prot = offset;
+        emit currentFrequencyChanged();
+    }
+}
+
 /**
  * @brief Turns the radio off if \p turnOnOff_prot and stops controlling it.
  */
@@ -68,7 +77,7 @@ void Radio::stop() {
     if (turnOnOff_prot) {
         turnOff();
     }
-    QTimer::singleShot(1000, [&](){
+    QTimer::singleShot(1000, [&]() {
         emit closePortSignal();
         setIsRunning(false);
     });
@@ -76,6 +85,10 @@ void Radio::stop() {
 
 void Radio::sendCustomCommand(QByteArray command) {
     emit newCommand(command);
+}
+
+long Radio::currentFrequency() {
+    return static_cast<long>(previous_downlink_freq) + offsetHz_prot + baseOffset_prot;
 }
 
 bool Radio::isRunning() const {
@@ -126,11 +139,12 @@ void Radio::trackingDataSlot(double azimuth,
     (void) doppler100;
     (void) nextAOSQS;
     (void) nextLOSQS;
-
     if (!isRunning()) {
         return;
     }
 
+    previous_downlink_freq = downlink_freq;
+    emit currentFrequencyChanged();
     int elev = static_cast<int>(elevation);
     if (elev != previousElevation_prot) {
         if (elev >= -5 && previousElevation_prot < -5) {

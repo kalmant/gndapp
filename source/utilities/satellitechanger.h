@@ -49,6 +49,13 @@ signals:
      * @param satelliteName The new satellite name to use in the spectrum receiver.
      */
     void newSpectrumTitle(QString satelliteName);
+
+    /**
+     * @brief This signal tells the SDRThread to reconfigure itself
+     * @param baseFrequency Base frequency for the SDR
+     * @param satelliteName Base offset frequency for the SDR
+     */
+    void newSDRConfiguration(unsigned long baseFrequency, long baseOffset);
 };
 
 #endif // SATELLITECHANGER_H

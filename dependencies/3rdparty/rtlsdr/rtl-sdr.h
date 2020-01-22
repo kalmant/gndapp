@@ -159,7 +159,7 @@ RTLSDR_API uint32_t rtlsdr_get_center_freq(rtlsdr_dev_t *dev);
  * \param ppm correction value in parts per million (ppm)
  * \return 0 on success
  */
-RTLSDR_API int rtlsdr_set_freq_correction(rtlsdr_dev_t *dev, int ppm);
+RTLSDR_API int rtlsdr_set_freq_correction(rtlsdr_dev_t *dev, double ppm);
 
 /*!
  * Get actual frequency correction value of the device.
@@ -167,7 +167,7 @@ RTLSDR_API int rtlsdr_set_freq_correction(rtlsdr_dev_t *dev, int ppm);
  * \param dev the device handle given by rtlsdr_open()
  * \return correction value in parts per million (ppm)
  */
-RTLSDR_API int rtlsdr_get_freq_correction(rtlsdr_dev_t *dev);
+RTLSDR_API double rtlsdr_get_freq_correction(rtlsdr_dev_t *dev);
 
 enum rtlsdr_tuner {
 	RTLSDR_TUNER_UNKNOWN = 0,

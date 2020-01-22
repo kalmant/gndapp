@@ -42,7 +42,7 @@ void SMOGRadio::setPortSettingsBasedOnBaudRate(int baudRate) {
 }
 
 void SMOGRadio::initialization() {
-    setFrequency(baseFrequency_prot);
+    setFrequency(baseFrequency_prot + offsetHz_prot);
     setPacketLength();
     setDatarate();
 }

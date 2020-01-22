@@ -65,10 +65,10 @@ struct DEMStruct{
 
 typedef struct DEMStruct DEMVariables;
 
-DEMVariables* create_and_initialize_sdr_variables(long doppler_freq, long datarate);
+DEMVariables* create_and_initialize_sdr_variables(long offset_freq, long datarate);
 DEMVariables* create_and_initialize_audio_variables();
 void free_dem_variables(DEMVariables *sdr_vars);
-void SDR_set_doppler_frequency(DEMVariables *sdr_vars, long doppler_freq);
+void SDR_set_offset(DEMVariables *sdr_vars, long offset_freq);
 void SDR_set_datarate(DEMVariables *sdr_vars, long datarate);
 
 
