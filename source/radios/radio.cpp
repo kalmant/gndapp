@@ -62,13 +62,10 @@ void Radio::start(QString portName, int baudRate, long offsetHz, bool turnOnOff)
     setIsRunning(true);
 }
 
-void Radio::setOffset(int offset)
-{
-    if (offset != offsetHz_prot){
+void Radio::setOffset(int offset) {
+    if (offset != offsetHz_prot) {
         offsetHz_prot = offset;
-        if (isRunning()){
-            setFrequency(static_cast<unsigned long>(previous_downlink_freq + offsetHz_prot + baseOffset_prot));
-        }
+        emit currentFrequencyChanged();
     }
 }
 
