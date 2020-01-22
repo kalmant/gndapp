@@ -457,7 +457,7 @@ ApplicationWindow {
                    "\n\nIf you encounter any issues, please get in contact with us at bmegnd@gnd.bme.hu!"+
                    "\n\nStay up to date through https://gnd.bme.hu/smog"+
                    "\n\nThank you to our contributors:\n• OM3BC"+
-                   "\n\nVersion: 1.0.5 BETA")
+                   "\n\nVersion: 1.0.5")
     }
     Loader {
         id: manualPacketInputLoader
