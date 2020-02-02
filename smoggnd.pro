@@ -89,7 +89,6 @@ HEADERS += \
     source/audio/audioindemodulator.h \
     source/audio/audioindemodulatorthread.h \
     source/audio/audiosampler.h \
-    source/audio/waterfallitem.h \
     source/command/commandtracker.h \
     source/command/commandqueue.h \
     source/command/gndconnection.h \
@@ -153,13 +152,13 @@ HEADERS += \
     dependencies/racoder/ra_config.h \
     dependencies/racoder/ra_decoder_gen.h \
     dependencies/racoder/ra_lfsr.h \
+    source/visualization/spectogram.h
 
 SOURCES += \
     source/main.cpp \
     source/audio/audioindemodulator.cpp \
     source/audio/audioindemodulatorthread.cpp \
     source/audio/audiosampler.cpp \
-    source/audio/waterfallitem.cpp \
     source/command/commandtracker.cpp \
     source/command/commandqueue.cpp \
     source/command/gndconnection.cpp \
@@ -214,3 +213,4 @@ SOURCES += \
     dependencies/racoder/ra_config.c \
     dependencies/racoder/ra_decoder_gen.c \
     dependencies/racoder/ra_lfsr.c \
+   source/visualization/spectogram.cpp

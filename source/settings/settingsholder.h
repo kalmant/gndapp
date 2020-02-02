@@ -27,16 +27,10 @@ private:
  */
 class SettingsHolder : public QObject {
     Q_OBJECT
-    // Waterfall settings group
-    // settings in order: deviceName, adaptiveColoring, scalingFactor, sampleCount
-    GENPROPERTY(QString, wdn)
-    GENPROPERTY(bool, wac)
-    GENPROPERTY(int, wsf)
-    GENPROPERTY(int, wsc)
 
     // Soundcard settings group
-    // settings in order: showWaterfallOnStartup
-    GENPROPERTY(bool, sswos)
+    // settings in order: deviceName
+    GENPROPERTY(QString, sdn)
 
     // Tracking settings group
     // settings in order: satelliteId, stationLat, stationLon, stationElev

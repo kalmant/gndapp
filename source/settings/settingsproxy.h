@@ -27,9 +27,9 @@ private:
 signals:
     /**
      * @brief Signal, that emits the soundcard settings after loading it from persistent storage.
-     * @param showWaterfallOnStartup True, if the waterfall diagram should be enabled upon startup.
+     * @param deviceName Name of audio device that should be selected.
      */
-    void loadSoundcardSettings(bool showWaterfallOnStartup);
+    void loadSoundcardSettings(QString deviceName);
 
     /**
      * @brief Signal, that emits the SDR settings after loading it from persistent storage.
@@ -81,15 +81,6 @@ signals:
         bool shouldPark,
         int parkingAz,
         int parkingElev);
-
-    /**
-     * @brief Signal, that emits the waterfall settings after loading it from persistent storage.
-     * @param deviceName Name of audio device that should be selected.
-     * @param adaptiveColoring True if adaptive coloring should be enabled by default.
-     * @param scalingFactor The value of the scaling factor.
-     * @param sampleCount The number of samples that should be used by the waterfall diagram.
-     */
-    void loadWaterfallSettings(QString deviceName, bool adaptiveColoring, int scalingFactor, int sampleCount);
 
     /**
      * @brief Signal, that emits the miscellaneous settings after loading it from persistent storage.

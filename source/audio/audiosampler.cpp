@@ -16,98 +16,15 @@
 #include "audiosampler.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
-#include <QtCore/QMetaMethod>
 #include <QtCore/QtEndian>
-#include <cmath>
 
 /**
  * @brief Constructor for the class.
  *
- * Initializes every necessary variable.
- * The default \p samplesToWait_priv is 4096, thus \p AmplitudeArray are initialized for 4096.
- *
  * @param parent
  */
 AudioSampler::AudioSampler(QObject *parent) : QIODevice(parent) {
-
-    // Initialising for a sample count of 4096
     started_priv = false;
-    samplesToWait_priv = 4096;
-
-    // Using FFTW according to its documentation
-    currentSampleCount = 0;
-    in = (double *) fftw_malloc(sizeof(double) * samplesToWait_priv);
-    out = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (samplesToWait_priv / 2 + 1));
-    my_plan = fftw_plan_dft_r2c_1d(samplesToWait_priv, in, out, FFTW_ESTIMATE);
-
-    // By default we use a sample count of 4096 and 44.1kHz sampling rate, so 300-3kHz translates to 252
-    AmplitudeArray.reset(new double[252]);
-}
-
-/**
- * @brief Destructor for the class.
- */
-AudioSampler::~AudioSampler() {
-    fftw_destroy_plan(my_plan);
-    fftw_free(in);
-    fftw_free(out);
-    fftw_cleanup();
-}
-
-/**
- * @brief The function is called whenever enough samples have been collected for FFTW.
- *
- * Executes \p my_plan , calculates the amplitudes and emits AudioSampler::samplesCollected().
- */
-void AudioSampler::elapsed() {
-    if (this->isSignalConnected(QMetaMethod::fromSignal(&AudioSampler::samplesCollected))) {
-
-        // Executing FFTW and producing values to out
-        fftw_execute(my_plan);
-
-        int startIndex = 0;
-        int lastIndex = 0;
-        int len = 0;
-
-        // Setting indices for the 4 preset sample counts
-        switch (samplesToWait_priv) {
-        case 1024:
-            startIndex = 7;
-            lastIndex = 69;
-            len = 63;
-            break;
-        case 2048:
-            startIndex = 14;
-            lastIndex = 139;
-            len = 126;
-            break;
-        case 4096:
-            startIndex = 28;
-            lastIndex = 279;
-            len = 252;
-            break;
-        case 8192:
-            startIndex = 56;
-            lastIndex = 559;
-            len = 504;
-            break;
-        default:
-            qCritical() << "For some reason the sample count was set to an undefined value. Shouldn't happen!!!";
-        }
-
-        // Calculating amplitudes based on out, which contains the values calculated by FFTW
-        for (int i = startIndex; i <= lastIndex; i++) {
-            double rN = out[i][0] / samplesToWait_priv;
-            double iN = out[i][1] / samplesToWait_priv;
-            AmplitudeArray[i - startIndex] = 2 * sqrt(rN * rN + iN * iN);
-        }
-
-        // Emitting the calculated values
-        emit this->samplesCollected(AmplitudeArray.data(), len);
-    }
-
-    // resetting the samplecount, so that we once again read from the input
-    currentSampleCount = 0;
 }
 
 /**
@@ -174,9 +91,7 @@ void AudioSampler::stop() {
     if (!started_priv)
         return;
 
-    // Stopping the device and clearing the samples
     input_priv->stop();
-    currentSampleCount = 0;
     this->close();
 
     started_priv = false;
@@ -188,14 +103,6 @@ void AudioSampler::stop() {
  */
 quint32 AudioSampler::samplingFrequency() const {
     return 44100;
-}
-
-/**
- * @brief Returns the number of samples that should be bundled together before executing FFTW.
- * @return Returns the value of \p samplesToWait_priv .
- */
-quint32 AudioSampler::samplesToWait() const {
-    return samplesToWait_priv;
 }
 
 /**
@@ -233,25 +140,16 @@ qint64 AudioSampler::writeData(const char *data, qint64 len) {
     // Since data is read as int16_t and received as char with length
     // Only half as many samples are available
 
-    // When packets are being read...
-    // Emitting to the thread and letting them know that len/2 samples are available
-    if (packetsAreBeingRead_priv) {
-        QScopedArrayPointer<std::int16_t> dataFor1250(new std::int16_t[len / 2]);
-        std::copy(samples, samples + len / 2, dataFor1250.data());
-        emit this->audioSamplesReadyFor1250(dataFor1250.take(), len / 2);
-    }
+    // Emitting to the demodulating thread and letting them know that len/2 samples are available
+    QScopedArrayPointer<std::int16_t> dataFor1250(new std::int16_t[len / 2]);
+    std::copy(samples, samples + len / 2, dataFor1250.data());
+    emit this->audioSamplesReadyFor1250(dataFor1250.take(), len / 2);
 
-    // When waterfall is running...
-    if (waterfallRunning_priv) {
-        for (qint64 i = 0; i < len / 2; i++) {
-            in[currentSampleCount] = ((double) samples[i]);
-            currentSampleCount++;
+    // Emitting to the spectogram
+    QScopedArrayPointer<std::int16_t> audioSamples(new std::int16_t[len / 2]);
+    std::copy(samples, samples + len / 2, audioSamples.data());
+    emit this->audioSamples(audioSamples.take(), len / 2);
 
-            if (currentSampleCount >= samplesToWait_priv) {
-                elapsed();
-            }
-        }
-    }
     return len;
 }
 
@@ -262,57 +160,4 @@ qint64 AudioSampler::writeData(const char *data, qint64 len) {
 void AudioSampler::audioInputStateChanged(QAudio::State state) {
 
     state_priv = state;
-}
-
-/**
- * @brief Called whenever \p samplesToWait_priv has changed.
- *
- * It modifies certain variables based on the change.
- *
- * @param value The new value for \p samplesToWait_priv .
- */
-void AudioSampler::samplesToWaitChanged(int value) {
-
-    // Stopping the device, resetting the necessary variables and initialising some others
-    this->stop();
-    samplesToWait_priv = value;
-    fftw_destroy_plan(my_plan);
-    fftw_free(in);
-    fftw_free(out);
-    fftw_cleanup();
-    in = (double *) fftw_malloc(sizeof(double) * samplesToWait_priv);
-    out = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (samplesToWait_priv / 2 + 1));
-    my_plan = fftw_plan_dft_r2c_1d(samplesToWait_priv, in, out, FFTW_ESTIMATE);
-    switch (samplesToWait_priv) {
-    case 1024:
-        AmplitudeArray.reset(new double[63]);
-        break;
-    case 2048:
-        AmplitudeArray.reset(new double[126]);
-        break;
-    case 4096:
-        AmplitudeArray.reset(new double[252]);
-        break;
-    case 8192:
-        AmplitudeArray.reset(new double[504]);
-        break;
-    default:
-        qInfo() << "Only the 4 preset values for sample count should be used!!";
-    }
-}
-
-/**
- * @brief Called whenever \p packetsAreBeingRead_priv has changed.
- * @param value The new value for \p packetsAreBeingRead_priv .
- */
-void AudioSampler::packetsAreBeingReadChangedSlot(bool value) {
-    packetsAreBeingRead_priv = value;
-}
-
-/**
- * @brief Called whenever \p waterfallRunning_priv has changed.
- * @param value The new value for \p waterfallRunning_priv .
- */
-void AudioSampler::waterfallRunningChangedSlot(bool value) {
-    waterfallRunning_priv = value;
 }

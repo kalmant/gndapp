@@ -221,7 +221,7 @@ ApplicationWindow {
                                 - topRow.height
                                 - mainWindow.footer.height
                                 - (cp.visible ? (cp.height + 10) : 0)
-                                - (audioInWaterfall.visible ? (audioInWaterfall.height + 10) : 0)
+                                - (spectogramComponent.visible ? (spectogramComponent.height + 10) : 0)
 
         Row {
             id: topRow
@@ -243,6 +243,7 @@ ApplicationWindow {
 
                     Component.onCompleted: {
                         if (!uplinkEnabled) { // Hide actions that should not appear if uplink is not enabled
+                            optionsMenu.removeAction(hideCommandMenuMenuItem)
                             optionsMenu.removeAction(commandMenuItem)
                             optionsMenu.removeAction(commandTrackerMenuItem)
                         }
@@ -261,35 +262,19 @@ ApplicationWindow {
                     }
 
                     Action {
-                        id: bottomSectionMenuItem
+                        id: hideCommandMenuMenuItem
                         property var sp: null
                         text: "Hide bottom section" + " (" + shortcut + ")"
-                        enabled: audioInWaterfall.visible || cp.visible
+                        enabled: uplinkEnabled && cp.visible
                         shortcut: "Ctrl+H"
                         onTriggered: {
                             if (sp === null) {
-                                console.warn("SettingsPage didn't properly set bottomSectionMenuItem's property!")
+                                console.warn("SettingsPage didn't properly set hideCommandMenuMenuItem's property!")
                             } else {
                                 showBottomSection = false
-                                sp.bottomSectionSwitch.checked = false
                             }
                         }
-                    }
-
-                    Action {
-                        id: waterfallMenuItem
-                        property var sp: null
-                        text: "Show waterfall" + " (" + shortcut + ")"
-                        enabled: !audioInWaterfall.visible
-                        shortcut: "Ctrl+W"
-                        onTriggered: {
-                            if (sp === null){
-                                console.warn("SettingsPage didn't properly set waterfallMenuItem's property!")
-                            } else {
-                                sp.bottomSectionSwitch.checked = true
-                            }
-                        }
-                    }
+                    }                    
 
                     Action {
                         id: commandMenuItem
@@ -302,7 +287,6 @@ ApplicationWindow {
                             if (sp === null){
                                 console.warn("SettingsPage didn't properly set commandMenuItem's property!")
                             } else {
-                                sp.bottomSectionSwitch.checked = false
                                 showBottomSection = true
                             }
                         }
@@ -379,8 +363,6 @@ ApplicationWindow {
                         id: settingsPage
 
                         Component.onCompleted: {
-                            bottomSectionMenuItem.sp = settingsPage
-                            waterfallMenuItem.sp = settingsPage
                             commandMenuItem.sp = settingsPage
                         }
                     }
@@ -406,7 +388,7 @@ ApplicationWindow {
             Loader {
                 id: cp
                 width: parent.width
-                visible: uplinkEnabled && showBottomSection && !audioInWaterfall.visible
+                visible: uplinkEnabled && showBottomSection
                 active: visible
 
                 sourceComponent: CommandPage {
@@ -414,9 +396,10 @@ ApplicationWindow {
                 }
             }
 
-            WaterfallComponent {
+            SpectogramComponent {
                 // TODO: wrap in a Loader so it is only loaded when visible
-                id: audioInWaterfall
+                id: spectogramComponent
+                visible: false
                 width: parent.width
             }
         }

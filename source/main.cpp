@@ -1,7 +1,7 @@
 
 #include "dependencies/obc-packet-helpers/packethelper.h"
 #include "source/audio/audioindemodulatorthread.h"
-#include "source/audio/waterfallitem.h"
+#include "source/audio/audiosampler.h"
 #include "source/command/gndconnection.h"
 #include "source/connection/uploadcontroller.h"
 #include "source/packet/packetdecoder.h"
@@ -24,6 +24,7 @@
 #include "source/utilities/logger.h"
 #include "source/utilities/messageproxy.h"
 #include "source/utilities/satellitechanger.h"
+#include "source/visualization/spectogram.h"
 #include <QApplication>
 #include <QDebug>
 #include <QFile>
@@ -140,7 +141,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     qRegisterMetaType<uint32_t>("uint32_t"); // has to be declared so that it can be used in queued connections
     qRegisterMetaType<QList<unsigned int>>("QList<uint>");
     qRegisterMetaType<SatelliteChanger::Satellites>("Satellites");
-    qmlRegisterType<WaterfallItem>("hu.timur", 1, 0, "Waterfall");
+    qmlRegisterType<Spectogram>("hu.tt", 1, 0, "Spectogram");
     s1obc::registerObcPacketTypesQt();
 
     QQmlApplicationEngine engine;
@@ -201,8 +202,10 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
 
     QScopedPointer<SDRThread> sdrThread(new SDRThread(&packetDecoder, &predicterController));
     sdrThread->start();
-    QObject::connect(
-        &satelliteChanger, &SatelliteChanger::newSDRConfiguration, sdrThread.data(), &SDRThread::newBaseFrequenciesSlot);
+    QObject::connect(&satelliteChanger,
+        &SatelliteChanger::newSDRConfiguration,
+        sdrThread.data(),
+        &SDRThread::newBaseFrequenciesSlot);
     engine.rootContext()->setContextProperty("sdrThread", sdrThread.data());
     engine.rootContext()->setContextProperty("messageProxy", &messageProxy);
 
@@ -264,17 +267,18 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
         return 1;
     }
 
-    WaterfallItem *wtfptr =
-        engine.rootObjects().at(0)->findChild<WaterfallItem *>("waterfallObject", Qt::FindChildrenRecursively);
-
+    AudioSampler audioSampler;
+    engine.rootContext()->setContextProperty("audioSampler", &audioSampler);
     QScopedPointer<AudioInDemodulatorThread> adem1250Thread(new AudioInDemodulatorThread(&packetDecoder));
-
-    QObject::connect(wtfptr->getAS(),
+    QObject::connect(&audioSampler,
         &AudioSampler::audioSamplesReadyFor1250,
         adem1250Thread.data(),
         &AudioInDemodulatorThread::demodulate);
-
     adem1250Thread->start();
+
+    Spectogram *spectogramptr =
+        engine.rootObjects().at(0)->findChild<Spectogram *>("spectogramObject", Qt::FindChildrenRecursively);
+    QObject::connect(&audioSampler, &AudioSampler::audioSamples, spectogramptr, &Spectogram::realSamplesReceived);
 
 #if defined(Q_OS_LINUX)
     // Initializing notifier on linux

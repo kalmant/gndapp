@@ -15,16 +15,8 @@ SettingsProxy::SettingsProxy(SettingsHolder *settingsHolder, QObject *parent) : 
  * @return Returns true upon successful saving.
  */
 bool SettingsProxy::saveSettings() {
-    settings.beginGroup("Waterfall");
-    settings.setValue("deviceName", sh->wdn());
-    settings.setValue("adaptiveColoring", sh->wac());
-    settings.setValue("scalingFactor", sh->wsf());
-    settings.setValue("sampleCount", sh->wsc());
-    qInfo() << "Successfully saved Waterfall settings";
-    settings.endGroup();
-
     settings.beginGroup("Soundcard");
-    settings.setValue("showWaterfallOnStartup", sh->sswos());
+    settings.setValue("deviceName", sh->sdn());
     qInfo() << "Successfully saved Soundcard settings";
     settings.endGroup();
 
@@ -88,7 +80,7 @@ bool SettingsProxy::saveSettings() {
 /**
  * @brief Loads every relevant setting from persistent storage.
  *
- * After loading the settings, it emits SettingsProxy::loadWaterfallSettings(), SettingsProxy::loadSoundcardSettings(),
+ * After loading the settings, it emits SettingsProxy::loadSoundcardSettings(), SettingsProxy::loadTrackingSettings()
  * etc..
  * @param emits emits signals if \p emits is true
  *
@@ -96,21 +88,11 @@ bool SettingsProxy::saveSettings() {
  */
 bool SettingsProxy::loadSettings(bool emits) {
     settings.sync();
-    settings.beginGroup("Waterfall");
-    sh->set_wdn(settings.value("deviceName", "").toString());
-    sh->set_wac(settings.value("adaptiveColoring", true).toBool());
-    sh->set_wsf(settings.value("scalingFactor", 100).toInt());
-    sh->set_wsc(settings.value("sampleCount", 4096).toInt());
-    if (emits) {
-        emit loadWaterfallSettings(sh->wdn(), sh->wac(), sh->wsf(), sh->wsc());
-        qInfo() << "Emitted Waterfall settings";
-    }
-    settings.endGroup();
 
     settings.beginGroup("Soundcard");
-    sh->set_sswos(settings.value("showWaterfallOnStartup", true).toBool());
+    sh->set_sdn(settings.value("deviceName", "").toString());
     if (emits) {
-        emit loadSoundcardSettings(sh->sswos());
+        emit loadSoundcardSettings(sh->sdn());
         qInfo() << "Emitted Soundcard settings";
     }
     settings.endGroup();

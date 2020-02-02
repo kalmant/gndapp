@@ -13,25 +13,17 @@ ScrollView {
 
     property bool compactLayout: mainWindow.width < 1200
     property int saveSettingsOnExit: 2
-    property var bottomSectionSwitch: waterfallDiagramSwitch
     property var baseFreq: baseFrequency
-
-    // TODO: figure out a better way to handle audioInWaterfall, since its defined in main.qml
 
     //Saves every setting to the SettingsHolder object and calls saveSettings() on settingsProxy
     function saveSettings(){
-        var WDNIndex = audioInWaterfall.audioDeviceCurrentIndex;
-        var WDName = audioInWaterfall.audioDeviceModel.data(audioInWaterfall.audioDeviceModel.index(WDNIndex,0));
-        if (typeof WDName != 'undefined'){
-            settingsHolder.wdn = WDName;
+        var SDNIndex = newAudioInputDeviceCombo.currentIndex;
+        var SDName = newAudioInputDeviceCombo.model.data(newAudioInputDeviceCombo.model.index(SDNIndex,0));
+        if (typeof SDName != 'undefined'){
+            settingsHolder.sdn = SDName;
         } else {
-            settingsHolder.wdn = "unspecified";
-        }
-        settingsHolder.wac = audioInWaterfall.adaptiveColoringChecked;
-        settingsHolder.wsf = audioInWaterfall.sensitivityScaleValue;
-        settingsHolder.wsc = audioInWaterfall.samplesToWait;
-
-        settingsHolder.sswos = waterfallDiagramSwitch.checked;
+            settingsHolder.sdn = "unspecified";
+        }        
 
         settingsHolder.tsi = parseInt(satIdInput.text);
         if (!latitudeInput.acceptableInput){
@@ -131,9 +123,6 @@ ScrollView {
     //  Every signal loads settings associated with that group
     Connections {
         target: settingsHandler
-        onLoadSoundcardSettings: {
-            waterfallDiagramSwitch.checked = showWaterfallOnStartup;
-        }
         onLoadSDRSettings:{
             if (offset>=-25000 && offset<=25000){
                 sdrOffsetSpinbox.value = offset;
@@ -255,46 +244,15 @@ ScrollView {
 
             rotatorParkingSwitch.checked = shouldPark;
         }
-        onLoadWaterfallSettings:{
+        onLoadSoundcardSettings: {
             var dnIndex = 0;
-            for (var i = 0; i < audioInWaterfall.audioDeviceModel.rowCount(); i++){
-                if (audioInWaterfall.audioDeviceModel.data(audioInWaterfall.audioDeviceModel.index(i,0)) === deviceName.toString()){
+            for (var i = 0; i < newAudioInputDeviceCombo.model.rowCount(); i++){
+                if (newAudioInputDeviceCombo.model.data(newAudioInputDeviceCombo.model.index(i,0)) === deviceName.toString()){
                     dnIndex = i;
                     break;
                 }
             }
-            audioInWaterfall.audioDeviceCurrentIndex = dnIndex;
-
-            if (scalingFactor>=0 && scalingFactor<=99999){
-                audioInWaterfall.sensitivityScaleValue = scalingFactor;
-            } else {
-                audioInWaterfall.sensitivityScaleValue = 100;
-            }
-
-            audioInWaterfall.adaptiveColoringChecked = adaptiveColoring;
-
-            switch (sampleCount){
-            case 1024:
-                audioInWaterfall.sample1024Checked = true;
-                audioInWaterfall.samplesToWait = 1024;
-                break;
-            case 2048:
-                audioInWaterfall.sample2048Checked = true;
-                audioInWaterfall.samplesToWait = 2048;
-                break;
-            case 4096:
-                audioInWaterfall.sample4096Checked = true;
-                audioInWaterfall.samplesToWait = 4096;
-                break;
-            case 8192:
-                audioInWaterfall.sample8192Checked = true;
-                audioInWaterfall.samplesToWait = 8192;
-                break;
-            default:
-                audioInWaterfall.sample1024Checked = true;
-                audioInWaterfall.samplesToWait = 1024;
-                break;
-            }
+            newAudioInputDeviceCombo.currentIndex = dnIndex;
         }
         onLoadMiscSettings:{
             if (newPacketsAtEnd){
@@ -340,6 +298,63 @@ ScrollView {
         width: scrollView.width - 2 * scrollView.padding
         spacing: 10
 
+        GroupBox{
+            width: parent.width
+            title: qsTr("Spectogram")
+            id: sggb
+            padding: 10
+
+            Column {
+                spacing: 10
+
+                Switch {
+                    id: spectogramSwitch
+                    enabled: spectogramRadio.checked || spectogramSDR.checked
+                    text: enabled ? qsTr("Plot"): '<font color="red">Spectogram plotting is only allowed if a device is selected</font>'
+                    onEnabledChanged: if (!enabled) checked = false
+                    onCheckedChanged: {
+                        if (checked){
+                            spectogramComponent.visible = true;
+                            spectogramComponent.start();
+                        } else {
+                            spectogramComponent.stop();
+                            spectogramComponent.visible = false;
+                        }
+                    }
+                }
+
+                Row {
+                    x: spectogramSwitch.indicator.width + spectogramSwitch.padding * 2
+                    spacing: parent.spacing
+
+                    Label {
+                        text: qsTr("Device")
+                        anchors.verticalCenter: parent.verticalCenter
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Demodulation must be running to plot a device")
+                    }
+
+                    RadioButton {
+                        id: spectogramRadio
+                        text: qsTr("Radio")
+                        enabled: soundcardInReceivePackets.checked
+                        onCheckedChanged : if (checked) spectogramComponent.changeToRadio()
+                        onEnabledChanged: if (!enabled) checked = false
+                    }
+                    RadioButton {
+                        id: spectogramSDR
+                        text: qsTr("SDR")
+                        enabled: sdrEnabledSwitch.checked
+                        onCheckedChanged : if (checked) spectogramComponent.changeToSDR()
+                        onEnabledChanged: if (!enabled) checked = false
+                    }
+
+                }
+            }
+        }
+
         GroupBox {
             width: parent.width
             title: qsTr("Soundcard")
@@ -347,7 +362,7 @@ ScrollView {
             padding: 10
 
             Column {
-                width: parent.width - 2 * parent.padding
+                spacing: 10
 
                 Switch {
                     id: soundcardInReceivePackets
@@ -355,23 +370,23 @@ ScrollView {
                     enabled: deviceDiscovery.audioDeviceCount > 0
                     onCheckedChanged: {
                         if (checked){
-                            audioInWaterfall.startDemodulation();
+                            audioSampler.start(newAudioInputDeviceCombo.currentIndex)
                         } else {
-                            audioInWaterfall.stopDemodulation();
+                            audioSampler.stop()
                         }
                     }
-                    width: Math.max(soundcardInReceivePackets.implicitWidth, waterfallDiagramSwitch.implicitWidth)
+                    width: soundcardInReceivePackets.implicitWidth
 
                     Connections {
                         target: messageProxy
                         onAudioDeviceDisconnected: {
-                            audioInWaterfall.stopPlot();
+                            spectogramComponent.stop()
                             soundcardInReceivePackets.checked = false;
                             logger.writeToLog("Audio error: The device has been disconnected during operation.");
                             audioDeviceDisconnected.open();
                         }
                         onAudioDeviceFailed: {
-                            audioInWaterfall.stopPlot();
+                            spectogramComponent.stop()
                             soundcardInReceivePackets.checked = false;
                             logger.writeToLog("Audio error: The device could not be started.");
                             audioDeviceFailedError.open();
@@ -379,23 +394,21 @@ ScrollView {
                     }
                 }
 
-                Row {
+                Grid {
                     x: soundcardInReceivePackets.indicator.width + soundcardInReceivePackets.padding * 2
-                    width: parent.width - x
                     spacing: parent.spacing
+                    verticalItemAlignment: Grid.AlignVCenter
+                    columns: 2
 
-                    CheckBox {
-                        id: waterfallDiagramSwitch
-                        checked: true
-                        text: qsTr("Show waterfall")
-                        onCheckedChanged: {
-                            if (waterfallDiagramSwitch.checked){
-                                audioInWaterfall.visible = true;
-                            } else {
-                                audioInWaterfall.stopPlot();
-                                audioInWaterfall.visible = false;
-                            }
-                        }
+                    Label {
+                        text: qsTr("Device")
+                    }
+                    ComboBox {
+                        id: newAudioInputDeviceCombo
+                        width: 275
+                        model: deviceDiscovery.audioDevices
+                        textRole: "display"
+                        enabled: newAudioInputDeviceCombo.count > 0 && !soundcardInReceivePackets.checked
                     }
                 }
             }
@@ -489,7 +502,6 @@ ScrollView {
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Refresh the list of SDR devices you have connected to your computer")
-
                         }
                     }
 
