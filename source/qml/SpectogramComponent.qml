@@ -47,22 +47,21 @@ Column {
                     Repeater {
                         model: 14
                         delegate: Item {
-                            width: 37.15 // 512 px = 2756 Hz -> 200 Hz = 37.15 px
+                            width: spectogram.width / 14
                             height: spectogram.height
 
                             Rectangle{
                                 color: "white"
-                                height: freqText.implicitHeight
-                                width: freqText.implicitWidth
+                                height: freqText.implicitHeight + 2
+                                width: freqText.implicitWidth + 4
                                 Text {
                                     id: freqText
                                     font.pixelSize: 9
-                                    text: String(index * 200 + 300) + " Hz"
+                                    text: String(Math.floor(index/14 * (spectogram.maximumFrequency - spectogram.minimumFrequency)) + Number(spectogram.minimumFrequency)) + " Hz"
                                     style: Text.Outline
                                     styleColor: "#fff"
                                     font.weight: Font.DemiBold
-
-
+                                    anchors.centerIn: parent
                                 }
                                 transform: [
                                     Rotation{

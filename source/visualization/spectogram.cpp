@@ -55,7 +55,7 @@ QVector<float> Spectogram::getAmplitudes(SpectogramMode mode, fftw_complex *fftw
 }
 
 Spectogram::Spectogram(QQuickItem *parent) : QQuickItem(parent) {
-    this->setWidth(item_width); // Unsure about radio, it used to be 504
+    this->setWidth(item_width);
     this->setHeight(item_height);
 
     this->setVisible(true);
@@ -164,14 +164,23 @@ void Spectogram::stopSpectogram() {
 }
 
 void Spectogram::changeSettings(SpectogramMode mode) {
-    if (mode == SpectogramMode::unset) {
+    switch (mode) {
+    case SpectogramMode::radio:
+        minimum_frequency = 300;
+        maximum_frequency = 3050;
+        break;
+    case SpectogramMode::sdr:
+        // TODO: set minimum and maximum freq.
+        break;
+    default:
         qWarning() << "Can not set mode to unset";
         return;
     }
 
     current_mode = mode;
+    emit minimumFrequencyChanged();
+    emit maximumFrequencyChanged();
     clear();
-    // TODO: set minimum and maximum freq.
 }
 
 void Spectogram::realSamplesReceived(int16_t *samples, int sample_count) {
