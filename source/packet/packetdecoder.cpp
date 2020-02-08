@@ -885,7 +885,16 @@ const DecodedPacket PacketDecoder::decodeWithRA(const QByteArray encodedData) {
     ra_decoder_gen(ra_encoded_bits.data(), ra_decoded_data.data(), 20);
 
     QByteArray decoded = QByteArray(reinterpret_cast<char *>(ra_decoded_data.data()), inputLength);
-    return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
+    uint8_t packetType = static_cast<uint8_t>(decoded.at(0));
+    if ((packetType >= 1 && packetType <= 7) ||
+        (currentSatellite == SatelliteChanger::Satellites::SMOGP && packetType >= 33 && packetType <= 34) ||
+        (currentSatellite == SatelliteChanger::Satellites::ATL1 && packetType >= 129 && packetType <= 131)) {
+        return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
+    }
+    else {
+        // Packet type is invalid so even though decoding was successful, input was incorrect
+        return DecodedPacket(DecodedPacket::Failure, 0, nullptr, QByteArray());
+    }
 }
 
 /**
