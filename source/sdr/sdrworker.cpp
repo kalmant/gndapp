@@ -21,39 +21,46 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
             worker->mutex_priv->unlock();
             return;
         }
-        if (*worker->ds_priv != worker->ds_freq){
+        if (*worker->ds_priv != worker->ds_freq) {
             worker->ds_freq = *worker->ds_priv;
             SDR_set_offset(worker->vars, worker->baseOffset + worker->ds_freq);
         }
         worker->packet_length = *worker->packet_length_ptr;
-        if (*worker->datarate_ptr != worker->datarate){
+        if (*worker->datarate_ptr != worker->datarate) {
             worker->datarate = *worker->datarate_ptr;
             SDR_set_datarate(worker->vars, worker->datarate);
         }
         worker->mutex_priv->unlock();
         for (int i = 0; i < (long) len; i += 2) {
-            std::complex<float> input(static_cast<int8_t>(static_cast<uint8_t>(buf[i])-128), static_cast<int8_t>(static_cast<uint8_t>(buf[i+1])-128)); // Removing DC
+            std::complex<float> input(static_cast<int8_t>(static_cast<uint8_t>(buf[i]) - 128),
+                static_cast<int8_t>(static_cast<uint8_t>(buf[i + 1]) - 128)); // Removing DC
             auto cncod = cnco(&worker->vars->cnco_vars, input);
             auto avgd = average(&worker->vars->avg_vars, cncod);
             std::complex<float> avg_dec_output;
             bool avg_dec_performed = average_dec(&worker->vars->avg_dec_vars, avgd, &avg_dec_output);
-            if (avg_dec_performed){
-                auto demod_output = smog_atl_demodulate(&worker->vars->demod_vars, avg_dec_output, S1DEM_SDR_SAMPLING_FREQ, worker->datarate);
-                if (worker->dem_a_set){
+            if (avg_dec_performed) {
+                auto demod_output = smog_atl_demodulate(&worker->vars->demod_vars, avg_dec_output);
+                if (worker->dem_a_set) {
                     worker->dem_b = demod_output;
                     worker->dem_a_set = false;
-                    auto decd = make_hard_decision(&worker->vars->dec_vars, worker->dem_a, worker->dem_b, worker->packet_length);
+                    auto decd = make_hard_decision(
+                        &worker->vars->dec_vars, worker->dem_a, worker->dem_b, worker->packet_length);
                     if (decd != -1) {
                         worker->packet_characters.append(char(decd));
                         if (worker->packet_characters.length() == worker->packet_length) {
                             QDateTime timestamp = QDateTime::currentDateTimeUtc();
                             QString source = QString("SDR %1 BPS").arg(worker->datarate);
-                            QString packetUpperHexString = QString(QByteArray(reinterpret_cast<char *>(worker->packet_characters.data()), worker->packet_length).toHex()).toUpper();
+                            QString packetUpperHexString =
+                                QString(QByteArray(reinterpret_cast<char *>(worker->packet_characters.data()),
+                                            worker->packet_length)
+                                            .toHex())
+                                    .toUpper();
                             emit worker->dataReady(timestamp, source, packetUpperHexString);
                             worker->packet_characters.clear();
                         }
                     }
-                } else {
+                }
+                else {
                     worker->dem_a = demod_output;
                     worker->dem_a_set = true;
                 }
@@ -76,7 +83,7 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
  * @param[in] dr Pointer to the long that stores the current value of datarate.
  * @param[in] parent Pointer to the parent QObject, should be left empty.
  */
-SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long* pl, long* dr, QObject *parent) : QObject(parent) {
+SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, QObject *parent) : QObject(parent) {
     mutex_priv = mutex;
     canRun_priv = canRun;
     ds_priv = ds;
@@ -117,10 +124,7 @@ void SDRWorker::cleanup() {
  * @param[in] gain Gain for the SDR.
  * @return Returns false if there was a problem with the operation.
  */
-bool SDRWorker::readFromSDR(int device_index,
-    long samplesPerSecond,
-    double ppm,
-    int gain) {
+bool SDRWorker::readFromSDR(int device_index, long samplesPerSecond, double ppm, int gain) {
     int r;
     uint32_t buflen = 16 * 16384;
     if (device_index < 0) {
@@ -170,11 +174,11 @@ bool SDRWorker::readFromSDR(int device_index,
         emit SDRHasBeenDisconnected();
         return false;
     }
-    if (dev_priv != nullptr){
+    if (dev_priv != nullptr) {
         rtlsdr_close(dev_priv);
         dev_priv = nullptr;
     }
-    if (dev_priv !=nullptr && 1 == has_device_been_lost(dev_priv)) {
+    if (dev_priv != nullptr && 1 == has_device_been_lost(dev_priv)) {
         // The device has been lost for some reason (has been disconnected)
         qWarning() << "SDR Device has been lost!";
         dev_priv = nullptr;
@@ -191,10 +195,7 @@ bool SDRWorker::readFromSDR(int device_index,
  * @param[in] ppm PPM error for the SDR.
  * @param[in] gain Gain for the SDR.
  */
-void SDRWorker::start(int device_index,
-    long samplesPerSecond,
-    double ppm,
-    int gain) {
+void SDRWorker::start(int device_index, long samplesPerSecond, double ppm, int gain) {
     bool success = readFromSDR(device_index, samplesPerSecond, ppm, gain);
     if (!success) {
         *canRun_priv = false;
@@ -206,7 +207,7 @@ void SDRWorker::start(int device_index,
  */
 void SDRWorker::stop() {
     mutex_priv->lock();
-    if (*canRun_priv){
+    if (*canRun_priv) {
         qWarning() << "SDR stop was called while the device is still allowed to run";
     }
     else if (dev_priv != nullptr) {

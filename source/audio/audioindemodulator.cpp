@@ -16,16 +16,16 @@ void AudioInDemodulator::process_samples(int16_t *samples, int len) {
     for (int i = 0; i < len; i++) {
         resample_input_buffer[current_input_buffer_idx] = s16le2cf(samples[i]);
         current_input_buffer_idx++;
-        if (current_input_buffer_idx == S1DEM_ORIGINAL_AUDIO_SAMPLING_FREQ){
+        if (current_input_buffer_idx == S1DEM_ORIGINAL_AUDIO_SAMPLING_FREQ) {
             rational_resample(resample_input_buffer, resample_output_buffer);
-            for (int j = 0; j < S1DEM_AUDIO_SAMPLING_FREQ; j++){
+            for (int j = 0; j < S1DEM_AUDIO_SAMPLING_FREQ; j++) {
                 auto cncod = cnco(&variables_priv->cnco_vars, resample_output_buffer[j]);
                 auto avgd = average(&variables_priv->avg_vars, cncod);
                 std::complex<float> avg_dec_output;
                 bool avg_dec_performed = average_dec(&variables_priv->avg_dec_vars, avgd, &avg_dec_output);
-                if (avg_dec_performed){
-                    auto demod_output = smog_atl_demodulate(&variables_priv->demod_vars, avg_dec_output, S1DEM_AUDIO_SAMPLING_FREQ, S1DEM_AUDIO_BPS);
-                    if (dem_a_set){
+                if (avg_dec_performed) {
+                    auto demod_output = smog_atl_demodulate(&variables_priv->demod_vars, avg_dec_output);
+                    if (dem_a_set) {
                         dem_b = demod_output;
                         dem_a_set = false;
                         auto decd = make_hard_decision(&variables_priv->dec_vars, dem_a, dem_b, packet_length_priv);
@@ -34,12 +34,16 @@ void AudioInDemodulator::process_samples(int16_t *samples, int len) {
                             if (packet_characters.length() == packet_length_priv) {
                                 QDateTime timestamp = QDateTime::currentDateTimeUtc();
                                 QString source = QString("Audio 1250 BPS");
-                                QString packetUpperHexString = QString(QByteArray(reinterpret_cast<char *>(packet_characters.data()), packet_length_priv).toHex()).toUpper();
+                                QString packetUpperHexString = QString(
+                                    QByteArray(reinterpret_cast<char *>(packet_characters.data()), packet_length_priv)
+                                        .toHex())
+                                                                   .toUpper();
                                 emit dataReady(timestamp, source, packetUpperHexString);
                                 packet_characters.clear();
                             }
                         }
-                    } else {
+                    }
+                    else {
                         dem_a = demod_output;
                         dem_a_set = true;
                     }
