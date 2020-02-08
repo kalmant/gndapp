@@ -91,7 +91,7 @@ public:
 
 public slots:
     void realSamplesReceived(int16_t *samples, int sample_count);
-    void complexSamplesReceived(QVector<std::complex<float>> samples);
+    void complexSampleReceived(std::complex<float> sample);
 signals:
     void isRunningChanged();
     void minimumFrequencyChanged();

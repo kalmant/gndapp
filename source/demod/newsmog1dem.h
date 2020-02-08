@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define S1DEM_SDR_SAMPLING_FREQ 250000
 #define S1DEM_ORIGINAL_AUDIO_SAMPLING_FREQ 44100
 #define S1DEM_AUDIO_BPS 1250
 #define S1DEM_AUDIO_SAMPLING_FREQ 42500
@@ -54,21 +53,6 @@ typedef struct AveragingStruct AveragingVariables;
 typedef struct AveragingDecStruct AveragingDecVariables;
 typedef struct DemodulationStruct DemodulationVariables;
 typedef struct DecisionStruct DecisionVariables;
-
-struct DEMStruct {
-    CncoVariables cnco_vars;
-    AveragingVariables avg_vars;
-    AveragingDecVariables avg_dec_vars;
-    DemodulationVariables demod_vars;
-    DecisionVariables dec_vars;
-};
-
-typedef struct DEMStruct DEMVariables;
-
-DEMVariables *create_and_initialize_sdr_variables(long offset_freq, long datarate);
-void free_dem_variables(DEMVariables *sdr_vars);
-void SDR_set_offset(DEMVariables *sdr_vars, long offset_freq);
-void SDR_set_datarate(DEMVariables *sdr_vars, long datarate);
 
 void change_cnco_sampling_rate(CncoVariables *cnco_vars, long sampling_rate);
 void change_cnco_offset_frequency(CncoVariables *cnco_vars, long offset_frequency);

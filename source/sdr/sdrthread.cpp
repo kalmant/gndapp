@@ -43,6 +43,9 @@ SDRThread::SDRThread(PacketDecoder *pd, PredicterController *predicter) : QThrea
     // base frequency change
     QObject::connect(this, &SDRThread::newBaseFrequencies, sdrWorker.data(), &SDRWorker::newBaseFrequencies);
 
+    // Forwarding complex sample for spectogram
+    QObject::connect(sdrWorker.data(), &SDRWorker::complexSampleReady, this, &SDRThread::complexSampleReady);
+
     QTimer::singleShot(150, [&]() { refreshSdrDevices(); });
 }
 

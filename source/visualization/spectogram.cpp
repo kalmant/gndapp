@@ -207,20 +207,19 @@ void Spectogram::realSamplesReceived(int16_t *samples, int sample_count) {
     }
 }
 
-void Spectogram::complexSamplesReceived(QVector<std::complex<float>> samples) {
+void Spectogram::complexSampleReceived(std::complex<float> sample) {
     if (!isRunning() || current_mode != SpectogramMode::sdr) {
         return;
     }
-    for (auto sample : samples) {
-        complex_samples[complex_sample_count][0] = static_cast<double>(sample.real());
-        complex_samples[complex_sample_count][1] = static_cast<double>(sample.imag());
-        complex_sample_count++;
-        if (complex_sample_count == sample_target) {
-            fftw_execute(complex_plan);
-            auto amplitudes = getAmplitudes(current_mode, complex_fftw_out);
-            draw(getAmplitudes(current_mode, complex_fftw_out));
-            complex_sample_count = 0;
-        }
+
+    complex_samples[complex_sample_count][0] = static_cast<double>(sample.real());
+    complex_samples[complex_sample_count][1] = static_cast<double>(sample.imag());
+    complex_sample_count++;
+    if (complex_sample_count == sample_target) {
+        fftw_execute(complex_plan);
+        auto amplitudes = getAmplitudes(current_mode, complex_fftw_out);
+        draw(getAmplitudes(current_mode, complex_fftw_out));
+        complex_sample_count = 0;
     }
 }
 

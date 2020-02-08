@@ -279,6 +279,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     Spectogram *spectogramptr =
         engine.rootObjects().at(0)->findChild<Spectogram *>("spectogramObject", Qt::FindChildrenRecursively);
     QObject::connect(&audioSampler, &AudioSampler::audioSamples, spectogramptr, &Spectogram::realSamplesReceived);
+    QObject::connect(
+        sdrThread.data(), &SDRThread::complexSampleReady, spectogramptr, &Spectogram::complexSampleReceived);
 
 #if defined(Q_OS_LINUX)
     // Initializing notifier on linux
