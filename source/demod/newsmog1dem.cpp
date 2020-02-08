@@ -53,58 +53,6 @@ DEMVariables *create_and_initialize_sdr_variables(long offset_freq, long datarat
     return sdr_vars;
 }
 
-DEMVariables *create_and_initialize_audio_variables() {
-    DEMVariables *audio_vars = (DEMVariables *) malloc(sizeof(DEMVariables));
-    audio_vars->cnco_vars.fs = S1DEM_AUDIO_SAMPLING_FREQ;
-    audio_vars->cnco_vars.f = -S1DEM_AUDIO_FREQ_CENTER_OFFSET;
-    audio_vars->cnco_vars.lo = (std::complex<float> *) malloc(sizeof(std::complex<float>) * audio_vars->cnco_vars.fs);
-    if (audio_vars->cnco_vars.lo == nullptr) {
-        printf("COULD NOT ALLOCATE MEMORY AUDIO CNCO");
-        exit(1);
-    }
-    for (int i = 0; i < audio_vars->cnco_vars.fs; i++) {
-        float p = 2.0 * M_PI / audio_vars->cnco_vars.fs * i;
-        if (audio_vars->cnco_vars.f > 0) {
-            audio_vars->cnco_vars.lo[i] = std::complex<float>(cos(p), sin(p));
-        }
-        else {
-            audio_vars->cnco_vars.lo[i] = std::complex<float>(cos(p), -sin(p));
-        }
-    }
-    if (audio_vars->cnco_vars.f < 0) {
-        audio_vars->cnco_vars.f *= -1;
-    }
-    audio_vars->cnco_vars.loi = 0;
-    audio_vars->avg_vars.n = S1DEM_AUDIO_SAMPLING_FREQ / S1DEM_AUDIO_BPS;
-    audio_vars->avg_vars.buf = (std::complex<float> *) malloc(sizeof(std::complex<float>) * audio_vars->avg_vars.n);
-    if (audio_vars->avg_vars.buf == nullptr) {
-        printf("COULD NOT ALLOCATE MEMORY FOR AUDIO AVG");
-        exit(1);
-    }
-    for (int i = 0; i < audio_vars->avg_vars.n; i++) {
-        audio_vars->avg_vars.buf[i] = std::complex<float>(0, 0);
-    }
-    audio_vars->avg_vars.index = 0;
-    audio_vars->avg_vars.out = std::complex<float>(0, 0);
-    audio_vars->avg_dec_vars.n = S1DEM_AUDIO_SAMPLING_FREQ / S1DEM_AUDIO_BPS / 2;
-    audio_vars->avg_dec_vars.buf =
-        (std::complex<float> *) malloc(sizeof(std::complex<float>) * audio_vars->avg_dec_vars.n);
-    if (audio_vars->avg_dec_vars.buf == nullptr) {
-        printf("COULD NOT ALLOCATE MEMORY FOR AUDIO AVG DEC");
-        exit(1);
-    }
-    audio_vars->avg_dec_vars.index = 0;
-    audio_vars->demod_vars.m = std::complex<float>(0, 0);
-    audio_vars->demod_vars.x = 0;
-    audio_vars->dec_vars.a = 0;
-    audio_vars->dec_vars.b = 0;
-    audio_vars->dec_vars.sm = 0;
-    audio_vars->dec_vars.ca = 0;
-    audio_vars->dec_vars.cb = 0;
-    audio_vars->dec_vars.d = 0;
-    return audio_vars;
-}
-
 void free_dem_variables(DEMVariables *dem_vars) {
     free(dem_vars->cnco_vars.lo);
     free(dem_vars->avg_vars.buf);
