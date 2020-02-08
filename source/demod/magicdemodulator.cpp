@@ -1,6 +1,7 @@
 #include "magicdemodulator.h"
 
-MagicDemodulator::MagicDemodulator(long sampling_rate, long datarate, QString source_string) {
+MagicDemodulator::MagicDemodulator(long sampling_rate, long datarate, QString source_string, QObject *parent)
+: QObject(parent) {
     this->sampling_rate = sampling_rate;
     this->datarate = datarate;
     this->source_string = source_string;

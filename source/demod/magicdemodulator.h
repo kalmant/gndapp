@@ -11,7 +11,7 @@
 class MagicDemodulator : public QObject {
     Q_OBJECT
 public:
-    MagicDemodulator(long sampling_rate, long datarate, QString source_string);
+    MagicDemodulator(long sampling_rate, long datarate, QString source_string, QObject *parent = 0);
     ~MagicDemodulator();
     void addSample(std::complex<float> sample);
     void clear();
