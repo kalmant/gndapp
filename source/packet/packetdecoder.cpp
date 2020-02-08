@@ -1173,15 +1173,8 @@ void PacketDecoder::processDecodedPacket(
             currentSatellite == SatelliteChanger::Satellites::SMOGP) {
             QByteArray auth = decodedPacket.right(signatureLength);
             QString packetName = QStringLiteral("File info");
-            packetSuccessfullyDecoded(timestamp,
-                source,
-                packetName,
-                encoding,
-                auth,
-                decodedPacket,
-                "",
-                QVariant::fromValue(false),
-                rssi);
+            packetSuccessfullyDecoded(
+                timestamp, source, packetName, encoding, auth, decodedPacket, "", QVariant::fromValue(false), rssi);
         }
         else {
             // Invalid packet type for satellite
@@ -1191,15 +1184,8 @@ void PacketDecoder::processDecodedPacket(
         if (currentSatellite == SatelliteChanger::Satellites::SMOGP) {
             QByteArray auth = decodedPacket.right(signatureLength);
             QString packetName = QStringLiteral("SMOG-P - Telemetry 1/2");
-            packetSuccessfullyDecoded(timestamp,
-                source,
-                packetName,
-                encoding,
-                auth,
-                decodedPacket,
-                "",
-                QVariant::fromValue(false),
-                rssi);
+            packetSuccessfullyDecoded(
+                timestamp, source, packetName, encoding, auth, decodedPacket, "", QVariant::fromValue(false), rssi);
         }
         else {
             // Invalid packet type for satellite
@@ -1209,15 +1195,8 @@ void PacketDecoder::processDecodedPacket(
         if (currentSatellite == SatelliteChanger::Satellites::SMOGP) {
             QByteArray auth = decodedPacket.right(signatureLength);
             QString packetName = QStringLiteral("SMOG-P - Telemetry 2/2");
-            packetSuccessfullyDecoded(timestamp,
-                source,
-                packetName,
-                encoding,
-                auth,
-                decodedPacket,
-                "",
-                QVariant::fromValue(false),
-                rssi);
+            packetSuccessfullyDecoded(
+                timestamp, source, packetName, encoding, auth, decodedPacket, "", QVariant::fromValue(false), rssi);
         }
         else {
             // Invalid packet type for satellite
@@ -1227,15 +1206,8 @@ void PacketDecoder::processDecodedPacket(
         if (currentSatellite == SatelliteChanger::Satellites::ATL1) {
             QByteArray auth = decodedPacket.right(signatureLength);
             QString packetName = QStringLiteral("ATL-1 - Telemetry 1/3");
-            packetSuccessfullyDecoded(timestamp,
-                source,
-                packetName,
-                encoding,
-                auth,
-                decodedPacket,
-                "",
-                QVariant::fromValue(false),
-                rssi);
+            packetSuccessfullyDecoded(
+                timestamp, source, packetName, encoding, auth, decodedPacket, "", QVariant::fromValue(false), rssi);
         }
         else {
             // Invalid packet type for satellite
@@ -1245,15 +1217,8 @@ void PacketDecoder::processDecodedPacket(
         if (currentSatellite == SatelliteChanger::Satellites::ATL1) {
             QByteArray auth = decodedPacket.right(signatureLength);
             QString packetName = QStringLiteral("ATL-1 - Telemetry 2/3");
-            packetSuccessfullyDecoded(timestamp,
-                source,
-                packetName,
-                encoding,
-                auth,
-                decodedPacket,
-                "",
-                QVariant::fromValue(false),
-                rssi);
+            packetSuccessfullyDecoded(
+                timestamp, source, packetName, encoding, auth, decodedPacket, "", QVariant::fromValue(false), rssi);
         }
         else {
             // Invalid packet type for satellite
@@ -1495,10 +1460,8 @@ QString PacketDecoder::fileToQString(uint8_t id, s1obc::FileEntry entry) {
  * @param packetUpperHexString QString that represents the data contained in the packet as an UPPERCASE Hex QString.
  * @param The RSSI that the packet was received with
  */
-void PacketDecoder::decodablePacketReceivedWithRssi(QDateTime timestamp,
-    QString source,
-    QString packetUpperHexString,
-    int rssi) {
+void PacketDecoder::decodablePacketReceivedWithRssi(
+    QDateTime timestamp, QString source, QString packetUpperHexString, int rssi) {
 
     if (packetUpperHexString.length() == 0) {
         qWarning() << "PacketDecoder received packetUpperHexString with a length of 0 from " << source;
@@ -1525,7 +1488,8 @@ void PacketDecoder::decodablePacketReceivedWithRssi(QDateTime timestamp,
         qWarning() << "PacketDecoder could not open the file for writing";
     }
     QByteArray received = QByteArray::fromHex(packetUpperHexString.toLocal8Bit());
-    if (received.length() == s1sync::syncPacketLength) {
+    switch (received.length()) {
+    case s1sync::syncPacketLength: {
         // Validate sync packet
         unsigned syncErrors = 0;
         const char *syncStartBytes = reinterpret_cast<const char *>(s1sync::syncBytes);
@@ -1538,10 +1502,8 @@ void PacketDecoder::decodablePacketReceivedWithRssi(QDateTime timestamp,
         }
 
         if (syncErrors > 200) {
-            qWarning() << "too many bit errors in sync packet:" << syncErrors;
-            qWarning() << received.toHex();
-            waitForSyncPacket();
-            return;
+            // Too many sync errors
+            break;
         }
 
         auto res = s1sync::getSyncContents(received);
@@ -1568,121 +1530,66 @@ void PacketDecoder::decodablePacketReceivedWithRssi(QDateTime timestamp,
             readableQString,
             QVariant(),
             rssi);
-        return;
+        break;
     }
-    using namespace s1sync;
-    switch (decodeMode_priv) {
-    case OperatingMode::AO40:
-        if (received.length() != 650) {
-            qWarning() << "Wrong packet length for AO40:" << received.length();
-        }
-        else {
-            DecodedPacket ao40_result = decodeWithAO40LONG(received);
-            if (ao40_result.getResult() == DecodedPacket::Success) {
-                QByteArray decoded = ao40_result.getDecodedPacket();
-                processDecodedPacket(timestamp, source, "AO40", decoded, rssi);
-            }
-            else {
-                qWarning() << "Failed AO40 decoding";
-            }
+    case 650: {
+        DecodedPacket ao40_result = decodeWithAO40LONG(received);
+        if (ao40_result.getResult() == DecodedPacket::Success) {
+            QByteArray decoded = ao40_result.getDecodedPacket();
+            processDecodedPacket(timestamp, source, "AO40", decoded, rssi);
         }
         break;
-    case OperatingMode::AO40Short:
-        if (received.length() != 333) {
-            qWarning() << "Wrong packet length for AO40Short:" << received.length();
-        }
-        else {
-            DecodedPacket ao40short_result = decodeWithAO40SHORT(received);
-            if (ao40short_result.getResult() == DecodedPacket::Success) {
-                QByteArray decoded = ao40short_result.getDecodedPacket();
-                processDecodedPacket(timestamp, source, "AO40Short", decoded, rssi);
-            }
-            else {
-                qWarning() << "Failed AO40Short decoding";
-            }
+    }
+    case 333: {
+        DecodedPacket ao40short_result = decodeWithAO40SHORT(received);
+        if (ao40short_result.getResult() == DecodedPacket::Success) {
+            QByteArray decoded = ao40short_result.getDecodedPacket();
+            processDecodedPacket(timestamp, source, "AO40Short", decoded, rssi);
         }
         break;
-    case OperatingMode::RA_128_to_260:
-        if (received.length() != 260) {
-            qWarning() << "Wrong packet length for RA128:" << received.length();
-        }
-        else {
-            DecodedPacket ra_result = decodeWithRA(received);
-            if (ra_result.getResult() != DecodedPacket::Failure) {
-                QByteArray decoded = ra_result.getDecodedPacket();
-                processDecodedPacket(timestamp, source, "RA128", decoded, rssi);
-            }
-            else {
-                qWarning() << "Failed RA128 decoding";
-            }
+    }
+    case 260: {
+        DecodedPacket ra_result = decodeWithRA(received);
+        if (ra_result.getResult() != DecodedPacket::Failure) {
+            QByteArray decoded = ra_result.getDecodedPacket();
+            processDecodedPacket(timestamp, source, "RA128", decoded, rssi);
         }
         break;
-    case OperatingMode::RA_256_to_514:
-        if (received.length() != 514) {
-            qWarning() << "Wrong packet length for RA256:" << received.length();
-        }
-        else {
-            DecodedPacket ra_result = decodeWithRA(received);
-            if (ra_result.getResult() != DecodedPacket::Failure) {
-                QByteArray decoded = ra_result.getDecodedPacket();
-                processDecodedPacket(timestamp, source, "RA256", decoded, rssi);
-            }
-            else {
-                qWarning() << "Failed RA256 decoding";
-            }
+    }
+    case 514: {
+        DecodedPacket ra_result = decodeWithRA(received);
+        if (ra_result.getResult() != DecodedPacket::Failure) {
+            QByteArray decoded = ra_result.getDecodedPacket();
+            processDecodedPacket(timestamp, source, "RA256", decoded, rssi);
         }
         break;
-    case OperatingMode::RA_512_to_1028:
-        if (received.length() != 1028) {
-            qWarning() << "Wrong packet length for RA512:" << received.length();
-        }
-        else {
-            DecodedPacket ra_result = decodeWithRA(received);
-            if (ra_result.getResult() != DecodedPacket::Failure) {
-                QByteArray decoded = ra_result.getDecodedPacket();
-                processDecodedPacket(timestamp, source, "RA512", decoded, rssi);
-            }
-            else {
-                qWarning() << "Failed RA512 decoding";
-            }
+    }
+    case 1028: {
+        DecodedPacket ra_result = decodeWithRA(received);
+        if (ra_result.getResult() != DecodedPacket::Failure) {
+            QByteArray decoded = ra_result.getDecodedPacket();
+            processDecodedPacket(timestamp, source, "RA512", decoded, rssi);
         }
         break;
-    case OperatingMode::RA_1024_to_2050:
-        if (received.length() != 2050) {
-            qWarning() << "Wrong packet length for RA1024:" << received.length();
-        }
-        else {
-            DecodedPacket ra_result = decodeWithRA(received);
-            if (ra_result.getResult() != DecodedPacket::Failure) {
-                QByteArray decoded = ra_result.getDecodedPacket();
-                processDecodedPacket(timestamp, source, "RA1024", decoded, rssi);
-            }
-            else {
-                qWarning() << "Failed RA1024 decoding";
-            }
+    }
+    case 2050: {
+        DecodedPacket ra_result = decodeWithRA(received);
+        if (ra_result.getResult() != DecodedPacket::Failure) {
+            QByteArray decoded = ra_result.getDecodedPacket();
+            processDecodedPacket(timestamp, source, "RA1024", decoded, rssi);
         }
         break;
-    case OperatingMode::RA_2048_to_4100:
-        if (received.length() != 4100) {
-            qWarning() << "Wrong packet length for RA2048:" << received.length();
-        }
-        else {
-            DecodedPacket ra_result = decodeWithRA(received);
-            if (ra_result.getResult() != DecodedPacket::Failure) {
-                QByteArray decoded = ra_result.getDecodedPacket();
-                processDecodedPacket(timestamp, source, "RA2048", decoded, rssi);
-            }
-            else {
-                qWarning() << "Failed RA2048 decoding";
-            }
+    }
+    case 4100: {
+        DecodedPacket ra_result = decodeWithRA(received);
+        if (ra_result.getResult() != DecodedPacket::Failure) {
+            QByteArray decoded = ra_result.getDecodedPacket();
+            processDecodedPacket(timestamp, source, "RA2048", decoded, rssi);
         }
         break;
-    case OperatingMode::Invalid:
-        qWarning() << "The previous processed sync-length packet was invalid";
-        break;
-    case OperatingMode::Receive:
-        qWarning() << "Received a packet even though the satellite should be receiving";
-        break;
+    }
+    default:
+        qWarning() << "Unknown packet length";
     }
 }
 
