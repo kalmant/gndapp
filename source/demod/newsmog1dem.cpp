@@ -302,3 +302,45 @@ void reinitialize_dec_vars(DecisionVariables *dec_vars) {
     dec_vars->cb = 0;
     dec_vars->d = 0;
 }
+
+void change_cnco_sampling_rate(CncoVariables *cnco_vars, long sampling_rate) {
+    cnco_vars->fs = sampling_rate;
+    cnco_vars->f = 0;
+    if (cnco_vars->lo) {
+        free(cnco_vars->lo);
+    }
+    cnco_vars->lo = (std::complex<float> *) malloc(sizeof(std::complex<float>) * cnco_vars->fs);
+    if (cnco_vars->lo == nullptr) {
+        printf("COULD NOT ALLOCATE MEMORY FOR CNCO");
+        exit(1);
+    }
+    for (int i = 0; i < cnco_vars->fs; i++) {
+        float p = 2.0 * M_PI / cnco_vars->fs * i;
+        if (cnco_vars->f > 0) {
+            cnco_vars->lo[i] = std::complex<float>(cos(p), sin(p));
+        }
+        else {
+            cnco_vars->lo[i] = std::complex<float>(cos(p), -sin(p));
+        }
+    }
+    if (cnco_vars->f < 0) {
+        cnco_vars->f *= -1;
+    }
+    cnco_vars->loi = 0;
+}
+
+void change_cnco_offset_frequency(CncoVariables *cnco_vars, long offset_frequency) {
+    cnco_vars->f = -offset_frequency; // If the offset is +100Hz, we have to apply a -100Hz CNCO
+    for (int i = 0; i < cnco_vars->fs; i++) {
+        float p = 2.0 * M_PI / cnco_vars->fs * i;
+        if (cnco_vars->f > 0) {
+            cnco_vars->lo[i] = std::complex<float>(cos(p), sin(p));
+        }
+        else {
+            cnco_vars->lo[i] = std::complex<float>(cos(p), -sin(p));
+        }
+    }
+    if (cnco_vars->f < 0) {
+        cnco_vars->f *= -1;
+    }
+}

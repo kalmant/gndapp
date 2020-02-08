@@ -71,6 +71,8 @@ void free_dem_variables(DEMVariables *sdr_vars);
 void SDR_set_offset(DEMVariables *sdr_vars, long offset_freq);
 void SDR_set_datarate(DEMVariables *sdr_vars, long datarate);
 
+void change_cnco_sampling_rate(CncoVariables *cnco_vars, long sampling_rate);
+void change_cnco_offset_frequency(CncoVariables *cnco_vars, long offset_frequency);
 void reinitialize_avg_vars(AveragingVariables *avg_vars, int n);
 void reinitialize_avg_dec_vars(AveragingDecVariables *avg_dec_vars, int n);
 void reinitialize_demod_vars(DemodulationVariables *demod_vars);
