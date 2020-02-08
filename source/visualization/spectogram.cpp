@@ -36,7 +36,6 @@ void Spectogram::setIsRunning(bool is_running) {
 
 QVector<float> Spectogram::getAmplitudes(SpectogramMode mode, fftw_complex *fftw_out) const {
     QVector<float> results;
-    // TODO: we only need a subset of the output depending on what we're drawing
     switch (mode) {
     case SpectogramMode::radio:
         results.reserve(64);
@@ -46,7 +45,13 @@ QVector<float> Spectogram::getAmplitudes(SpectogramMode mode, fftw_complex *fftw
         }
         return results;
     case SpectogramMode::sdr:
-        qCritical() << "UNIMPLEMENTED";
+        // Note: We have 1024 samples but only 512 can be drawn
+        for (int i = 0; i < 512; i++) {
+            results.append(20 * std::log10(sqrt(fftw_out[2 * i][0] * fftw_out[2 * i][0] +
+                                                fftw_out[2 * i][1] * fftw_out[2 * i][1]) +
+                                           sqrt(fftw_out[2 * i + 1][0] * fftw_out[2 * i + 1][0] +
+                                                fftw_out[2 * i + 1][1] * fftw_out[2 * i + 1][1])));
+        }
         return results;
     default:
         qCritical() << "mode is unset";
@@ -166,11 +171,14 @@ void Spectogram::stopSpectogram() {
 void Spectogram::changeSettings(SpectogramMode mode) {
     switch (mode) {
     case SpectogramMode::radio:
-        minimum_frequency = 300;
-        maximum_frequency = 3050;
+        // Sampling rate is 44.1kHz for audio
+        minimum_frequency = 300;  // Not exactly accurate
+        maximum_frequency = 3050; // Not exactly accurate
         break;
     case SpectogramMode::sdr:
-        // TODO: set minimum and maximum freq.
+        // Sampling rate is 2.5kHz for SDR spectogram
+        minimum_frequency = -1250;
+        maximum_frequency = 1250; // Not exactly accurate
         break;
     default:
         qWarning() << "Can not set mode to unset";
@@ -210,7 +218,7 @@ void Spectogram::complexSamplesReceived(QVector<std::complex<float>> samples) {
         if (complex_sample_count == sample_target) {
             fftw_execute(complex_plan);
             auto amplitudes = getAmplitudes(current_mode, complex_fftw_out);
-            // TODO: draw
+            draw(getAmplitudes(current_mode, complex_fftw_out));
             complex_sample_count = 0;
         }
     }
@@ -226,13 +234,9 @@ QSGNode *Spectogram::updatePaintNode(QSGNode *mainNode, UpdatePaintNodeData *) {
         clip_node = new QSGClipNode();
         clip_node->setFlag(QSGNode::OwnedByParent);
         clip_node->setIsRectangular(true);
-        // We set this one a few lines later, may be unnecessary
         clip_node->setClipRect(QRectF(0, 0, this->width(), this->height()));
         mainNode->appendChildNode(clip_node);
     }
-
-    // Update clip rectangle -=--- unsure why this is necessary
-    // clipNode_priv->setClipRect(QRectF(0, 0, this->width(), this->height()));
 
     QQuickWindow::CreateTextureOptions textureOptions = 0;
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
