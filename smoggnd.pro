@@ -95,6 +95,7 @@ HEADERS += \
     source/connection/packetsjsonwrapper.h \
     source/connection/uploadcontroller.h \
     source/connection/uploadworker.h \
+    source/demod/magicdemodulator.h \
     source/demod/newsmog1dem.h \
     source/packet/chartwindow.h \
     source/packet/decodedpacket.h \
@@ -165,6 +166,7 @@ SOURCES += \
     source/connection/packetsjsonwrapper.cpp \
     source/connection/uploadcontroller.cpp \
     source/connection/uploadworker.cpp \
+    source/demod/magicdemodulator.cpp \
     source/demod/newsmog1dem.cpp \
     source/packet/chartwindow.cpp \
     source/packet/decodedpacket.cpp \
