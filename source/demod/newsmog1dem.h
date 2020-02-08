@@ -18,20 +18,20 @@
 struct CncoStruct {
     long fs;
     long f;
-    std::complex<float> *lo;
+    std::complex<float> *lo = nullptr;
     long loi;
 };
 
 struct AveragingStruct {
     int n;
-    std::complex<float> *buf;
+    std::complex<float> *buf = nullptr;
     std::complex<float> out;
     int index;
 };
 
 struct AveragingDecStruct {
     int n;
-    std::complex<float> *buf;
+    std::complex<float> *buf = nullptr;
     int index;
 };
 

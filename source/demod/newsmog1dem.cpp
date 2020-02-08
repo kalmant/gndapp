@@ -227,7 +227,7 @@ void reinitialize_avg_vars(AveragingVariables *avg_vars, int n) {
 void reinitialize_avg_dec_vars(AveragingDecVariables *avg_dec_vars, int n) {
     avg_dec_vars->n = n;
     if (avg_dec_vars->buf) {
-        free(avg_dec_vars);
+        free(avg_dec_vars->buf);
     }
     avg_dec_vars->buf = (std::complex<float> *) malloc(sizeof(std::complex<float>) * avg_dec_vars->n);
     if (avg_dec_vars->buf == nullptr) {
