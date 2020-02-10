@@ -889,7 +889,58 @@ const DecodedPacket PacketDecoder::decodeWithRA(const QByteArray encodedData) {
     if ((packetType >= 1 && packetType <= 7) ||
         (currentSatellite == SatelliteChanger::Satellites::SMOGP && packetType >= 33 && packetType <= 34) ||
         (currentSatellite == SatelliteChanger::Satellites::ATL1 && packetType >= 129 && packetType <= 131)) {
-        return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
+        switch (packetType) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 131: {
+            int32_t timestamp;
+            memcpy(&timestamp, decoded.mid(1, 4).data(), 4);
+            if (isTimestampValid(timestamp)) {
+                if (packetType == 5) {
+                    uint8_t index = static_cast<uint8_t>(decoded.at(14));
+                    uint8_t count = static_cast<uint8_t>(decoded.at(15));
+                    if (index > count) {
+                        break;
+                    }
+                }
+                if (packetType == 7) {
+                    uint16_t index;
+                    memcpy(&index, decoded.mid(5, 2).data(), 2);
+                    uint16_t count;
+                    memcpy(&count, decoded.mid(7, 2).data(), 2);
+                    if (index > count) {
+                        break;
+                    }
+                }
+                return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
+            }
+            break;
+        }
+        case 33:
+        case 129: {
+            int32_t timestamp;
+            memcpy(&timestamp, decoded.mid(5, 4).data(), 4);
+            if (isTimestampValid(timestamp)) {
+                return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
+            }
+            break;
+        }
+        case 34:
+        case 130: {
+            int32_t timestamp;
+            memcpy(&timestamp, decoded.mid(2, 4).data(), 4);
+            if (isTimestampValid(timestamp)) {
+                return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
+            }
+            break;
+        }
+        }
+        return DecodedPacket(DecodedPacket::Failure, 0, nullptr, QByteArray());
     }
     else {
         // Packet type is invalid so even though decoding was successful, input was incorrect
@@ -1448,6 +1499,26 @@ QString PacketDecoder::fileToQString(uint8_t id, s1obc::FileEntry entry) {
     else {
         return QString("File is missing");
     }
+}
+
+/**
+ * @brief Checks if \p timestamp appears to be invalid
+ * @param timestamp The timestamp to check
+ * @return True if \p timestamp appears to be valid, false otherwise
+ */
+bool PacketDecoder::isTimestampValid(int32_t timestamp) const {
+    if (timestamp < 0) {
+        return false;
+    }
+    auto gracePeriod = 60 * 60 * 24 * 366; // Grace period is a year
+    auto now = QDateTime::currentSecsSinceEpoch();
+    if (timestamp > gracePeriod && timestamp < (now - gracePeriod)) {
+        return false;
+    }
+    if (timestamp > (now + gracePeriod)) {
+        return false;
+    }
+    return true;
 }
 
 /**
