@@ -37,13 +37,15 @@ void Spectogram::setIsRunning(bool is_running) {
 QVector<float> Spectogram::getAmplitudes(SpectogramMode mode, fftw_complex *fftw_out) const {
     QVector<float> results;
     switch (mode) {
-    case SpectogramMode::radio:
-        results.reserve(64);
-        static constexpr int offset = 7;
-        for (int i = offset; i < offset + 64; i++) {
+    case SpectogramMode::radio: {
+        auto audio_amplite_count = 256;
+        results.reserve(audio_amplite_count);
+        static constexpr int offset = 28;
+        for (int i = offset; i < offset + audio_amplite_count; i++) {
             results.append(20 * std::log10(sqrt(fftw_out[i][0] * fftw_out[i][0] + fftw_out[i][1] * fftw_out[i][1])));
         }
         return results;
+    }
     case SpectogramMode::sdr:
         // Note: We have 1024 samples but only 512 can be drawn
         for (int i = 0; i < 512; i++) {
@@ -105,14 +107,14 @@ Spectogram::Spectogram(QQuickItem *parent) : QQuickItem(parent) {
 
     // Complex FFTW
     // http://www.fftw.org/doc/Complex-One_002dDimensional-DFTs.html
-    complex_samples = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (sample_target));
-    complex_fftw_out = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (sample_target));
-    complex_plan = fftw_plan_dft_1d(sample_target, complex_samples, complex_fftw_out, FFTW_FORWARD, FFTW_ESTIMATE);
+    complex_samples = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (sample_target_sdr));
+    complex_fftw_out = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (sample_target_sdr));
+    complex_plan = fftw_plan_dft_1d(sample_target_sdr, complex_samples, complex_fftw_out, FFTW_FORWARD, FFTW_ESTIMATE);
 
     // Real FFTW
-    real_samples = (double *) fftw_malloc(sizeof(double) * (sample_target));
-    real_fftw_out = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (sample_target / 2 + 1));
-    real_plan = fftw_plan_dft_r2c_1d(sample_target, real_samples, real_fftw_out, FFTW_ESTIMATE);
+    real_samples = (double *) fftw_malloc(sizeof(double) * (sample_target_audio));
+    real_fftw_out = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (sample_target_audio / 2 + 1));
+    real_plan = fftw_plan_dft_r2c_1d(sample_target_audio, real_samples, real_fftw_out, FFTW_ESTIMATE);
 }
 
 Spectogram::~Spectogram() {
@@ -199,7 +201,7 @@ void Spectogram::realSamplesReceived(int16_t *samples, int sample_count) {
     for (int i = 0; i < sample_count; i++) {
         real_samples[real_sample_count] = static_cast<double>(samples_received[i]);
         real_sample_count++;
-        if (real_sample_count == sample_target) {
+        if (real_sample_count == sample_target_audio) {
             fftw_execute(real_plan);
             draw(getAmplitudes(current_mode, real_fftw_out));
             real_sample_count = 0;
@@ -215,7 +217,7 @@ void Spectogram::complexSampleReceived(std::complex<float> sample) {
     complex_samples[complex_sample_count][0] = static_cast<double>(sample.real());
     complex_samples[complex_sample_count][1] = static_cast<double>(sample.imag());
     complex_sample_count++;
-    if (complex_sample_count == sample_target) {
+    if (complex_sample_count == sample_target_sdr) {
         fftw_execute(complex_plan);
         auto amplitudes = getAmplitudes(current_mode, complex_fftw_out);
         draw(getAmplitudes(current_mode, complex_fftw_out));

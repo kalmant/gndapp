@@ -49,7 +49,8 @@ class Spectogram : public QQuickItem {
     int real_sample_count = 0;
     fftw_complex *real_fftw_out;
 
-    static constexpr int sample_target = 1024;
+    static constexpr int sample_target_sdr = 1024;
+    static constexpr int sample_target_audio = 4098;
 
     // Drawing related variables
     static constexpr unsigned int item_width = 512;  //!< The height of the item
