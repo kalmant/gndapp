@@ -17,19 +17,20 @@ public:
     void clear();
 
 private:
-    static constexpr int PACKET_SIZES_COUNT = 4;
+    static constexpr int PACKET_SIZES_COUNT = 5;
 
     long sampling_rate;
     long datarate;
     QString source_string;
 
-    int packet_lengths[4] = {70, 260, 333, 514};
-    QVector<char> packet_buffers[4] = {QVector<char>(), QVector<char>(), QVector<char>()};
+    int packet_lengths[5] = {70, 260, 333, 514, 650};
+    QVector<char> packet_buffers[5] = {
+        QVector<char>(), QVector<char>(), QVector<char>(), QVector<char>(), QVector<char>()};
 
     AveragingVariables avg_vars;
     AveragingDecVariables avg_dec_vars;
     DemodulationVariables demod_vars;
-    DecisionVariables dec_vars[4];
+    DecisionVariables dec_vars[5];
 
     std::complex<float> dem_a;
     std::complex<float> dem_b;
