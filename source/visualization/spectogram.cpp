@@ -34,7 +34,7 @@ void Spectogram::setIsRunning(bool is_running) {
     }
 }
 
-QVector<float> Spectogram::getAmplitudes(SpectogramMode mode, fftw_complex *fftw_out) const {
+QVector<float> Spectogram::getProcessedAmplitudes(SpectogramMode mode, fftw_complex *fftw_out) const {
     QVector<float> results;
     switch (mode) {
     case SpectogramMode::radio: {
@@ -49,12 +49,70 @@ QVector<float> Spectogram::getAmplitudes(SpectogramMode mode, fftw_complex *fftw
     case SpectogramMode::sdr:
         // Note: We have 1024 samples but only 512 can be drawn
         for (int i = 0; i < 512; i++) {
-            results.append(20 * std::log10(sqrt(fftw_out[2 * i][0] * fftw_out[2 * i][0] +
-                                                fftw_out[2 * i][1] * fftw_out[2 * i][1]) +
-                                           sqrt(fftw_out[2 * i + 1][0] * fftw_out[2 * i + 1][0] +
-                                                fftw_out[2 * i + 1][1] * fftw_out[2 * i + 1][1])));
+            // The second segment should be drawn on the left side of the spectogram (due to how FFT works)
+            auto j = (i + 256) % 512;
+            results.append(20 * std::log10(sqrt(fftw_out[2 * j][0] * fftw_out[2 * j][0] +
+                                                fftw_out[2 * j][1] * fftw_out[2 * j][1]) +
+                                           sqrt(fftw_out[2 * j + 1][0] * fftw_out[2 * j + 1][0] +
+                                                fftw_out[2 * j + 1][1] * fftw_out[2 * j + 1][1])));
         }
         return results;
+    default:
+        qCritical() << "mode is unset";
+        return results;
+    }
+}
+
+QVector<int> Spectogram::getColorIndices(SpectogramMode mode, QVector<float> processed_amplitudes) const {
+    QVector<int> results;
+    switch (mode) {
+    case SpectogramMode::radio: {
+        float min, max;
+        min = max = processed_amplitudes[0];
+        for (auto amplitude : processed_amplitudes) {
+            if (amplitude < min) {
+                min = amplitude;
+            }
+            if (amplitude > max) {
+                max = amplitude;
+            }
+        }
+
+        for (auto amplitude : processed_amplitudes) {
+            int color_index;
+
+            color_index = (int) ((color_count - 1) / (max - min) * (amplitude - min));
+
+            if (color_index < 0) {
+                color_index = 0;
+            }
+            else if (color_index >= color_count) {
+                color_index = color_count - 1;
+            }
+            results.append(color_index);
+        }
+        return results;
+    }
+    case SpectogramMode::sdr: {
+        for (auto processed_amplitude : processed_amplitudes) {
+            // 140 = 20*log10(10(avg)*5(avg_dec)*40(avg)*20(avg_dec)*128(ad converter)*2(fft 1024->512 px)) -> [0,1]
+            // We added another 20 due to some possible miscalculations
+            float amplitude = processed_amplitude - 160;
+            amplitude += SDR_DYNAMIC_RANGE; // Offset for visualization
+            int color_index;
+
+            color_index = amplitude / SDR_DYNAMIC_RANGE * (color_count - 1);
+
+            if (color_index < 0) {
+                color_index = 0;
+            }
+            else if (color_index >= color_count) {
+                color_index = color_count - 1;
+            }
+            results.append(color_index);
+        }
+        return results;
+    }
     default:
         qCritical() << "mode is unset";
         return results;
@@ -203,7 +261,7 @@ void Spectogram::realSamplesReceived(int16_t *samples, int sample_count) {
         real_sample_count++;
         if (real_sample_count == sample_target_audio) {
             fftw_execute(real_plan);
-            draw(getAmplitudes(current_mode, real_fftw_out));
+            draw(getColorIndices(current_mode, getProcessedAmplitudes(current_mode, real_fftw_out)));
             real_sample_count = 0;
         }
     }
@@ -219,8 +277,7 @@ void Spectogram::complexSampleReceived(std::complex<float> sample) {
     complex_sample_count++;
     if (complex_sample_count == sample_target_sdr) {
         fftw_execute(complex_plan);
-        auto amplitudes = getAmplitudes(current_mode, complex_fftw_out);
-        draw(getAmplitudes(current_mode, complex_fftw_out));
+        draw(getColorIndices(current_mode, getProcessedAmplitudes(current_mode, complex_fftw_out)));
         complex_sample_count = 0;
     }
 }
@@ -276,7 +333,7 @@ QSGNode *Spectogram::updatePaintNode(QSGNode *mainNode, UpdatePaintNodeData *) {
     return mainNode;
 }
 
-void Spectogram::draw(QVector<float> processed_amplitudes) {
+void Spectogram::draw(QVector<int> color_indices) {
     // Get raw image data (1 pixel = 0xffRRGGBB)
     QRgb *imgData = (QRgb *) image->bits();
 
@@ -286,31 +343,10 @@ void Spectogram::draw(QVector<float> processed_amplitudes) {
     }
     int yyend = image_line;
     int imgWidth = image->width();
-    int unit_width = imgWidth / processed_amplitudes.size();
+    int unit_width = imgWidth / color_indices.size();
 
-    float min, max;
-    min = max = processed_amplitudes[0];
-    for (auto amplitude : processed_amplitudes) {
-        if (amplitude < min) {
-            min = amplitude;
-        }
-        if (amplitude > max) {
-            max = amplitude;
-        }
-    }
-
-    for (unsigned int x = 0; x < processed_amplitudes.size(); x++) {
-        float amplitude = processed_amplitudes[x];
-        int color_index;
-
-        color_index = (int) ((color_count - 1) / (max - min) * (amplitude - min));
-
-        if (color_index < 0) {
-            color_index = 0;
-        }
-        else if (color_index >= color_count) {
-            color_index = color_count - 1;
-        }
+    for (int x = 0; x < color_indices.size(); x++) {
+        int color_index = color_indices[x];
 
         // Draw a colored rectangle by directly manipulating the image pixels
         // It is implemented this way in order to increase performance

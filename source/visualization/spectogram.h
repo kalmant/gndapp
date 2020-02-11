@@ -49,6 +49,8 @@ class Spectogram : public QQuickItem {
     int real_sample_count = 0;
     fftw_complex *real_fftw_out;
 
+    static constexpr int SDR_DYNAMIC_RANGE = 60;
+
     static constexpr int sample_target_sdr = 1024;
     static constexpr int sample_target_audio = 4098;
 
@@ -71,8 +73,9 @@ class Spectogram : public QQuickItem {
 
     void clear(); //!< Clears the image
     void setIsRunning(bool is_running);
-    QVector<float> getAmplitudes(SpectogramMode mode, fftw_complex *fftw_out) const;
-    void draw(QVector<float> processed_amplitudes);
+    QVector<float> getProcessedAmplitudes(SpectogramMode mode, fftw_complex *fftw_out) const;
+    QVector<int> getColorIndices(SpectogramMode mode, QVector<float> processed_amplitudes) const;
+    void draw(QVector<int> color_indices);
 
 public:
     explicit Spectogram(QQuickItem *parent = nullptr);

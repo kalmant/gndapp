@@ -141,6 +141,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     qRegisterMetaType<uint32_t>("uint32_t"); // has to be declared so that it can be used in queued connections
     qRegisterMetaType<QList<unsigned int>>("QList<uint>");
     qRegisterMetaType<SatelliteChanger::Satellites>("Satellites");
+    qRegisterMetaType<std::complex<float>>("std::complex<float>");
     qmlRegisterType<Spectogram>("hu.tt", 1, 0, "Spectogram");
     s1obc::registerObcPacketTypesQt();
 
