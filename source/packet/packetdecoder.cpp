@@ -885,67 +885,7 @@ const DecodedPacket PacketDecoder::decodeWithRA(const QByteArray encodedData) {
     ra_decoder_gen(ra_encoded_bits.data(), ra_decoded_data.data(), 20);
 
     QByteArray decoded = QByteArray(reinterpret_cast<char *>(ra_decoded_data.data()), inputLength);
-    uint8_t packetType = static_cast<uint8_t>(decoded.at(0));
-    if ((packetType >= 1 && packetType <= 7) ||
-        (currentSatellite == SatelliteChanger::Satellites::SMOGP && packetType >= 33 && packetType <= 34) ||
-        (currentSatellite == SatelliteChanger::Satellites::ATL1 && packetType >= 129 && packetType <= 131)) {
-        switch (packetType) {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 131: {
-            int32_t timestamp;
-            memcpy(&timestamp, decoded.mid(1, 4).data(), 4);
-            if (isTimestampValid(timestamp)) {
-                if (packetType == 5) {
-                    uint8_t index = static_cast<uint8_t>(decoded.at(14));
-                    uint8_t count = static_cast<uint8_t>(decoded.at(15));
-                    if (index > count) {
-                        break;
-                    }
-                }
-                if (packetType == 7) {
-                    uint16_t index;
-                    memcpy(&index, decoded.mid(5, 2).data(), 2);
-                    uint16_t count;
-                    memcpy(&count, decoded.mid(7, 2).data(), 2);
-                    if (index > count) {
-                        break;
-                    }
-                }
-                return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
-            }
-            break;
-        }
-        case 33:
-        case 129: {
-            int32_t timestamp;
-            memcpy(&timestamp, decoded.mid(5, 4).data(), 4);
-            if (isTimestampValid(timestamp)) {
-                return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
-            }
-            break;
-        }
-        case 34:
-        case 130: {
-            int32_t timestamp;
-            memcpy(&timestamp, decoded.mid(2, 4).data(), 4);
-            if (isTimestampValid(timestamp)) {
-                return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
-            }
-            break;
-        }
-        }
-        return DecodedPacket(DecodedPacket::Failure, 0, nullptr, QByteArray());
-    }
-    else {
-        // Packet type is invalid so even though decoding was successful, input was incorrect
-        return DecodedPacket(DecodedPacket::Failure, 0, nullptr, QByteArray());
-    }
+    return DecodedPacket(DecodedPacket::Success, 0, nullptr, decoded);
 }
 
 /**
@@ -970,6 +910,9 @@ void PacketDecoder::processDecodedPacket(
     emit stopSyncTimeoutTimer();
     unsigned int packetTypeSize = 0;
     using namespace s1obc;
+    if (!checkForAnomalies(decodedPacket)) {
+        return;
+    }
     uint8_t packetType = static_cast<uint8_t>(decodedPacket.at(0));
     switch (packetType) {
     case DownlinkPacketType_Telemetry1:
@@ -1519,6 +1462,66 @@ bool PacketDecoder::isTimestampValid(int32_t timestamp) const {
         return false;
     }
     return true;
+}
+
+bool PacketDecoder::checkForAnomalies(QByteArray &decodedPacket) const {
+    uint8_t packetType = static_cast<uint8_t>(decodedPacket.at(0));
+    if ((packetType >= 1 && packetType <= 7) ||
+        (currentSatellite == SatelliteChanger::Satellites::SMOGP && packetType >= 33 && packetType <= 34) ||
+        (currentSatellite == SatelliteChanger::Satellites::ATL1 && packetType >= 129 && packetType <= 131)) {
+        switch (packetType) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 131: {
+            int32_t timestamp;
+            memcpy(&timestamp, decodedPacket.mid(1, 4).data(), 4);
+            if (isTimestampValid(timestamp)) {
+                if (packetType == 5) {
+                    uint8_t index = static_cast<uint8_t>(decodedPacket.at(14));
+                    uint8_t count = static_cast<uint8_t>(decodedPacket.at(15));
+                    if (index > count) {
+                        break;
+                    }
+                }
+                if (packetType == 7) {
+                    uint16_t index;
+                    memcpy(&index, decodedPacket.mid(5, 2).data(), 2);
+                    uint16_t count;
+                    memcpy(&count, decodedPacket.mid(7, 2).data(), 2);
+                    if (index > count) {
+                        break;
+                    }
+                }
+                return true;
+            }
+            break;
+        }
+        case 33:
+        case 129: {
+            int32_t timestamp;
+            memcpy(&timestamp, decodedPacket.mid(5, 4).data(), 4);
+            if (isTimestampValid(timestamp)) {
+                return true;
+            }
+            break;
+        }
+        case 34:
+        case 130: {
+            int32_t timestamp;
+            memcpy(&timestamp, decodedPacket.mid(2, 4).data(), 4);
+            if (isTimestampValid(timestamp)) {
+                return true;
+            }
+            break;
+        }
+        }
+    }
+    return false;
 }
 
 /**

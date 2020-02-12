@@ -113,6 +113,7 @@ private:
     QString fileToQString(uint8_t id, s1obc::FileEntry entry);
 
     bool isTimestampValid(int32_t timestamp) const;
+    bool checkForAnomalies(QByteArray &decodedPacket) const;
 
 public slots:
     void decodablePacketReceived(QDateTime timestamp, QString source, QString packetUpperHexString);
