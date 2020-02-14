@@ -101,7 +101,7 @@ QVector<int> Spectogram::getColorIndices(SpectogramMode mode, QVector<float> pro
             amplitude += SDR_DYNAMIC_RANGE; // Offset for visualization
             int color_index;
 
-            color_index = amplitude / SDR_DYNAMIC_RANGE * (color_count - 1);
+            color_index = amplitude * sdr_visualization_scaling / SDR_DYNAMIC_RANGE * (color_count - 1);
 
             if (color_index < 0) {
                 color_index = 0;
@@ -226,6 +226,14 @@ void Spectogram::startSpectogram() {
 
 void Spectogram::stopSpectogram() {
     setIsRunning(false);
+}
+
+float Spectogram::sdrScaling() const {
+    return sdr_visualization_scaling;
+}
+
+void Spectogram::setSdrScaling(float value) {
+    sdr_visualization_scaling = value;
 }
 
 void Spectogram::changeSettings(SpectogramMode mode) {

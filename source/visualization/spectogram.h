@@ -28,6 +28,7 @@ class Spectogram : public QQuickItem {
     Q_PROPERTY(bool inSDRMode READ inSDRMode)
     Q_PROPERTY(long minimumFrequency READ minimumFrequency NOTIFY minimumFrequencyChanged)
     Q_PROPERTY(long maximumFrequency READ maximumFrequency NOTIFY maximumFrequencyChanged)
+    Q_PROPERTY(float sdrScaling READ sdrScaling WRITE setSdrScaling)
 
     bool is_running = false;
     SpectogramMode current_mode = SpectogramMode::unset;
@@ -50,6 +51,7 @@ class Spectogram : public QQuickItem {
     fftw_complex *real_fftw_out;
 
     static constexpr int SDR_DYNAMIC_RANGE = 60;
+    float sdr_visualization_scaling = 1.0f;
 
     static constexpr int sample_target_sdr = 1024;
     static constexpr int sample_target_audio = 4098;
@@ -92,6 +94,9 @@ public:
     Q_INVOKABLE void switchToSDRMode();
     Q_INVOKABLE void startSpectogram();
     Q_INVOKABLE void stopSpectogram();
+
+    float sdrScaling() const;
+    void setSdrScaling(float value);
 
 public slots:
     void realSamplesReceived(int16_t *samples, int sample_count);

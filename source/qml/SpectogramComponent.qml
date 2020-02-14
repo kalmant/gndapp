@@ -29,6 +29,7 @@ Column {
 
         Spectogram {
             id: spectogram
+            sdrScaling: sdrSensitivityScale.value / 100
 
 
             objectName: "spectogramObject"
@@ -94,6 +95,21 @@ Column {
                     }
                 }
             }
+        }
+        Label {
+            text: qsTr("Scaling factor")
+            anchors.verticalCenter: parent.verticalCenter
+            visible: spectogram.inSDRMode
+        }
+        SpinBox{
+            id: sdrSensitivityScale
+            anchors.verticalCenter: parent.verticalCenter
+            visible: spectogram.inSDRMode
+
+            from: 10
+            to: 99999
+            stepSize: 10
+            value: 100
         }
     }
 }
