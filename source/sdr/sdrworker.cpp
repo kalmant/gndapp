@@ -92,7 +92,7 @@ SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, Q
 
     QObject::connect(&magic_demod_1250, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
     QObject::connect(&magic_demod_2500, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
-    QObject::connect(&magic_demod_2500, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
+    QObject::connect(&magic_demod_5000, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
     QObject::connect(&magic_demod_12500, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
 }
 
