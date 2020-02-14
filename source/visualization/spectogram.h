@@ -24,8 +24,8 @@ enum SpectogramMode { radio, sdr, unset };
 class Spectogram : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(bool running READ isRunning NOTIFY isRunningChanged)
-    Q_PROPERTY(bool inRadioMode READ inRadioMode)
-    Q_PROPERTY(bool inSDRMode READ inSDRMode)
+    Q_PROPERTY(bool inRadioMode READ inRadioMode NOTIFY modeChanged)
+    Q_PROPERTY(bool inSDRMode READ inSDRMode NOTIFY modeChanged)
     Q_PROPERTY(long minimumFrequency READ minimumFrequency NOTIFY minimumFrequencyChanged)
     Q_PROPERTY(long maximumFrequency READ maximumFrequency NOTIFY maximumFrequencyChanged)
     Q_PROPERTY(float sdrScaling READ sdrScaling WRITE setSdrScaling)
@@ -105,6 +105,7 @@ signals:
     void isRunningChanged();
     void minimumFrequencyChanged();
     void maximumFrequencyChanged();
+    void modeChanged();
 };
 
 #endif // SPECTOGRAM_H

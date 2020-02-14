@@ -254,6 +254,7 @@ void Spectogram::changeSettings(SpectogramMode mode) {
     }
 
     current_mode = mode;
+    emit modeChanged();
     emit minimumFrequencyChanged();
     emit maximumFrequencyChanged();
     clear();
