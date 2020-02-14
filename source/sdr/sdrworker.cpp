@@ -27,8 +27,8 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
         }
         worker->mutex_priv->unlock();
         for (int i = 0; i < (long) len; i += 2) {
-            std::complex<float> input(static_cast<int8_t>(static_cast<uint8_t>(buf[i]) - 127.5),
-                static_cast<int8_t>(static_cast<uint8_t>(buf[i + 1]) - 127.5)); // Removing DC
+            std::complex<float> input(static_cast<float>(static_cast<uint8_t>(buf[i]) - 127.5),
+                static_cast<float>(static_cast<uint8_t>(buf[i + 1]) - 127.5)); // Removing DC
             auto cncod = cnco(&worker->cnco_vars, input);
             // 5x AVG_DEC
             auto avgd_5 = average(&worker->avg_vars_5, cncod);
