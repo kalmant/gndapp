@@ -107,7 +107,7 @@ void PacketDecoder::manualPacketInput(QString source, QString packetUpperHexStri
             return;
         }
         QByteArray received = QByteArray::fromHex(packetUpperHexString.toLocal8Bit());
-        processDecodedPacket(QDateTime::currentDateTimeUtc(), source, "PRE-DECODED", received, 0);
+        processDecodedPacket(QDateTime::currentDateTimeUtc(), source, "PRE-DECODED", received, 0, packetUpperHexString);
     }
 }
 
@@ -905,13 +905,30 @@ const QString PacketDecoder::getDateTimeString(QDateTime datetime) const {
  * @param decodedPacket The QByteArray containing the decoded data
  * @param rssi The RSSI that the packet was received with
  */
-void PacketDecoder::processDecodedPacket(
-    const QDateTime &timestamp, const QString &source, const QString &encoding, QByteArray &decodedPacket, int rssi) {
+void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
+    const QString &source,
+    const QString &encoding,
+    QByteArray &decodedPacket,
+    int rssi,
+    QString originalString) {
     emit stopSyncTimeoutTimer();
     unsigned int packetTypeSize = 0;
     using namespace s1obc;
     if (!checkForAnomalies(decodedPacket)) {
         return;
+    }
+    // Logging to file
+    QFile packetFile(this->logDirString + this->prefix + "_" + this->fileName);
+    packetFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+    if (packetFile.isOpen()) {
+        QTextStream writer(&packetFile);
+        writer << "Timestamp: " << getDateTimeString(timestamp) << "\tSource: " << source
+               << "\tENCODED data: " << originalString << "\n";
+        writer.flush();
+        packetFile.close();
+    }
+    else {
+        qWarning() << "PacketDecoder could not open the file for writing";
     }
     uint8_t packetType = static_cast<uint8_t>(decodedPacket.at(0));
     switch (packetType) {
@@ -1548,19 +1565,6 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
                    << packetUpperHexString;
         return;
     }
-    // Logging to file
-    QFile packetFile(this->logDirString + this->prefix + "_" + this->fileName);
-    packetFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-    if (packetFile.isOpen()) {
-        QTextStream writer(&packetFile);
-        writer << "Timestamp: " << getDateTimeString(timestamp) << "\tSource: " << source
-               << "\tENCODED data: " << packetUpperHexString << "\n";
-        writer.flush();
-        packetFile.close();
-    }
-    else {
-        qWarning() << "PacketDecoder could not open the file for writing";
-    }
     QByteArray received = QByteArray::fromHex(packetUpperHexString.toLocal8Bit());
     switch (received.length()) {
     case s1sync::syncPacketLength: {
@@ -1610,7 +1614,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         DecodedPacket ao40_result = decodeWithAO40LONG(received);
         if (ao40_result.getResult() == DecodedPacket::Success) {
             QByteArray decoded = ao40_result.getDecodedPacket();
-            processDecodedPacket(timestamp, source, "AO40", decoded, rssi);
+            processDecodedPacket(timestamp, source, "AO40", decoded, rssi, packetUpperHexString);
         }
         break;
     }
@@ -1618,7 +1622,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         DecodedPacket ao40short_result = decodeWithAO40SHORT(received);
         if (ao40short_result.getResult() == DecodedPacket::Success) {
             QByteArray decoded = ao40short_result.getDecodedPacket();
-            processDecodedPacket(timestamp, source, "AO40Short", decoded, rssi);
+            processDecodedPacket(timestamp, source, "AO40Short", decoded, rssi, packetUpperHexString);
         }
         break;
     }
@@ -1626,7 +1630,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         DecodedPacket ra_result = decodeWithRA(received);
         if (ra_result.getResult() != DecodedPacket::Failure) {
             QByteArray decoded = ra_result.getDecodedPacket();
-            processDecodedPacket(timestamp, source, "RA128", decoded, rssi);
+            processDecodedPacket(timestamp, source, "RA128", decoded, rssi, packetUpperHexString);
         }
         break;
     }
@@ -1634,7 +1638,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         DecodedPacket ra_result = decodeWithRA(received);
         if (ra_result.getResult() != DecodedPacket::Failure) {
             QByteArray decoded = ra_result.getDecodedPacket();
-            processDecodedPacket(timestamp, source, "RA256", decoded, rssi);
+            processDecodedPacket(timestamp, source, "RA256", decoded, rssi, packetUpperHexString);
         }
         break;
     }
@@ -1642,7 +1646,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         DecodedPacket ra_result = decodeWithRA(received);
         if (ra_result.getResult() != DecodedPacket::Failure) {
             QByteArray decoded = ra_result.getDecodedPacket();
-            processDecodedPacket(timestamp, source, "RA512", decoded, rssi);
+            processDecodedPacket(timestamp, source, "RA512", decoded, rssi, packetUpperHexString);
         }
         break;
     }
@@ -1650,7 +1654,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         DecodedPacket ra_result = decodeWithRA(received);
         if (ra_result.getResult() != DecodedPacket::Failure) {
             QByteArray decoded = ra_result.getDecodedPacket();
-            processDecodedPacket(timestamp, source, "RA1024", decoded, rssi);
+            processDecodedPacket(timestamp, source, "RA1024", decoded, rssi, packetUpperHexString);
         }
         break;
     }
@@ -1658,7 +1662,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         DecodedPacket ra_result = decodeWithRA(received);
         if (ra_result.getResult() != DecodedPacket::Failure) {
             QByteArray decoded = ra_result.getDecodedPacket();
-            processDecodedPacket(timestamp, source, "RA2048", decoded, rssi);
+            processDecodedPacket(timestamp, source, "RA2048", decoded, rssi, packetUpperHexString);
         }
         break;
     }

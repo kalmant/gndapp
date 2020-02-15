@@ -94,7 +94,8 @@ private:
         const QString &source,
         const QString &encoding,
         QByteArray &decodedPacket,
-        int rssi);
+        int rssi,
+        QString originalString);
     void packetSuccessfullyDecoded(QDateTime timestamp,
         QString source,
         QString type,
