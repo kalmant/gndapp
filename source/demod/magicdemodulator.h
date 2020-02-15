@@ -22,6 +22,7 @@ private:
     long sampling_rate;
     long datarate;
     QString source_string;
+    const int starting_index; // Ensures that only 1250 BPS demodulates sync packet lengthed packets
 
     int packet_lengths[5] = {70, 260, 333, 514, 650};
     QVector<char> packet_buffers[5] = {

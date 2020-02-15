@@ -1,7 +1,7 @@
 #include "magicdemodulator.h"
 
 MagicDemodulator::MagicDemodulator(long sampling_rate, long datarate, QString source_string, QObject *parent)
-: QObject(parent) {
+: QObject(parent), starting_index(datarate != 1250) {
     this->sampling_rate = sampling_rate;
     this->datarate = datarate;
     this->source_string = source_string;
@@ -10,7 +10,7 @@ MagicDemodulator::MagicDemodulator(long sampling_rate, long datarate, QString so
         qCritical() << "Invalid sampling_rate and datarate pair:" << sampling_rate << " - " << datarate;
     }
 
-    for (int i = 0; i < PACKET_SIZES_COUNT; i++) {
+    for (int i = starting_index; i < PACKET_SIZES_COUNT; i++) {
         packet_buffers[i].reserve(packet_lengths[i]);
     }
 
@@ -31,7 +31,7 @@ void MagicDemodulator::addSample(std::complex<float> sample) {
         if (dem_a_set) {
             dem_b = demod_output;
             dem_a_set = false;
-            for (int i = 0; i < PACKET_SIZES_COUNT; i++) {
+            for (int i = starting_index; i < PACKET_SIZES_COUNT; i++) {
                 packet_buffers[i].reserve(packet_lengths[i]);
 
                 auto decd = make_hard_decision(&dec_vars[i], dem_a, dem_b, packet_lengths[i]);
@@ -60,13 +60,13 @@ void MagicDemodulator::clear() {
 }
 
 void MagicDemodulator::reinitialize() {
-    for (int i = 0; i < PACKET_SIZES_COUNT; i++) {
+    for (int i = starting_index; i < PACKET_SIZES_COUNT; i++) {
         packet_buffers[i].clear();
     }
     reinitialize_avg_vars(&avg_vars, sampling_rate / datarate);
     reinitialize_avg_dec_vars(&avg_dec_vars, sampling_rate / datarate / 2); // 2 samples / bit
     reinitialize_demod_vars(&demod_vars);
-    for (int i = 0; i < PACKET_SIZES_COUNT; i++) {
+    for (int i = starting_index; i < PACKET_SIZES_COUNT; i++) {
         reinitialize_dec_vars(&dec_vars[i]);
     }
 }
