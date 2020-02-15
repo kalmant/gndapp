@@ -1583,7 +1583,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
             // Too many sync errors
             break;
         }
-
+        emit resetDemodulators();
         auto res = s1sync::getSyncContents(received);
         processSyncContents(res.first, res.second);
 

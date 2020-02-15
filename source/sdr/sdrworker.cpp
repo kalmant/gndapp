@@ -68,7 +68,8 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
  * @param[in] dr Pointer to the long that stores the current value of datarate.
  * @param[in] parent Pointer to the parent QObject, should be left empty.
  */
-SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, QObject *parent) : QObject(parent) {
+SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, PacketDecoder *pd, QObject *parent)
+: QObject(parent) {
     mutex_priv = mutex;
     canRun_priv = canRun;
     ds_priv = ds;
@@ -94,6 +95,10 @@ SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, Q
     QObject::connect(&magic_demod_2500, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
     QObject::connect(&magic_demod_5000, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
     QObject::connect(&magic_demod_12500, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
+    QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_1250, &MagicDemodulator::reset);
+    QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_2500, &MagicDemodulator::reset);
+    QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_5000, &MagicDemodulator::reset);
+    QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_12500, &MagicDemodulator::reset);
 }
 
 /**

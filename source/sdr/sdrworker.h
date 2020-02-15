@@ -3,6 +3,7 @@
 
 #include "../demod/magicdemodulator.h"
 #include "../demod/newsmog1dem.h"
+#include "../packet/packetdecoder.h"
 #include "convenience.h"
 #include "rtl-sdr.h"
 #include <QDateTime>
@@ -55,7 +56,8 @@ public:
     MagicDemodulator magic_demod_5000{50000, 5000, "SDR 5000 BPS"};
     MagicDemodulator magic_demod_12500{50000, 12500, "SDR 12500 BPS"};
 
-    explicit SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, QObject *parent = 0);
+    explicit SDRWorker(
+        QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, PacketDecoder *pd, QObject *parent = 0);
     ~SDRWorker();
 
     bool readFromSDR(int device_index, long samplesPerSecond, double ppm, int gain);

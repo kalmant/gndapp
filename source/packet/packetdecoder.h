@@ -214,6 +214,13 @@ signals:
      * @param ackTimestampString The QString describing the time when the ack has arrived
      */
     void newCommandAcknowledged(uint16_t uplinkId, QString ackTimestampString);
+
+    /**
+     * @brief Signal that is emitted when demodulators should be reset after a sync packet has been received.
+     * This is because when a sync packet is demodulated, it's also demodulated into bigger packet lengths.
+     * But the beginning section of the packet after the sync packet is also included in that bigger demodulation.
+     */
+    void resetDemodulators();
 };
 
 #endif // PACKETDECODER_H

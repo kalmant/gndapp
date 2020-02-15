@@ -63,3 +63,7 @@ void AudioInDemodulator::changeSettingsSlot(long new_packet_length) {
     (void) new_packet_length;
     // NOTE: packet_length is a thing of the past since we now demodulate with every packet length
 }
+
+void AudioInDemodulator::resetDemodulatorSlot() {
+    magic_demod.clear();
+}

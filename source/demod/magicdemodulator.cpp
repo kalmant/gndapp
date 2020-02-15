@@ -70,3 +70,7 @@ void MagicDemodulator::reinitialize() {
         reinitialize_dec_vars(&dec_vars[i]);
     }
 }
+
+void MagicDemodulator::reset() {
+    clear();
+}

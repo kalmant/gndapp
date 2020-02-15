@@ -42,6 +42,7 @@ signals:
 public slots:
     void demodulateSlot(std::int16_t *samples, int len);
     void changeSettingsSlot(long new_packet_length);
+    void resetDemodulatorSlot();
 };
 
 #endif // AUDIOINDEMODULATOR_H

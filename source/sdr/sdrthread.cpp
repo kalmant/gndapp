@@ -23,7 +23,8 @@ SDRThread::SDRThread(PacketDecoder *pd, PredicterController *predicter) : QThrea
     baseOffset_priv = 0;
     dataRateBPS_priv = 1250;
     packetLengthBytes_priv = 70;
-    sdrWorker.reset(new SDRWorker(mut_priv.data(), canRun_priv.data(), ds_priv.data(), pl_priv.data(), dr_priv.data()));
+    sdrWorker.reset(
+        new SDRWorker(mut_priv.data(), canRun_priv.data(), ds_priv.data(), pl_priv.data(), dr_priv.data(), pd));
     QObject::connect(sdrWorker.data(), &SDRWorker::dataReady, this, &SDRThread::decodablePacketReceivedSlot);
     QObject::connect(this, &SDRThread::decodablePacketReceivedSignal, pd, &PacketDecoder::decodablePacketReceived);
     sdrWorker->moveToThread(this); // may be unnecessary because the object itself was created on this thread

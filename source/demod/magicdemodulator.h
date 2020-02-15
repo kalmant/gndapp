@@ -40,6 +40,9 @@ private:
 
 signals:
     void dataReady(QDateTime timestamp, QString source, QString packetUpperHexString);
+
+public slots:
+    void reset();
 };
 
 #endif // MAGICDEMODULATOR_H
