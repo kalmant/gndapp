@@ -89,6 +89,8 @@ ScrollView {
                         return "Packet"
                     else if (section === "OBC")
                         return "OBC - On-board computer"
+                    else if (section === "Beacon")
+                        return "Beacon contents"
                     else if (section === "COM")
                         return "COM - Communication"
                     else if (section === "TID1")
