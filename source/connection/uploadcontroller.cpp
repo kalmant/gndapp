@@ -55,13 +55,13 @@ void UploadController::upload() {
 
 void UploadController::login(QString username, QString password) {
     Q_ASSERT(username != nullptr);
-    if (username.length() > 0) {
+    Q_ASSERT(password != nullptr);
+    if (username.length() > 0 && password.length() > 0) {
         emit loginInWorker(username, password);
     }
 }
 
-void UploadController::logout()
-{
+void UploadController::logout() {
     emit logoutInWorker();
 }
 
