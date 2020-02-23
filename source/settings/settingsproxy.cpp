@@ -29,7 +29,7 @@ bool SettingsProxy::saveSettings() {
     settings.endGroup();
 
     settings.beginGroup("SDR");
-    settings.setValue("offset", sh->sdroffs());
+    settings.setValue("offsets", sh->sdroffs());
     settings.setValue("PPM", sh->sdrppm());
     settings.setValue("gain", sh->sdrgain());
     settings.setValue("automaticDFTracking", sh->sdradft());
@@ -39,7 +39,7 @@ bool SettingsProxy::saveSettings() {
     settings.beginGroup("Radio");
     settings.setValue("COMPort", sh->racp());
     settings.setValue("baudRate", sh->rabr());
-    settings.setValue("offset", sh->raoffs());
+    settings.setValue("offsets", sh->raoffs());
     settings.setValue("model", sh->ram());
     settings.setValue("shouldRadioTurnOn", sh->rasrto());
     settings.setValue("smogRadio5VOutSwitchOn", sh->rasr5voso());
@@ -117,7 +117,7 @@ bool SettingsProxy::loadSettings(bool emits) {
     settings.endGroup();
 
     settings.beginGroup("SDR");
-    sh->set_sdroffs(settings.value("offset", 0).toInt());
+    sh->set_sdroffs(settings.value("offsets", "0,0,0").toString());
     sh->set_sdrppm(settings.value("PPM", 0).toInt());
     sh->set_sdrgain(settings.value("gain", 0).toInt());
     sh->set_sdradft(settings.value("automaticDFTracking", false).toBool());
@@ -130,7 +130,7 @@ bool SettingsProxy::loadSettings(bool emits) {
     settings.beginGroup("Radio");
     sh->set_racp(settings.value("COMPort", "COM 6").toString());
     sh->set_rabr(settings.value("baudRate", 4800).toInt());
-    sh->set_raoffs(settings.value("offset", 0).toInt());
+    sh->set_raoffs(settings.value("offsets", "0,0,0").toString());
     sh->set_ram(settings.value("model", "FT-817").toString());
     sh->set_rasrto(settings.value("shouldRadioTurnOn", false).toBool());
     sh->set_rasr5voso(settings.value("smogRadio5VOutSwitchOn", false).toBool());

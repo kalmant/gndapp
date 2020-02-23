@@ -47,7 +47,7 @@ ScrollView {
         }
         settingsHolder.tse = parseInt(elevationInput.text);
 
-        settingsHolder.sdroffs = sdrOffsetSpinbox.value;
+        settingsHolder.sdroffs = sdrOffsetSpinbox.offset0+","+sdrOffsetSpinbox.offset1+","+sdrOffsetSpinbox.offset2
         settingsHolder.sdrppm = sdrPPMSpinbox.value;
         settingsHolder.sdrgain = sdrGainSpinbox.value;
         settingsHolder.sdradft = sdrDFTrackingSwitch.checked;
@@ -59,7 +59,7 @@ ScrollView {
             settingsHolder.racp = "unspecified";
         }
         settingsHolder.rabr = radioBaudRate.model[radioBaudRate.currentIndex];
-        settingsHolder.raoffs = radioOffsetSpinbox.value;
+        settingsHolder.raoffs = radioOffsetSpinbox.offset0+","+radioOffsetSpinbox.offset1+","+radioOffsetSpinbox.offset2
         settingsHolder.ram = radioModelCombo.model[radioModelCombo.currentIndex];
         settingsHolder.rasrto = ft8x7OnOffSwitch.checked;
         settingsHolder.rasr5voso = smogRadio5VOutSwitch.checked;
@@ -122,6 +122,34 @@ ScrollView {
         }
     }
 
+    function setSDROffsetBasedOnCurrentSatellite(){
+        switch (satelliteSelectorCombo.currentIndex){
+        case 0:
+            sdrOffsetSpinbox.value = sdrOffsetSpinbox.offset0
+            break;
+        case 1:
+            sdrOffsetSpinbox.value = sdrOffsetSpinbox.offset1
+            break;
+        case 2:
+            sdrOffsetSpinbox.value = sdrOffsetSpinbox.offset2
+            break;
+        }
+    }
+
+    function setRadioOffsetBasedOnCurrentSatellite() {
+        switch (satelliteSelectorCombo.currentIndex){
+        case 0:
+            radioOffsetSpinbox.value = radioOffsetSpinbox.offset0
+            break;
+        case 1:
+            radioOffsetSpinbox.value = radioOffsetSpinbox.offset1
+            break;
+        case 2:
+            radioOffsetSpinbox.value = radioOffsetSpinbox.offset2
+            break;
+        }
+    }
+
     Component.onCompleted: {
         settingsHandler.loadSettings();
         console.log("Base frequency is "+baseFreq+" Hz.");
@@ -133,11 +161,12 @@ ScrollView {
     Connections {
         target: settingsHandler
         onLoadSDRSettings:{
-            if (offset>=-25000 && offset<=25000){
-                sdrOffsetSpinbox.value = offset;
-            } else {
-                sdrOffsetSpinbox.value = 0;
-            }
+            var offsets_string = offsets;
+            var offsets_array = offsets.split(",");
+            sdrOffsetSpinbox.offset0 = Number(offsets_array[0]);
+            sdrOffsetSpinbox.offset1 = Number(offsets_array[1]);
+            sdrOffsetSpinbox.offset2 = Number(offsets_array[2]);
+            setSDROffsetBasedOnCurrentSatellite();
 
             if (PPM>=-225*100 && PPM<=225*100){
                 sdrPPMSpinbox.value = PPM;
@@ -198,11 +227,12 @@ ScrollView {
             var brIndex = radioBaudRate.model.indexOf(""+baudRate);
             radioBaudRate.currentIndex = brIndex >= 0 ? brIndex: 0;
 
-            if (offset>=-25000 && offset<=25000){
-                radioOffsetSpinbox.value = offset;
-            } else {
-                radioOffsetSpinbox.value = 0;
-            }
+            var offsets_string = offsets;
+            var offsets_array = offsets.split(",");
+            radioOffsetSpinbox.offset0 = Number(offsets_array[0]);
+            radioOffsetSpinbox.offset1 = Number(offsets_array[1]);
+            radioOffsetSpinbox.offset2 = Number(offsets_array[2]);
+            setRadioOffsetBasedOnCurrentSatellite();
 
             var mIndex = radioModelCombo.model.indexOf(""+model);
             radioModelCombo.currentIndex = mIndex >= 0 ? mIndex: 0;
@@ -597,8 +627,23 @@ ScrollView {
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Adds a frequency offset to the SDR's frequency.")
                             onValueChanged: {
-                                sdrThread.setOffset(sdrOffsetSpinbox.value)
+                                sdrThread.setOffset(sdrOffsetSpinbox.value);
+                                switch (satelliteSelectorCombo.currentIndex){
+                                case 0:
+                                    offset0 = sdrOffsetSpinbox.value;
+                                    break;
+                                case 1:
+                                    offset1 = sdrOffsetSpinbox.value;
+                                    break;
+                                case 2:
+                                    offset2 = sdrOffsetSpinbox.value;
+                                    break;
+                                }
                             }
+
+                            property int offset0: sdrOffsetSpinbox.value
+                            property int offset1: sdrOffsetSpinbox.value
+                            property int offset2: sdrOffsetSpinbox.value
                         }
                         Label{
                             enabled: sdrEnabledSwitch.checked
@@ -1007,7 +1052,23 @@ ScrollView {
                                     // icom radio
                                     icom.setOffset(radioOffsetSpinbox.value);
                                 }
+
+                                switch (satelliteSelectorCombo.currentIndex){
+                                case 0:
+                                    offset0 = radioOffsetSpinbox.value;
+                                    break;
+                                case 1:
+                                    offset1 = radioOffsetSpinbox.value;
+                                    break;
+                                case 2:
+                                    offset2 = radioOffsetSpinbox.value;
+                                    break;
+                                }
                             }
+
+                            property int offset0: radioOffsetSpinbox.value
+                            property int offset1: radioOffsetSpinbox.value
+                            property int offset2: radioOffsetSpinbox.value
                         }
                         Label{
                             enabled: radioSwitch.checked && Number(predictElText.text) >= -5
@@ -1351,21 +1412,27 @@ ScrollView {
                         onCurrentIndexChanged: {
                             mainWindow.currentSatellite = currentIndex
                             switch (currentIndex){
-                            case model.indexOf(smog1):
+                            case 0:
                                 satelliteChanger.changeToSMOG1()
                                 mainWindow.title = "SMOG-1 GND Client Software"
+                                setSDROffsetBasedOnCurrentSatellite();
+                                setRadioOffsetBasedOnCurrentSatellite();
                                 break;
-                            case model.indexOf(smogp):
+                            case 1:
                                 satelliteChanger.changeToSMOGP()
                                 mainWindow.title = "SMOG-P GND Client Software"
                                 satIdInput.text = "44832"
                                 predicterController.changeSatID(44832)
+                                setSDROffsetBasedOnCurrentSatellite();
+                                setRadioOffsetBasedOnCurrentSatellite();
                                 break;
-                            case model.indexOf(atl1):
+                            case 2:
                                 satelliteChanger.changeToATL1()
                                 mainWindow.title = "ATL-1 GND Client Software"
                                 satIdInput.text = "44830"
                                 predicterController.changeSatID(44830)
+                                setSDROffsetBasedOnCurrentSatellite();
+                                setRadioOffsetBasedOnCurrentSatellite();
                                 break;
                             }
                         }

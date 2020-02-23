@@ -33,12 +33,12 @@ signals:
 
     /**
      * @brief Signal, that emits the SDR settings after loading it from persistent storage.
-     * @param offset The offset frequency for the SDR.
+     * @param offsets The offset frequencies for the SDR.
      * @param PPM The PPM setting for the SDR. It is saved as PPM hundredths (1.43 -> 143)
      * @param gain The gain setting for the SDR.
      * @param autoDFTrack True, if the automatic doppler frequency correction should be enabled.
      */
-    void loadSDRSettings(int offset, int PPM, int gain, bool autoDFTrack);
+    void loadSDRSettings(QString offsets, int PPM, int gain, bool autoDFTrack);
 
     /**
      * @brief Signal, that emits the tracking settings after loading it from persistent storage.
@@ -53,14 +53,18 @@ signals:
      * @brief Signal, that emits the radio settings after loading it from persistent storage.
      * @param COMPort Name of the COM port used by the radio.
      * @param baudRate Baud rate used for the communcation on the COM port.
-     * @param offset The offset frequency for the radio.
+     * @param offsets The offset frequencies for the radio.
      * @param model Name of the radio model that should be set.
      * @param shouldRadioTurnOn True, if the radio should turn on between passes of the satelite. FT-817 specific
      * setting.
      * @param smogRadio5VOutSwitchOn True, if smogRadio5VOutSwitch should be on
      */
-    void loadRadioSettings(
-        QString COMPort, int baudRate, int offset, QString model, bool shouldRadioTurnOn, bool smogRadio5VOutSwitchOn);
+    void loadRadioSettings(QString COMPort,
+        int baudRate,
+        QString offsets,
+        QString model,
+        bool shouldRadioTurnOn,
+        bool smogRadio5VOutSwitchOn);
 
     /**
      * @brief Signal, that emits the rotator settings after loading it from persistent storage.
