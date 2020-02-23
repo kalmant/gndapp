@@ -80,7 +80,8 @@ ScrollView {
 
         settingsHolder.mnpae = newPacketBottomRadio.checked == true ? true : false ;
         settingsHolder.mssoe = alwaysRadio.checked == true ? 0 : (neverRadio.checked == true ? 1 : 2);
-        settingsHolder.msatidx = satelliteSelectorCombo.currentIndex
+        settingsHolder.msatidx = satelliteSelectorCombo.currentIndex;
+        settingsHolder.msssdrs = spectogramComponent.getSDRSensitivity();
 
         settingsHolder.uu = uploadUsernameTF.text.trim();
         settingsHolder.up = passwordStoreSwitch.currentSetting ? uploadPasswordTF.text : "password";
@@ -325,6 +326,8 @@ ScrollView {
             } else {
                 satelliteSelectorCombo.currentIndex = satelliteIndex
             }
+
+            spectogramComponent.setSDRSensitivity(spectogramSDRSensitivity);
 
         }
         onLoadUploadSettings:{

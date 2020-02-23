@@ -92,8 +92,10 @@ signals:
      * @param saveSettingsOnExit 0 if settings should always save on exit, 1 if it should never save and 2 if there
      * should be a popup asking for this decision.
      * @param satelliteIndex id of the satellite currently in use
+     * @param spectogramSDRSensitivity Sensitivity for SDR spectogram
      */
-    void loadMiscSettings(bool newPacketsAtEnd, int saveSettingsOnExit, int satelliteIndex);
+    void loadMiscSettings(
+        bool newPacketsAtEnd, int saveSettingsOnExit, int satelliteIndex, int spectogramSDRSensitivity);
 
     /**
      * @brief Signal, that emits the upload settings after loading it from persistent storage.

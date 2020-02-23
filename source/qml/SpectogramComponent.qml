@@ -21,6 +21,13 @@ Column {
         spectogram.stopSpectogram()
     }
 
+    function getSDRSensitivity(){
+        return sdrSensitivityScale.value;
+    }
+
+    function setSDRSensitivity(value){
+        sdrSensitivityScale.value = value;
+    }
 
     Row{
         id: spectogramRow

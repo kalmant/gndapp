@@ -62,6 +62,7 @@ bool SettingsProxy::saveSettings() {
     settings.setValue("newPacketsAtEnd", sh->mnpae());
     settings.setValue("saveSettingsOnExit", sh->mssoe());
     settings.setValue("satelliteIndex", sh->msatidx());
+    settings.setValue("spectogramSDRSensitivity", sh->msssdrs());
     qInfo() << "Successfully saved Misc settings";
     settings.endGroup();
 
@@ -160,8 +161,9 @@ bool SettingsProxy::loadSettings(bool emits) {
     sh->set_mnpae(settings.value("newPacketsAtEnd", false).toBool());
     sh->set_mssoe(settings.value("saveSettingsOnExit", 2).toInt());
     sh->set_msatidx(settings.value("satelliteIndex", 1).toInt());
+    sh->set_msssdrs(settings.value("spectogramSDRSensitivity", 100).toInt());
     if (emits) {
-        emit loadMiscSettings(sh->mnpae(), sh->mssoe(), sh->msatidx());
+        emit loadMiscSettings(sh->mnpae(), sh->mssoe(), sh->msatidx(), sh->msssdrs());
         qInfo() << "Emitted Misc settings";
     }
     settings.endGroup();

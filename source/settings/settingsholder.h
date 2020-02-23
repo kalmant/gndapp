@@ -68,10 +68,11 @@ class SettingsHolder : public QObject {
     GENPROPERTY(int, ropelev)
 
     // Misc settings group
-    // settings in order: newPacketsAtEnd, saveSettingsOnExit, satelliteIndex
+    // settings in order: newPacketsAtEnd, saveSettingsOnExit, satelliteIndex, spectogramSDRSensitivity
     GENPROPERTY(bool, mnpae)
     GENPROPERTY(int, mssoe)
     GENPROPERTY(int, msatidx)
+    GENPROPERTY(int, msssdrs)
 
     // Upload settings group
     // settings in order: username, password, storePassword, autoLogin, automaticUploadFrequency
