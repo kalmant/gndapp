@@ -19,7 +19,7 @@ Rotator::Rotator(PredicterController *predicter, int msecsBetweenCommands, QObje
     QObject::connect(this, &Rotator::changePortSettings, sph_prot.data(), &SerialPortHandler::changePortSettings);
     QObject::connect(this, &Rotator::clearCommandList, sph_prot.data(), &SerialPortHandler::clearCommandList);
     QObject::connect(this, &Rotator::closePortSignal, sph_prot.data(), &SerialPortHandler::closePort);
-    QObject::connect(&prePositionTimer_prot, &QTimer::timeout, [&]() { isCurrentlyFollowing_prot = true; });
+    QObject::connect(&prePositionTimer_prot, &QTimer::timeout, [&]() { isPrepositioning_prot = true; });
     QObject::connect(this, &Rotator::nextPassDataRequestSignal, predicter, &PredicterController::requestNextPass);
     QObject::connect(predicter, &PredicterController::nextPassSignal, this, &Rotator::nextPassDataSlot);
     QObject::connect(predicter, &PredicterController::trackingDataSignal, this, &Rotator::trackingDataSlot);
@@ -62,6 +62,8 @@ void Rotator::start(QString portName,
     shouldPark_prot = shouldPark;
     passCrossesStopPoint_prot = false;
     isCurrentlyFollowing_prot = false;
+    prePositionTimer_prot.stop();
+    isPrepositioning_prot = false;
     lastElevation_prot = -181;
     lastAzimuth_prot = -361;
 
@@ -89,6 +91,7 @@ void Rotator::stop() {
     setIsRunning(false);
     isCurrentlyFollowing_prot = false;
     prePositionTimer_prot.stop();
+    isPrepositioning_prot = false;
 }
 
 void Rotator::sendCustomCommand(QByteArray command) {
@@ -157,15 +160,21 @@ void Rotator::trackingDataSlot(double azimuth,
     int azim = static_cast<int>(azimuth + 0.5);   // round azimuth
     if (!isCurrentlyFollowing_prot && elev >= -5) {
         isCurrentlyFollowing_prot = true;
+        prePositionTimer_prot.stop();
+        isPrepositioning_prot = false;
     }
 
+    if (isPrepositioning_prot) {
+        lastElevation_prot = -181;
+        isPrepositioning_prot = false;
+        isCurrentlyFollowing_prot = true;
+    }
     if (isCurrentlyFollowing_prot) {
         if (lastElevation_prot >= -2 && elev < lastElevation_prot) {
             isCurrentlyFollowing_prot = false;
             if (shouldPark_prot) {
                 park();
             }
-            prePositionTimer_prot.stop();
             emit nextPassDataRequestSignal();
         }
         else if (lastAzimuth_prot != azim || lastElevation_prot != elev) {
@@ -209,10 +218,12 @@ void Rotator::nextPassDataSlot(QList<unsigned int> nextPassAzimuths, long nextPa
     }
 
     long secondsUntilNextPass = nextPassTimestamp - static_cast<long>((QDateTime::currentMSecsSinceEpoch() / 1000));
-    if (secondsUntilNextPass < 180) {
-        isCurrentlyFollowing_prot = true;
+
+    if (secondsUntilNextPass < PREPOSITIONING_SECONDS) {
+        prePositionTimer_prot.stop();
+        isPrepositioning_prot = true;
     }
     else {
-        prePositionTimer_prot.start(secondsUntilNextPass * 1000);
+        prePositionTimer_prot.start((secondsUntilNextPass - PREPOSITIONING_SECONDS) * 1000);
     }
 }
