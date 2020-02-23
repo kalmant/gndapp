@@ -83,6 +83,9 @@ ScrollView {
         settingsHolder.msatidx = satelliteSelectorCombo.currentIndex
 
         settingsHolder.uu = uploadUsernameTF.text.trim();
+        settingsHolder.up = passwordStoreSwitch.currentSetting ? uploadPasswordTF.text : "password";
+        settingsHolder.usp = passwordStoreSwitch.currentSetting;
+        settingsHolder.ual = autoLoginSwitch.checked;
         settingsHolder.uauf = uploaderAUFSB.value;
 
         settingsHandler.saveSettings();
@@ -111,6 +114,12 @@ ScrollView {
 
         predicterController.changeStation(tempLat,tempLon,tempElev);
 
+    }
+
+    function loginButtonClicked(){
+        if (loginButton.enabled){
+            uploader.login(uploadUsernameTF.text.trim(), uploadPasswordTF.text)
+        }
     }
 
     Component.onCompleted: {
@@ -290,7 +299,14 @@ ScrollView {
         }
         onLoadUploadSettings:{
             uploadUsernameTF.text = username;
+            uploadPasswordTF.text = password;
+            autoLoginSwitch.checked = autoLogin;
+            passwordStoreSwitch.currentSetting = storePassword;
             uploaderAUFSB.value = automaticUploadFrequency;
+
+            if (autoLoginSwitch.checked) {
+                loginButtonClicked();
+            }
         }
     }
 
@@ -1397,7 +1413,6 @@ ScrollView {
 
                     TextField {
                         id: uploadPasswordTF
-                        text: "password"
                         enabled: !uploader.isLoggedIn && !uploader.isCurrentlyLoggingIn
                         maximumLength: 128
                         anchors.verticalCenter: parent.verticalCenter
@@ -1407,26 +1422,68 @@ ScrollView {
                         ToolTip.delay: 1000
                         ToolTip.timeout: 5000
                         ToolTip.visible: hovered
-                        ToolTip.text: qsTr("Your password is not stored when you save your settings!")
+                        ToolTip.text: qsTr("Your password is not stored when you save your settings unless you enable 'Store'!")
                     }
+                    Switch {
+                        id: passwordStoreSwitch
+                        visible: true
+                        text: "Store"
+                        anchors.verticalCenter: parent.verticalCenter
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("If set, saving settings also saves the password")
+                        checkable: false
 
+                        property bool currentSetting: false
+                        checked: false
+                        onClicked: {
+                            if (!currentSetting){
+                                passwordStoreQuestion.open()
+                            } else {
+                                currentSetting = false
+                            }
+                        }
+                        onCurrentSettingChanged: {
+                            checked = currentSetting
+
+                            if (!currentSetting) {
+                                autoLoginSwitch.checked = false
+                            }
+                        }
+                        onCheckedChanged: {
+                            if (checked != currentSetting) {
+                                checked = currentSetting
+                            }
+                        }
+                    }
                     Button {
                         id: loginButton
                         text: qsTr("Login")
                         enabled: !uploader.isLoggedIn && !uploader.isCurrentlyLoggingIn && uploadUsernameTF.text.length > 0 && uploadPasswordTF.text.length > 0
                         onClicked: {
-                            uploader.login(uploadUsernameTF.text.trim(), uploadPasswordTF.text)
+                            loginButtonClicked();
                         }
                         anchors.verticalCenter: parent.verticalCenter
                         ToolTip.delay: 1000
                         ToolTip.timeout: 5000
                         ToolTip.visible: hovered
-                        ToolTip.text: qsTr("Your password is not stored when you save your settings!")
+                        ToolTip.text: qsTr("Your password is not stored when you save your settings unless you enable 'Store'!")
                     }
                     BusyIndicator {
                         running: uploader.isCurrentlyLoggingIn
                         height: loginButton.height + 5
                         width: height
+                    }
+                    Switch {
+                        id: autoLoginSwitch
+                        visible: passwordStoreSwitch.checked
+                        text: "Auto"
+                        anchors.verticalCenter: parent.verticalCenter
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("If set, login is automatically attempted when the program starts")
                     }
                 }
 
@@ -1600,6 +1657,25 @@ ScrollView {
             title: qsTr("Operation timed out")
             text: qsTr("The operation towards our server has timed out.\nPlease ensure the problem is not on your end and try again."+
                        "\n\nIf you believe the issue is on our end, please get in contact with us!")
+        }
+        Dialogs1.MessageDialog {
+            id: passwordStoreQuestion
+            icon: Dialogs1.StandardIcon.Question
+            standardButtons: Dialogs1.StandardButton.No | Dialogs1.StandardButton.Yes
+            title: qsTr("Confirm password storage")
+            text: qsTr("Your password will be stored as cleartext among the program's configurations when settings are saved."+
+                        "\nThis means any program or user capable of reading that configuration will be able to read your password."+
+                        "\nOnly enable this if you are comfortable with the implications of this!"+
+                        "\n\nDo you want to enable storing your password?")
+            onYes: {
+                passwordStoreSwitch.currentSetting = true
+            }
+            onNo: {
+                passwordStoreSwitch.currentSetting = false
+            }
+            onRejected: {
+                passwordStoreSwitch.currentSetting = false
+            }
         }
     }
 }

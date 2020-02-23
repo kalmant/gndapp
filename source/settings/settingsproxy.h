@@ -94,9 +94,13 @@ signals:
     /**
      * @brief Signal, that emits the upload settings after loading it from persistent storage.
      * @param username Username
+     * @param password Password
+     * @param storePassword Whether the password should be stored
+     * @param autoLogin Whether login should be attempted after on startup
      * @param automaticUploadFrequency The number of packets that trigger an upload automatically
      */
-    void loadUploadSettings(QString username, int automaticUploadFrequency);
+    void loadUploadSettings(
+        QString username, QString password, bool storePassword, bool autoLogin, int automaticUploadFrequency);
 };
 
 #endif // SETTINGSPROXY_H

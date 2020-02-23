@@ -67,6 +67,14 @@ bool SettingsProxy::saveSettings() {
 
     settings.beginGroup("Upload");
     settings.setValue("username", sh->uu());
+    settings.setValue("storePassword", sh->usp());
+    if (!sh->usp()) {
+        settings.remove("password");
+    }
+    else {
+        settings.setValue("password", sh->up());
+    }
+    settings.setValue("autoLogin", sh->ual());
     settings.setValue("automaticUploadFrequency", sh->uauf());
     qInfo() << "Successfully saved Upload settings";
     settings.endGroup();
@@ -160,9 +168,12 @@ bool SettingsProxy::loadSettings(bool emits) {
 
     settings.beginGroup("Upload");
     sh->set_uu(settings.value("username", "username").toString());
+    sh->set_up(settings.value("password", "password").toString());
+    sh->set_usp(settings.value("storePassword", false).toBool());
+    sh->set_ual(settings.value("autoLogin", false).toBool());
     sh->set_uauf(settings.value("automaticUploadFrequency", 5).toInt());
     if (emits) {
-        emit loadUploadSettings(sh->uu(), sh->uauf());
+        emit loadUploadSettings(sh->uu(), sh->up(), sh->usp(), sh->ual(), sh->uauf());
         qInfo() << "Emitted Upload settings";
     }
     settings.endGroup();
