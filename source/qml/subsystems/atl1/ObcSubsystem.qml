@@ -176,6 +176,12 @@ Subsystem {
             description: "OBC-COM UART errors"
             content: String(telemetry4packet.diag.uartErrorCounter)
         },
+        // Beacon
+        TelemetryObject {
+            group: "Beacon"
+            description: "Message"
+            content: String(telemetry4packet.message)
+        },
         // PCU1 Bus
         TelemetryObject {
             group: "PCU1-Bus"

@@ -27,18 +27,18 @@ private:
 signals:
     /**
      * @brief Signal, that emits the soundcard settings after loading it from persistent storage.
-     * @param showWaterfallOnStartup True, if the waterfall diagram should be enabled upon startup.
+     * @param deviceName Name of audio device that should be selected.
      */
-    void loadSoundcardSettings(bool showWaterfallOnStartup);
+    void loadSoundcardSettings(QString deviceName);
 
     /**
      * @brief Signal, that emits the SDR settings after loading it from persistent storage.
-     * @param offset The offset frequency for the SDR.
+     * @param offsets The offset frequencies for the SDR.
      * @param PPM The PPM setting for the SDR. It is saved as PPM hundredths (1.43 -> 143)
      * @param gain The gain setting for the SDR.
      * @param autoDFTrack True, if the automatic doppler frequency correction should be enabled.
      */
-    void loadSDRSettings(int offset, int PPM, int gain, bool autoDFTrack);
+    void loadSDRSettings(QString offsets, int PPM, int gain, bool autoDFTrack);
 
     /**
      * @brief Signal, that emits the tracking settings after loading it from persistent storage.
@@ -53,14 +53,18 @@ signals:
      * @brief Signal, that emits the radio settings after loading it from persistent storage.
      * @param COMPort Name of the COM port used by the radio.
      * @param baudRate Baud rate used for the communcation on the COM port.
-     * @param offset The offset frequency for the radio.
+     * @param offsets The offset frequencies for the radio.
      * @param model Name of the radio model that should be set.
      * @param shouldRadioTurnOn True, if the radio should turn on between passes of the satelite. FT-817 specific
      * setting.
      * @param smogRadio5VOutSwitchOn True, if smogRadio5VOutSwitch should be on
      */
-    void loadRadioSettings(
-        QString COMPort, int baudRate, int offset, QString model, bool shouldRadioTurnOn, bool smogRadio5VOutSwitchOn);
+    void loadRadioSettings(QString COMPort,
+        int baudRate,
+        QString offsets,
+        QString model,
+        bool shouldRadioTurnOn,
+        bool smogRadio5VOutSwitchOn);
 
     /**
      * @brief Signal, that emits the rotator settings after loading it from persistent storage.
@@ -83,29 +87,26 @@ signals:
         int parkingElev);
 
     /**
-     * @brief Signal, that emits the waterfall settings after loading it from persistent storage.
-     * @param deviceName Name of audio device that should be selected.
-     * @param adaptiveColoring True if adaptive coloring should be enabled by default.
-     * @param scalingFactor The value of the scaling factor.
-     * @param sampleCount The number of samples that should be used by the waterfall diagram.
-     */
-    void loadWaterfallSettings(QString deviceName, bool adaptiveColoring, int scalingFactor, int sampleCount);
-
-    /**
      * @brief Signal, that emits the miscellaneous settings after loading it from persistent storage.
      * @param newPacketsAtEnd True, if packets should be added to the end of the list, instead of the start.
      * @param saveSettingsOnExit 0 if settings should always save on exit, 1 if it should never save and 2 if there
      * should be a popup asking for this decision.
      * @param satelliteIndex id of the satellite currently in use
+     * @param spectogramSDRSensitivity Sensitivity for SDR spectogram
      */
-    void loadMiscSettings(bool newPacketsAtEnd, int saveSettingsOnExit, int satelliteIndex);
+    void loadMiscSettings(
+        bool newPacketsAtEnd, int saveSettingsOnExit, int satelliteIndex, int spectogramSDRSensitivity);
 
     /**
      * @brief Signal, that emits the upload settings after loading it from persistent storage.
      * @param username Username
+     * @param password Password
+     * @param storePassword Whether the password should be stored
+     * @param autoLogin Whether login should be attempted after on startup
      * @param automaticUploadFrequency The number of packets that trigger an upload automatically
      */
-    void loadUploadSettings(QString username, int automaticUploadFrequency);
+    void loadUploadSettings(
+        QString username, QString password, bool storePassword, bool autoLogin, int automaticUploadFrequency);
 };
 
 #endif // SETTINGSPROXY_H

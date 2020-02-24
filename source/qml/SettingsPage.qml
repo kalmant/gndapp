@@ -13,25 +13,17 @@ ScrollView {
 
     property bool compactLayout: mainWindow.width < 1200
     property int saveSettingsOnExit: 2
-    property var bottomSectionSwitch: waterfallDiagramSwitch
     property var baseFreq: baseFrequency
-
-    // TODO: figure out a better way to handle audioInWaterfall, since its defined in main.qml
 
     //Saves every setting to the SettingsHolder object and calls saveSettings() on settingsProxy
     function saveSettings(){
-        var WDNIndex = audioInWaterfall.audioDeviceCurrentIndex;
-        var WDName = audioInWaterfall.audioDeviceModel.data(audioInWaterfall.audioDeviceModel.index(WDNIndex,0));
-        if (typeof WDName != 'undefined'){
-            settingsHolder.wdn = WDName;
+        var SDNIndex = newAudioInputDeviceCombo.currentIndex;
+        var SDName = newAudioInputDeviceCombo.model.data(newAudioInputDeviceCombo.model.index(SDNIndex,0));
+        if (typeof SDName != 'undefined'){
+            settingsHolder.sdn = SDName;
         } else {
-            settingsHolder.wdn = "unspecified";
-        }
-        settingsHolder.wac = audioInWaterfall.adaptiveColoringChecked;
-        settingsHolder.wsf = audioInWaterfall.sensitivityScaleValue;
-        settingsHolder.wsc = audioInWaterfall.samplesToWait;
-
-        settingsHolder.sswos = waterfallDiagramSwitch.checked;
+            settingsHolder.sdn = "unspecified";
+        }        
 
         settingsHolder.tsi = parseInt(satIdInput.text);
         if (!latitudeInput.acceptableInput){
@@ -55,7 +47,7 @@ ScrollView {
         }
         settingsHolder.tse = parseInt(elevationInput.text);
 
-        settingsHolder.sdroffs = sdrOffsetSpinbox.value;
+        settingsHolder.sdroffs = sdrOffsetSpinbox.offset0+","+sdrOffsetSpinbox.offset1+","+sdrOffsetSpinbox.offset2
         settingsHolder.sdrppm = sdrPPMSpinbox.value;
         settingsHolder.sdrgain = sdrGainSpinbox.value;
         settingsHolder.sdradft = sdrDFTrackingSwitch.checked;
@@ -67,7 +59,7 @@ ScrollView {
             settingsHolder.racp = "unspecified";
         }
         settingsHolder.rabr = radioBaudRate.model[radioBaudRate.currentIndex];
-        settingsHolder.raoffs = radioOffsetSpinbox.value;
+        settingsHolder.raoffs = radioOffsetSpinbox.offset0+","+radioOffsetSpinbox.offset1+","+radioOffsetSpinbox.offset2
         settingsHolder.ram = radioModelCombo.model[radioModelCombo.currentIndex];
         settingsHolder.rasrto = ft8x7OnOffSwitch.checked;
         settingsHolder.rasr5voso = smogRadio5VOutSwitch.checked;
@@ -88,9 +80,13 @@ ScrollView {
 
         settingsHolder.mnpae = newPacketBottomRadio.checked == true ? true : false ;
         settingsHolder.mssoe = alwaysRadio.checked == true ? 0 : (neverRadio.checked == true ? 1 : 2);
-        settingsHolder.msatidx = satelliteSelectorCombo.currentIndex
+        settingsHolder.msatidx = satelliteSelectorCombo.currentIndex;
+        settingsHolder.msssdrs = spectogramComponent.getSDRSensitivity();
 
         settingsHolder.uu = uploadUsernameTF.text.trim();
+        settingsHolder.up = passwordStoreSwitch.currentSetting ? uploadPasswordTF.text : "password";
+        settingsHolder.usp = passwordStoreSwitch.currentSetting;
+        settingsHolder.ual = autoLoginSwitch.checked;
         settingsHolder.uauf = uploaderAUFSB.value;
 
         settingsHandler.saveSettings();
@@ -121,6 +117,40 @@ ScrollView {
 
     }
 
+    function loginButtonClicked(){
+        if (loginButton.enabled){
+            uploader.login(uploadUsernameTF.text.trim(), uploadPasswordTF.text)
+        }
+    }
+
+    function setSDROffsetBasedOnCurrentSatellite(){
+        switch (satelliteSelectorCombo.currentIndex){
+        case 0:
+            sdrOffsetSpinbox.value = sdrOffsetSpinbox.offset0
+            break;
+        case 1:
+            sdrOffsetSpinbox.value = sdrOffsetSpinbox.offset1
+            break;
+        case 2:
+            sdrOffsetSpinbox.value = sdrOffsetSpinbox.offset2
+            break;
+        }
+    }
+
+    function setRadioOffsetBasedOnCurrentSatellite() {
+        switch (satelliteSelectorCombo.currentIndex){
+        case 0:
+            radioOffsetSpinbox.value = radioOffsetSpinbox.offset0
+            break;
+        case 1:
+            radioOffsetSpinbox.value = radioOffsetSpinbox.offset1
+            break;
+        case 2:
+            radioOffsetSpinbox.value = radioOffsetSpinbox.offset2
+            break;
+        }
+    }
+
     Component.onCompleted: {
         settingsHandler.loadSettings();
         console.log("Base frequency is "+baseFreq+" Hz.");
@@ -131,15 +161,13 @@ ScrollView {
     //  Every signal loads settings associated with that group
     Connections {
         target: settingsHandler
-        onLoadSoundcardSettings: {
-            waterfallDiagramSwitch.checked = showWaterfallOnStartup;
-        }
         onLoadSDRSettings:{
-            if (offset>=-25000 && offset<=25000){
-                sdrOffsetSpinbox.value = offset;
-            } else {
-                sdrOffsetSpinbox.value = 0;
-            }
+            var offsets_string = offsets;
+            var offsets_array = offsets.split(",");
+            sdrOffsetSpinbox.offset0 = Number(offsets_array[0]);
+            sdrOffsetSpinbox.offset1 = Number(offsets_array[1]);
+            sdrOffsetSpinbox.offset2 = Number(offsets_array[2]);
+            setSDROffsetBasedOnCurrentSatellite();
 
             if (PPM>=-225*100 && PPM<=225*100){
                 sdrPPMSpinbox.value = PPM;
@@ -200,11 +228,12 @@ ScrollView {
             var brIndex = radioBaudRate.model.indexOf(""+baudRate);
             radioBaudRate.currentIndex = brIndex >= 0 ? brIndex: 0;
 
-            if (offset>=-25000 && offset<=25000){
-                radioOffsetSpinbox.value = offset;
-            } else {
-                radioOffsetSpinbox.value = 0;
-            }
+            var offsets_string = offsets;
+            var offsets_array = offsets.split(",");
+            radioOffsetSpinbox.offset0 = Number(offsets_array[0]);
+            radioOffsetSpinbox.offset1 = Number(offsets_array[1]);
+            radioOffsetSpinbox.offset2 = Number(offsets_array[2]);
+            setRadioOffsetBasedOnCurrentSatellite();
 
             var mIndex = radioModelCombo.model.indexOf(""+model);
             radioModelCombo.currentIndex = mIndex >= 0 ? mIndex: 0;
@@ -255,46 +284,15 @@ ScrollView {
 
             rotatorParkingSwitch.checked = shouldPark;
         }
-        onLoadWaterfallSettings:{
+        onLoadSoundcardSettings: {
             var dnIndex = 0;
-            for (var i = 0; i < audioInWaterfall.audioDeviceModel.rowCount(); i++){
-                if (audioInWaterfall.audioDeviceModel.data(audioInWaterfall.audioDeviceModel.index(i,0)) === deviceName.toString()){
+            for (var i = 0; i < newAudioInputDeviceCombo.model.rowCount(); i++){
+                if (newAudioInputDeviceCombo.model.data(newAudioInputDeviceCombo.model.index(i,0)) === deviceName.toString()){
                     dnIndex = i;
                     break;
                 }
             }
-            audioInWaterfall.audioDeviceCurrentIndex = dnIndex;
-
-            if (scalingFactor>=0 && scalingFactor<=99999){
-                audioInWaterfall.sensitivityScaleValue = scalingFactor;
-            } else {
-                audioInWaterfall.sensitivityScaleValue = 100;
-            }
-
-            audioInWaterfall.adaptiveColoringChecked = adaptiveColoring;
-
-            switch (sampleCount){
-            case 1024:
-                audioInWaterfall.sample1024Checked = true;
-                audioInWaterfall.samplesToWait = 1024;
-                break;
-            case 2048:
-                audioInWaterfall.sample2048Checked = true;
-                audioInWaterfall.samplesToWait = 2048;
-                break;
-            case 4096:
-                audioInWaterfall.sample4096Checked = true;
-                audioInWaterfall.samplesToWait = 4096;
-                break;
-            case 8192:
-                audioInWaterfall.sample8192Checked = true;
-                audioInWaterfall.samplesToWait = 8192;
-                break;
-            default:
-                audioInWaterfall.sample1024Checked = true;
-                audioInWaterfall.samplesToWait = 1024;
-                break;
-            }
+            newAudioInputDeviceCombo.currentIndex = dnIndex;
         }
         onLoadMiscSettings:{
             if (newPacketsAtEnd){
@@ -329,16 +327,82 @@ ScrollView {
                 satelliteSelectorCombo.currentIndex = satelliteIndex
             }
 
+            spectogramComponent.setSDRSensitivity(spectogramSDRSensitivity);
+
         }
         onLoadUploadSettings:{
             uploadUsernameTF.text = username;
+            uploadPasswordTF.text = password;
+            autoLoginSwitch.checked = autoLogin;
+            passwordStoreSwitch.currentSetting = storePassword;
             uploaderAUFSB.value = automaticUploadFrequency;
+
+            if (autoLoginSwitch.checked) {
+                loginButtonClicked();
+            }
         }
     }
 
     Column {
         width: scrollView.width - 2 * scrollView.padding
         spacing: 10
+
+        GroupBox{
+            width: parent.width
+            title: qsTr("Spectogram")
+            id: sggb
+            padding: 10
+
+            Column {
+                spacing: 10
+
+                Switch {
+                    id: spectogramSwitch
+                    enabled: spectogramRadio.checked || spectogramSDR.checked
+                    text: enabled ? qsTr("Plot"): '<font color="red">Spectogram plotting is only allowed if a device is selected</font>'
+                    onEnabledChanged: if (!enabled) checked = false
+                    onCheckedChanged: {
+                        if (checked){
+                            spectogramComponent.visible = true;
+                            spectogramComponent.start();
+                        } else {
+                            spectogramComponent.stop();
+                            spectogramComponent.visible = false;
+                        }
+                    }
+                }
+
+                Row {
+                    x: spectogramSwitch.indicator.width + spectogramSwitch.padding * 2
+                    spacing: parent.spacing
+
+                    Label {
+                        text: qsTr("Device")
+                        anchors.verticalCenter: parent.verticalCenter
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Demodulation must be running to plot a device")
+                    }
+
+                    RadioButton {
+                        id: spectogramRadio
+                        text: qsTr("Radio")
+                        enabled: soundcardInReceivePackets.checked
+                        onCheckedChanged : if (checked) spectogramComponent.changeToRadio()
+                        onEnabledChanged: if (!enabled) checked = false
+                    }
+                    RadioButton {
+                        id: spectogramSDR
+                        text: qsTr("SDR")
+                        enabled: sdrEnabledSwitch.checked
+                        onCheckedChanged : if (checked) spectogramComponent.changeToSDR()
+                        onEnabledChanged: if (!enabled) checked = false
+                    }
+
+                }
+            }
+        }
 
         GroupBox {
             width: parent.width
@@ -347,7 +411,7 @@ ScrollView {
             padding: 10
 
             Column {
-                width: parent.width - 2 * parent.padding
+                spacing: 10
 
                 Switch {
                     id: soundcardInReceivePackets
@@ -355,23 +419,23 @@ ScrollView {
                     enabled: deviceDiscovery.audioDeviceCount > 0
                     onCheckedChanged: {
                         if (checked){
-                            audioInWaterfall.startDemodulation();
+                            audioSampler.start(newAudioInputDeviceCombo.currentIndex)
                         } else {
-                            audioInWaterfall.stopDemodulation();
+                            audioSampler.stop()
                         }
                     }
-                    width: Math.max(soundcardInReceivePackets.implicitWidth, waterfallDiagramSwitch.implicitWidth)
+                    width: soundcardInReceivePackets.implicitWidth
 
                     Connections {
                         target: messageProxy
                         onAudioDeviceDisconnected: {
-                            audioInWaterfall.stopPlot();
+                            spectogramComponent.stop()
                             soundcardInReceivePackets.checked = false;
                             logger.writeToLog("Audio error: The device has been disconnected during operation.");
                             audioDeviceDisconnected.open();
                         }
                         onAudioDeviceFailed: {
-                            audioInWaterfall.stopPlot();
+                            spectogramComponent.stop()
                             soundcardInReceivePackets.checked = false;
                             logger.writeToLog("Audio error: The device could not be started.");
                             audioDeviceFailedError.open();
@@ -379,23 +443,21 @@ ScrollView {
                     }
                 }
 
-                Row {
+                Grid {
                     x: soundcardInReceivePackets.indicator.width + soundcardInReceivePackets.padding * 2
-                    width: parent.width - x
                     spacing: parent.spacing
+                    verticalItemAlignment: Grid.AlignVCenter
+                    columns: 2
 
-                    CheckBox {
-                        id: waterfallDiagramSwitch
-                        checked: true
-                        text: qsTr("Show waterfall")
-                        onCheckedChanged: {
-                            if (waterfallDiagramSwitch.checked){
-                                audioInWaterfall.visible = true;
-                            } else {
-                                audioInWaterfall.stopPlot();
-                                audioInWaterfall.visible = false;
-                            }
-                        }
+                    Label {
+                        text: qsTr("Device")
+                    }
+                    ComboBox {
+                        id: newAudioInputDeviceCombo
+                        width: 275
+                        model: deviceDiscovery.audioDevices
+                        textRole: "display"
+                        enabled: newAudioInputDeviceCombo.count > 0 && !soundcardInReceivePackets.checked
                     }
                 }
             }
@@ -489,7 +551,6 @@ ScrollView {
                             ToolTip.timeout: 5000
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Refresh the list of SDR devices you have connected to your computer")
-
                         }
                     }
 
@@ -569,8 +630,23 @@ ScrollView {
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Adds a frequency offset to the SDR's frequency.")
                             onValueChanged: {
-                                sdrThread.setOffset(sdrOffsetSpinbox.value)
+                                sdrThread.setOffset(sdrOffsetSpinbox.value);
+                                switch (satelliteSelectorCombo.currentIndex){
+                                case 0:
+                                    offset0 = sdrOffsetSpinbox.value;
+                                    break;
+                                case 1:
+                                    offset1 = sdrOffsetSpinbox.value;
+                                    break;
+                                case 2:
+                                    offset2 = sdrOffsetSpinbox.value;
+                                    break;
+                                }
                             }
+
+                            property int offset0: sdrOffsetSpinbox.value
+                            property int offset1: sdrOffsetSpinbox.value
+                            property int offset2: sdrOffsetSpinbox.value
                         }
                         Label{
                             enabled: sdrEnabledSwitch.checked
@@ -979,7 +1055,23 @@ ScrollView {
                                     // icom radio
                                     icom.setOffset(radioOffsetSpinbox.value);
                                 }
+
+                                switch (satelliteSelectorCombo.currentIndex){
+                                case 0:
+                                    offset0 = radioOffsetSpinbox.value;
+                                    break;
+                                case 1:
+                                    offset1 = radioOffsetSpinbox.value;
+                                    break;
+                                case 2:
+                                    offset2 = radioOffsetSpinbox.value;
+                                    break;
+                                }
                             }
+
+                            property int offset0: radioOffsetSpinbox.value
+                            property int offset1: radioOffsetSpinbox.value
+                            property int offset2: radioOffsetSpinbox.value
                         }
                         Label{
                             enabled: radioSwitch.checked && Number(predictElText.text) >= -5
@@ -1323,21 +1415,27 @@ ScrollView {
                         onCurrentIndexChanged: {
                             mainWindow.currentSatellite = currentIndex
                             switch (currentIndex){
-                            case model.indexOf(smog1):
+                            case 0:
                                 satelliteChanger.changeToSMOG1()
                                 mainWindow.title = "SMOG-1 GND Client Software"
+                                setSDROffsetBasedOnCurrentSatellite();
+                                setRadioOffsetBasedOnCurrentSatellite();
                                 break;
-                            case model.indexOf(smogp):
+                            case 1:
                                 satelliteChanger.changeToSMOGP()
                                 mainWindow.title = "SMOG-P GND Client Software"
                                 satIdInput.text = "44832"
                                 predicterController.changeSatID(44832)
+                                setSDROffsetBasedOnCurrentSatellite();
+                                setRadioOffsetBasedOnCurrentSatellite();
                                 break;
-                            case model.indexOf(atl1):
+                            case 2:
                                 satelliteChanger.changeToATL1()
                                 mainWindow.title = "ATL-1 GND Client Software"
                                 satIdInput.text = "44830"
                                 predicterController.changeSatID(44830)
+                                setSDROffsetBasedOnCurrentSatellite();
+                                setRadioOffsetBasedOnCurrentSatellite();
                                 break;
                             }
                         }
@@ -1385,7 +1483,6 @@ ScrollView {
 
                     TextField {
                         id: uploadPasswordTF
-                        text: "password"
                         enabled: !uploader.isLoggedIn && !uploader.isCurrentlyLoggingIn
                         maximumLength: 128
                         anchors.verticalCenter: parent.verticalCenter
@@ -1395,26 +1492,68 @@ ScrollView {
                         ToolTip.delay: 1000
                         ToolTip.timeout: 5000
                         ToolTip.visible: hovered
-                        ToolTip.text: qsTr("Your password is not stored when you save your settings!")
+                        ToolTip.text: qsTr("Your password is not stored when you save your settings unless you enable 'Store'!")
                     }
+                    Switch {
+                        id: passwordStoreSwitch
+                        visible: true
+                        text: "Store"
+                        anchors.verticalCenter: parent.verticalCenter
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("If set, saving settings also saves the password")
+                        checkable: false
 
+                        property bool currentSetting: false
+                        checked: false
+                        onClicked: {
+                            if (!currentSetting){
+                                passwordStoreQuestion.open()
+                            } else {
+                                currentSetting = false
+                            }
+                        }
+                        onCurrentSettingChanged: {
+                            checked = currentSetting
+
+                            if (!currentSetting) {
+                                autoLoginSwitch.checked = false
+                            }
+                        }
+                        onCheckedChanged: {
+                            if (checked != currentSetting) {
+                                checked = currentSetting
+                            }
+                        }
+                    }
                     Button {
                         id: loginButton
                         text: qsTr("Login")
                         enabled: !uploader.isLoggedIn && !uploader.isCurrentlyLoggingIn && uploadUsernameTF.text.length > 0 && uploadPasswordTF.text.length > 0
                         onClicked: {
-                            uploader.login(uploadUsernameTF.text.trim(), uploadPasswordTF.text)
+                            loginButtonClicked();
                         }
                         anchors.verticalCenter: parent.verticalCenter
                         ToolTip.delay: 1000
                         ToolTip.timeout: 5000
                         ToolTip.visible: hovered
-                        ToolTip.text: qsTr("Your password is not stored when you save your settings!")
+                        ToolTip.text: qsTr("Your password is not stored when you save your settings unless you enable 'Store'!")
                     }
                     BusyIndicator {
                         running: uploader.isCurrentlyLoggingIn
                         height: loginButton.height + 5
                         width: height
+                    }
+                    Switch {
+                        id: autoLoginSwitch
+                        visible: passwordStoreSwitch.checked
+                        text: "Auto"
+                        anchors.verticalCenter: parent.verticalCenter
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("If set, login is automatically attempted when the program starts")
                     }
                 }
 
@@ -1588,6 +1727,25 @@ ScrollView {
             title: qsTr("Operation timed out")
             text: qsTr("The operation towards our server has timed out.\nPlease ensure the problem is not on your end and try again."+
                        "\n\nIf you believe the issue is on our end, please get in contact with us!")
+        }
+        Dialogs1.MessageDialog {
+            id: passwordStoreQuestion
+            icon: Dialogs1.StandardIcon.Question
+            standardButtons: Dialogs1.StandardButton.No | Dialogs1.StandardButton.Yes
+            title: qsTr("Confirm password storage")
+            text: qsTr("Your password will be stored as cleartext among the program's configurations when settings are saved."+
+                        "\nThis means any program or user capable of reading that configuration will be able to read your password."+
+                        "\nOnly enable this if you are comfortable with the implications of this!"+
+                        "\n\nDo you want to enable storing your password?")
+            onYes: {
+                passwordStoreSwitch.currentSetting = true
+            }
+            onNo: {
+                passwordStoreSwitch.currentSetting = false
+            }
+            onRejected: {
+                passwordStoreSwitch.currentSetting = false
+            }
         }
     }
 }

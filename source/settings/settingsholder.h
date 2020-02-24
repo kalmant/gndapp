@@ -27,16 +27,10 @@ private:
  */
 class SettingsHolder : public QObject {
     Q_OBJECT
-    // Waterfall settings group
-    // settings in order: deviceName, adaptiveColoring, scalingFactor, sampleCount
-    GENPROPERTY(QString, wdn)
-    GENPROPERTY(bool, wac)
-    GENPROPERTY(int, wsf)
-    GENPROPERTY(int, wsc)
 
     // Soundcard settings group
-    // settings in order: showWaterfallOnStartup
-    GENPROPERTY(bool, sswos)
+    // settings in order: deviceName
+    GENPROPERTY(QString, sdn)
 
     // Tracking settings group
     // settings in order: satelliteId, stationLat, stationLon, stationElev
@@ -46,17 +40,17 @@ class SettingsHolder : public QObject {
     GENPROPERTY(int, tse)
 
     // SDR settings group
-    // settings in order: offset, PPM, gain, automaticDFTracking, DF
-    GENPROPERTY(int, sdroffs)
+    // settings in order: offsets, PPM, gain, automaticDFTracking, DF
+    GENPROPERTY(QString, sdroffs)
     GENPROPERTY(int, sdrppm)
     GENPROPERTY(int, sdrgain)
     GENPROPERTY(bool, sdradft)
 
     // Radio settings group
-    // settings in order: COMPort, baudRate, offset, model, shouldRadioTurnOn, smogRadio5VOutSwitchOn
+    // settings in order: COMPort, baudRate, offsets, model, shouldRadioTurnOn, smogRadio5VOutSwitchOn
     GENPROPERTY(QString, racp)
     GENPROPERTY(int, rabr)
-    GENPROPERTY(int, raoffs)
+    GENPROPERTY(QString, raoffs)
     GENPROPERTY(QString, ram)
     GENPROPERTY(bool, rasrto)
     GENPROPERTY(bool, rasr5voso)
@@ -74,14 +68,18 @@ class SettingsHolder : public QObject {
     GENPROPERTY(int, ropelev)
 
     // Misc settings group
-    // settings in order: newPacketsAtEnd, saveSettingsOnExit, satelliteIndex
+    // settings in order: newPacketsAtEnd, saveSettingsOnExit, satelliteIndex, spectogramSDRSensitivity
     GENPROPERTY(bool, mnpae)
     GENPROPERTY(int, mssoe)
     GENPROPERTY(int, msatidx)
+    GENPROPERTY(int, msssdrs)
 
     // Upload settings group
-    // settings in order: username, automaticUploadFrequency
+    // settings in order: username, password, storePassword, autoLogin, automaticUploadFrequency
     GENPROPERTY(QString, uu)
+    GENPROPERTY(QString, up)
+    GENPROPERTY(bool, usp)
+    GENPROPERTY(bool, ual)
     GENPROPERTY(int, uauf)
 
 public:

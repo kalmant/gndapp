@@ -1,13 +1,11 @@
 #ifndef AUDIOINDEMODULATOR_H
 #define AUDIOINDEMODULATOR_H
-#include <complex>
+
+#include "../demod/magicdemodulator.h"
 #include "../demod/newsmog1dem.h"
-#include <QDateTime>
-#include <QDebug>
 #include <QObject>
 #include <QScopedArrayPointer>
-#include <math.h>
-
+#include <complex>
 
 /**
  * @brief The class that 1250 BPS data received from an audio sampler.
@@ -23,14 +21,11 @@ private:
     std::complex<float> resample_output_buffer[S1DEM_AUDIO_SAMPLING_FREQ];
     long packet_length_priv;
     long current_input_buffer_idx;
-    std::complex<float> dem_a;
-    std::complex<float> dem_b;
-    bool dem_a_set;
-    QVector<char> packet_characters;
-    DEMVariables *variables_priv;                    //!< Variables pointer to the demodulation variables
+    CncoVariables cnco_vars;
+    MagicDemodulator magic_demod{S1DEM_AUDIO_SAMPLING_FREQ, 1250, "Audio 1250 BPS"};
 
 public:
-    AudioInDemodulator(long packet_length, QObject *parent = 0);
+    AudioInDemodulator(QObject *parent = 0);
     ~AudioInDemodulator();
 signals:
     /**
@@ -47,6 +42,7 @@ signals:
 public slots:
     void demodulateSlot(std::int16_t *samples, int len);
     void changeSettingsSlot(long new_packet_length);
+    void resetDemodulatorSlot();
 };
 
 #endif // AUDIOINDEMODULATOR_H

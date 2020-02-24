@@ -21,41 +21,33 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
             worker->mutex_priv->unlock();
             return;
         }
-        if (*worker->ds_priv != worker->ds_freq){
+        if (*worker->ds_priv != worker->ds_freq) {
             worker->ds_freq = *worker->ds_priv;
-            SDR_set_offset(worker->vars, worker->baseOffset + worker->ds_freq);
-        }
-        worker->packet_length = *worker->packet_length_ptr;
-        if (*worker->datarate_ptr != worker->datarate){
-            worker->datarate = *worker->datarate_ptr;
-            SDR_set_datarate(worker->vars, worker->datarate);
+            change_cnco_offset_frequency(&worker->cnco_vars, worker->baseOffset + worker->ds_freq);
         }
         worker->mutex_priv->unlock();
         for (int i = 0; i < (long) len; i += 2) {
-            std::complex<float> input(static_cast<int8_t>(static_cast<uint8_t>(buf[i])-128), static_cast<int8_t>(static_cast<uint8_t>(buf[i+1])-128)); // Removing DC
-            auto cncod = cnco(&worker->vars->cnco_vars, input);
-            auto avgd = average(&worker->vars->avg_vars, cncod);
-            std::complex<float> avg_dec_output;
-            bool avg_dec_performed = average_dec(&worker->vars->avg_dec_vars, avgd, &avg_dec_output);
-            if (avg_dec_performed){
-                auto demod_output = smog_atl_demodulate(&worker->vars->demod_vars, avg_dec_output, S1DEM_SDR_SAMPLING_FREQ, worker->datarate);
-                if (worker->dem_a_set){
-                    worker->dem_b = demod_output;
-                    worker->dem_a_set = false;
-                    auto decd = make_hard_decision(&worker->vars->dec_vars, worker->dem_a, worker->dem_b, worker->packet_length);
-                    if (decd != -1) {
-                        worker->packet_characters.append(char(decd));
-                        if (worker->packet_characters.length() == worker->packet_length) {
-                            QDateTime timestamp = QDateTime::currentDateTimeUtc();
-                            QString source = QString("SDR %1 BPS").arg(worker->datarate);
-                            QString packetUpperHexString = QString(QByteArray(reinterpret_cast<char *>(worker->packet_characters.data()), worker->packet_length).toHex()).toUpper();
-                            emit worker->dataReady(timestamp, source, packetUpperHexString);
-                            worker->packet_characters.clear();
-                        }
-                    }
-                } else {
-                    worker->dem_a = demod_output;
-                    worker->dem_a_set = true;
+            std::complex<float> input(static_cast<float>(static_cast<uint8_t>(buf[i]) - 127.5),
+                static_cast<float>(static_cast<uint8_t>(buf[i + 1]) - 127.5)); // Removing DC
+            auto cncod = cnco(&worker->cnco_vars, input);
+            // 5x AVG_DEC
+            auto avgd_5 = average(&worker->avg_vars_5, cncod);
+            std::complex<float> avg_dec_output_5;
+            bool avg_dec_5_performed = average_dec(&worker->avg_dec_vars_5, avgd_5, &avg_dec_output_5);
+            if (avg_dec_5_performed) {
+                // Parallel demodulation
+                worker->magic_demod_1250.addSample(avg_dec_output_5);
+                worker->magic_demod_2500.addSample(avg_dec_output_5);
+                worker->magic_demod_5000.addSample(avg_dec_output_5);
+                worker->magic_demod_12500.addSample(avg_dec_output_5);
+
+                // 20x AVG_DEC
+                auto avgd_20 = average(&worker->avg_vars_20, avg_dec_output_5);
+                std::complex<float> avg_dec_output_20;
+                bool avg_dec_20_performed = average_dec(&worker->avg_dec_vars_20, avgd_20, &avg_dec_output_20);
+                if (avg_dec_20_performed) {
+                    // Emit to spectogram
+                    emit worker->complexSampleReady(avg_dec_output_20);
                 }
             }
         }
@@ -76,7 +68,8 @@ void rtlsdr_callback(unsigned char *buf, unsigned int len, void *ctx) {
  * @param[in] dr Pointer to the long that stores the current value of datarate.
  * @param[in] parent Pointer to the parent QObject, should be left empty.
  */
-SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long* pl, long* dr, QObject *parent) : QObject(parent) {
+SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, PacketDecoder *pd, QObject *parent)
+: QObject(parent) {
     mutex_priv = mutex;
     canRun_priv = canRun;
     ds_priv = ds;
@@ -86,7 +79,26 @@ SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long* pl, long* dr, Q
     dev_priv = nullptr;
     baseFrequency = INITIALBASEFREQUENCY;
     baseOffset = 0;
-    vars = nullptr;
+
+    // Setting up CNCO vars
+    change_cnco_sampling_rate(&cnco_vars, 250000);
+
+    // Setting up avg vars and avg dec vars for the first, 5x decimation
+    reinitialize_avg_vars(&avg_vars_5, 10);
+    reinitialize_avg_dec_vars(&avg_dec_vars_5, 5);
+
+    // Setting up avg vars and avg dec vars for the second, 20x decimation
+    reinitialize_avg_vars(&avg_vars_20, 40);
+    reinitialize_avg_dec_vars(&avg_dec_vars_20, 20);
+
+    QObject::connect(&magic_demod_1250, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
+    QObject::connect(&magic_demod_2500, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
+    QObject::connect(&magic_demod_5000, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
+    QObject::connect(&magic_demod_12500, &MagicDemodulator::dataReady, this, &SDRWorker::dataReady);
+    QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_1250, &MagicDemodulator::reset);
+    QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_2500, &MagicDemodulator::reset);
+    QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_5000, &MagicDemodulator::reset);
+    QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_12500, &MagicDemodulator::reset);
 }
 
 /**
@@ -101,9 +113,11 @@ SDRWorker::~SDRWorker() {
  * @brief Frees resources.
  */
 void SDRWorker::cleanup() {
-    if (vars != nullptr) {
-        free_dem_variables(vars);
-    }
+    free(cnco_vars.lo);
+    free(avg_vars_5.buf);
+    free(avg_dec_vars_5.buf);
+    free(avg_vars_20.buf);
+    free(avg_dec_vars_20.buf);
 }
 
 /**
@@ -117,10 +131,7 @@ void SDRWorker::cleanup() {
  * @param[in] gain Gain for the SDR.
  * @return Returns false if there was a problem with the operation.
  */
-bool SDRWorker::readFromSDR(int device_index,
-    long samplesPerSecond,
-    double ppm,
-    int gain) {
+bool SDRWorker::readFromSDR(int device_index, long samplesPerSecond, double ppm, int gain) {
     int r;
     uint32_t buflen = 16 * 16384;
     if (device_index < 0) {
@@ -153,13 +164,22 @@ bool SDRWorker::readFromSDR(int device_index,
 
     verbose_reset_buffer(dev_priv);
 
-    // Deleting the variables struct and data
-    cleanup();
-
-    datarate = *datarate_ptr;
     ds_freq = *ds_priv;
-    packet_length = *packet_length_ptr;
-    vars = create_and_initialize_sdr_variables(baseOffset + ds_freq, datarate);
+
+    // Resetting CNCO vars
+    change_cnco_sampling_rate(&cnco_vars, 250000);
+    // Setting initial cnco offset frequency
+    change_cnco_offset_frequency(&cnco_vars, baseOffset + ds_freq);
+    // Resetting AVG vars
+    reinitialize_avg_vars(&avg_vars_5, 10);
+    reinitialize_avg_dec_vars(&avg_dec_vars_5, 5);
+    reinitialize_avg_vars(&avg_vars_20, 40);
+    reinitialize_avg_dec_vars(&avg_dec_vars_20, 20);
+    // Resetting MagicDemodulators
+    magic_demod_1250.clear();
+    magic_demod_2500.clear();
+    magic_demod_5000.clear();
+    magic_demod_12500.clear();
 
     *canRun_priv = true;
 
@@ -170,11 +190,11 @@ bool SDRWorker::readFromSDR(int device_index,
         emit SDRHasBeenDisconnected();
         return false;
     }
-    if (dev_priv != nullptr){
+    if (dev_priv != nullptr) {
         rtlsdr_close(dev_priv);
         dev_priv = nullptr;
     }
-    if (dev_priv !=nullptr && 1 == has_device_been_lost(dev_priv)) {
+    if (dev_priv != nullptr && 1 == has_device_been_lost(dev_priv)) {
         // The device has been lost for some reason (has been disconnected)
         qWarning() << "SDR Device has been lost!";
         dev_priv = nullptr;
@@ -191,10 +211,7 @@ bool SDRWorker::readFromSDR(int device_index,
  * @param[in] ppm PPM error for the SDR.
  * @param[in] gain Gain for the SDR.
  */
-void SDRWorker::start(int device_index,
-    long samplesPerSecond,
-    double ppm,
-    int gain) {
+void SDRWorker::start(int device_index, long samplesPerSecond, double ppm, int gain) {
     bool success = readFromSDR(device_index, samplesPerSecond, ppm, gain);
     if (!success) {
         *canRun_priv = false;
@@ -206,7 +223,7 @@ void SDRWorker::start(int device_index,
  */
 void SDRWorker::stop() {
     mutex_priv->lock();
-    if (*canRun_priv){
+    if (*canRun_priv) {
         qWarning() << "SDR stop was called while the device is still allowed to run";
     }
     else if (dev_priv != nullptr) {

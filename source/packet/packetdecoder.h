@@ -90,8 +90,12 @@ private:
     const DecodedPacket decodeWithAO40LONG(const QByteArray encodedData);
     const DecodedPacket decodeWithRA(const QByteArray encodedData);
     const QString getDateTimeString(QDateTime datetime) const;
-    void processDecodedPacket(
-        const QDateTime &timestamp, const QString &source, const QString &encoding, QByteArray &decodedPacket, int rssi);
+    void processDecodedPacket(const QDateTime &timestamp,
+        const QString &source,
+        const QString &encoding,
+        QByteArray &decodedPacket,
+        int rssi,
+        QString originalString);
     void packetSuccessfullyDecoded(QDateTime timestamp,
         QString source,
         QString type,
@@ -99,7 +103,8 @@ private:
         QByteArray auth,
         QByteArray decodedData,
         QString readableQString,
-        QVariant packet, int rssi);
+        QVariant packet,
+        int rssi);
     void processSyncContents(unsigned int datarateBPS, s1sync::OperatingMode operatingMode);
     bool isUpperHexString(QString input) const;
     bool checkSignature(const QByteArray &data) const;
@@ -107,6 +112,9 @@ private:
     QString fileTypeToQString(s1obc::FileType type);
     QString fileEntryToQString(s1obc::FileEntry entry);
     QString fileToQString(uint8_t id, s1obc::FileEntry entry);
+
+    bool isTimestampValid(int32_t timestamp) const;
+    bool checkForAnomalies(QByteArray &decodedPacket) const;
 
 public slots:
     void decodablePacketReceived(QDateTime timestamp, QString source, QString packetUpperHexString);
@@ -206,6 +214,13 @@ signals:
      * @param ackTimestampString The QString describing the time when the ack has arrived
      */
     void newCommandAcknowledged(uint16_t uplinkId, QString ackTimestampString);
+
+    /**
+     * @brief Signal that is emitted when demodulators should be reset after a sync packet has been received.
+     * This is because when a sync packet is demodulated, it's also demodulated into bigger packet lengths.
+     * But the beginning section of the packet after the sync packet is also included in that bigger demodulation.
+     */
+    void resetDemodulators();
 };
 
 #endif // PACKETDECODER_H

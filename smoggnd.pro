@@ -89,13 +89,13 @@ HEADERS += \
     source/audio/audioindemodulator.h \
     source/audio/audioindemodulatorthread.h \
     source/audio/audiosampler.h \
-    source/audio/waterfallitem.h \
     source/command/commandtracker.h \
     source/command/commandqueue.h \
     source/command/gndconnection.h \
     source/connection/packetsjsonwrapper.h \
     source/connection/uploadcontroller.h \
     source/connection/uploadworker.h \
+    source/demod/magicdemodulator.h \
     source/demod/newsmog1dem.h \
     source/packet/chartwindow.h \
     source/packet/decodedpacket.h \
@@ -153,19 +153,20 @@ HEADERS += \
     dependencies/racoder/ra_config.h \
     dependencies/racoder/ra_decoder_gen.h \
     dependencies/racoder/ra_lfsr.h \
+    source/visualization/spectogram.h
 
 SOURCES += \
     source/main.cpp \
     source/audio/audioindemodulator.cpp \
     source/audio/audioindemodulatorthread.cpp \
     source/audio/audiosampler.cpp \
-    source/audio/waterfallitem.cpp \
     source/command/commandtracker.cpp \
     source/command/commandqueue.cpp \
     source/command/gndconnection.cpp \
     source/connection/packetsjsonwrapper.cpp \
     source/connection/uploadcontroller.cpp \
     source/connection/uploadworker.cpp \
+    source/demod/magicdemodulator.cpp \
     source/demod/newsmog1dem.cpp \
     source/packet/chartwindow.cpp \
     source/packet/decodedpacket.cpp \
@@ -214,3 +215,4 @@ SOURCES += \
     dependencies/racoder/ra_config.c \
     dependencies/racoder/ra_decoder_gen.c \
     dependencies/racoder/ra_lfsr.c \
+   source/visualization/spectogram.cpp

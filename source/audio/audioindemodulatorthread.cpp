@@ -7,7 +7,7 @@
  * @param[in] ptm Pointer to a \p PacketDecoder instance that receives the emitted demodulated packets.
  */
 AudioInDemodulatorThread::AudioInDemodulatorThread(PacketDecoder *pd) {
-    demodulatorObject.reset(new AudioInDemodulator(64));
+    demodulatorObject.reset(new AudioInDemodulator());
     demodulatorObject->moveToThread(this); // may be unnecessary because the object itself was created on this thread
     QObject::connect(
         demodulatorObject.data(), &AudioInDemodulator::dataReady, pd, &PacketDecoder::decodablePacketReceived);
@@ -22,6 +22,8 @@ AudioInDemodulatorThread::AudioInDemodulatorThread(PacketDecoder *pd) {
         &AudioInDemodulator::changeSettingsSlot,
         Qt::QueuedConnection);
     QObject::connect(pd, &PacketDecoder::newPacketLength, this, &AudioInDemodulatorThread::changeSettings);
+    QObject::connect(
+        pd, &PacketDecoder::resetDemodulators, demodulatorObject.data(), &AudioInDemodulator::resetDemodulatorSlot);
 }
 
 /**

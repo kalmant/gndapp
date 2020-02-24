@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>WaterfallComponent.qml</file>
         <file>PacketPage.qml</file>
         <file>SettingsPage.qml</file>
         <file>CommandPage.qml</file>
@@ -61,5 +60,6 @@
         <file>subsystems/atl1/BatterySubsystem.qml</file>
         <file>packets/atl1/BatteryPacket.qml</file>
         <file>qtquickcontrols2.conf</file>
+        <file>SpectogramComponent.qml</file>
     </qresource>
 </RCC>

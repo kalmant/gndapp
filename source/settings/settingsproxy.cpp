@@ -15,16 +15,8 @@ SettingsProxy::SettingsProxy(SettingsHolder *settingsHolder, QObject *parent) : 
  * @return Returns true upon successful saving.
  */
 bool SettingsProxy::saveSettings() {
-    settings.beginGroup("Waterfall");
-    settings.setValue("deviceName", sh->wdn());
-    settings.setValue("adaptiveColoring", sh->wac());
-    settings.setValue("scalingFactor", sh->wsf());
-    settings.setValue("sampleCount", sh->wsc());
-    qInfo() << "Successfully saved Waterfall settings";
-    settings.endGroup();
-
     settings.beginGroup("Soundcard");
-    settings.setValue("showWaterfallOnStartup", sh->sswos());
+    settings.setValue("deviceName", sh->sdn());
     qInfo() << "Successfully saved Soundcard settings";
     settings.endGroup();
 
@@ -37,7 +29,7 @@ bool SettingsProxy::saveSettings() {
     settings.endGroup();
 
     settings.beginGroup("SDR");
-    settings.setValue("offset", sh->sdroffs());
+    settings.setValue("offsets", sh->sdroffs());
     settings.setValue("PPM", sh->sdrppm());
     settings.setValue("gain", sh->sdrgain());
     settings.setValue("automaticDFTracking", sh->sdradft());
@@ -47,7 +39,7 @@ bool SettingsProxy::saveSettings() {
     settings.beginGroup("Radio");
     settings.setValue("COMPort", sh->racp());
     settings.setValue("baudRate", sh->rabr());
-    settings.setValue("offset", sh->raoffs());
+    settings.setValue("offsets", sh->raoffs());
     settings.setValue("model", sh->ram());
     settings.setValue("shouldRadioTurnOn", sh->rasrto());
     settings.setValue("smogRadio5VOutSwitchOn", sh->rasr5voso());
@@ -70,11 +62,20 @@ bool SettingsProxy::saveSettings() {
     settings.setValue("newPacketsAtEnd", sh->mnpae());
     settings.setValue("saveSettingsOnExit", sh->mssoe());
     settings.setValue("satelliteIndex", sh->msatidx());
+    settings.setValue("spectogramSDRSensitivity", sh->msssdrs());
     qInfo() << "Successfully saved Misc settings";
     settings.endGroup();
 
     settings.beginGroup("Upload");
     settings.setValue("username", sh->uu());
+    settings.setValue("storePassword", sh->usp());
+    if (!sh->usp()) {
+        settings.remove("password");
+    }
+    else {
+        settings.setValue("password", sh->up());
+    }
+    settings.setValue("autoLogin", sh->ual());
     settings.setValue("automaticUploadFrequency", sh->uauf());
     qInfo() << "Successfully saved Upload settings";
     settings.endGroup();
@@ -88,7 +89,7 @@ bool SettingsProxy::saveSettings() {
 /**
  * @brief Loads every relevant setting from persistent storage.
  *
- * After loading the settings, it emits SettingsProxy::loadWaterfallSettings(), SettingsProxy::loadSoundcardSettings(),
+ * After loading the settings, it emits SettingsProxy::loadSoundcardSettings(), SettingsProxy::loadTrackingSettings()
  * etc..
  * @param emits emits signals if \p emits is true
  *
@@ -96,21 +97,11 @@ bool SettingsProxy::saveSettings() {
  */
 bool SettingsProxy::loadSettings(bool emits) {
     settings.sync();
-    settings.beginGroup("Waterfall");
-    sh->set_wdn(settings.value("deviceName", "").toString());
-    sh->set_wac(settings.value("adaptiveColoring", true).toBool());
-    sh->set_wsf(settings.value("scalingFactor", 100).toInt());
-    sh->set_wsc(settings.value("sampleCount", 4096).toInt());
-    if (emits) {
-        emit loadWaterfallSettings(sh->wdn(), sh->wac(), sh->wsf(), sh->wsc());
-        qInfo() << "Emitted Waterfall settings";
-    }
-    settings.endGroup();
 
     settings.beginGroup("Soundcard");
-    sh->set_sswos(settings.value("showWaterfallOnStartup", true).toBool());
+    sh->set_sdn(settings.value("deviceName", "").toString());
     if (emits) {
-        emit loadSoundcardSettings(sh->sswos());
+        emit loadSoundcardSettings(sh->sdn());
         qInfo() << "Emitted Soundcard settings";
     }
     settings.endGroup();
@@ -127,7 +118,7 @@ bool SettingsProxy::loadSettings(bool emits) {
     settings.endGroup();
 
     settings.beginGroup("SDR");
-    sh->set_sdroffs(settings.value("offset", 0).toInt());
+    sh->set_sdroffs(settings.value("offsets", "0,0,0").toString());
     sh->set_sdrppm(settings.value("PPM", 0).toInt());
     sh->set_sdrgain(settings.value("gain", 0).toInt());
     sh->set_sdradft(settings.value("automaticDFTracking", false).toBool());
@@ -140,7 +131,7 @@ bool SettingsProxy::loadSettings(bool emits) {
     settings.beginGroup("Radio");
     sh->set_racp(settings.value("COMPort", "COM 6").toString());
     sh->set_rabr(settings.value("baudRate", 4800).toInt());
-    sh->set_raoffs(settings.value("offset", 0).toInt());
+    sh->set_raoffs(settings.value("offsets", "0,0,0").toString());
     sh->set_ram(settings.value("model", "FT-817").toString());
     sh->set_rasrto(settings.value("shouldRadioTurnOn", false).toBool());
     sh->set_rasr5voso(settings.value("smogRadio5VOutSwitchOn", false).toBool());
@@ -170,17 +161,21 @@ bool SettingsProxy::loadSettings(bool emits) {
     sh->set_mnpae(settings.value("newPacketsAtEnd", false).toBool());
     sh->set_mssoe(settings.value("saveSettingsOnExit", 2).toInt());
     sh->set_msatidx(settings.value("satelliteIndex", 1).toInt());
+    sh->set_msssdrs(settings.value("spectogramSDRSensitivity", 100).toInt());
     if (emits) {
-        emit loadMiscSettings(sh->mnpae(), sh->mssoe(), sh->msatidx());
+        emit loadMiscSettings(sh->mnpae(), sh->mssoe(), sh->msatidx(), sh->msssdrs());
         qInfo() << "Emitted Misc settings";
     }
     settings.endGroup();
 
     settings.beginGroup("Upload");
     sh->set_uu(settings.value("username", "username").toString());
+    sh->set_up(settings.value("password", "password").toString());
+    sh->set_usp(settings.value("storePassword", false).toBool());
+    sh->set_ual(settings.value("autoLogin", false).toBool());
     sh->set_uauf(settings.value("automaticUploadFrequency", 5).toInt());
     if (emits) {
-        emit loadUploadSettings(sh->uu(), sh->uauf());
+        emit loadUploadSettings(sh->uu(), sh->up(), sh->usp(), sh->ual(), sh->uauf());
         qInfo() << "Emitted Upload settings";
     }
     settings.endGroup();

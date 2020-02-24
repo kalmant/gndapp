@@ -107,6 +107,8 @@ signals:
 
     void currentFrequencyChanged();
 
+    void complexSampleReady(std::complex<float> sample);
+
 private slots:
     void newDataRateSlot(unsigned int newDataRateBPS);
     void newPacketLengthSlot(unsigned int newPacketLengthBytes);

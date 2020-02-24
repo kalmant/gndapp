@@ -16,23 +16,19 @@
 #ifndef AUDIOSAMPLER_H
 #define AUDIOSAMPLER_H
 
-#include "fftw3.h"
 #include <QScopedArrayPointer>
 #include <QScopedPointer>
 #include <QtCore/QIODevice>
 #include <QtCore/QScopedPointer>
-#include <QtCore/QTimer>
 #include <QtMultimedia/QAudioBuffer>
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioInput>
-#include <vector>
 
 /**
  * @brief A class that handles audio input devices.
  *
- * It reads from a device, has the capability of FFTW-ing and emitting to WaterfallItem.
- * It is also capable of emitting the data read from the device to demodulators.
+ * It reads from a device and emits data to a demodulator and the spectogram
  */
 class AudioSampler : public QIODevice {
 private:
@@ -42,29 +38,13 @@ private:
     QScopedPointer<QAudioInput> input_priv; //!< QAudioInput pointer to the currently opened port
     bool started_priv;                      //!< True if the device has been started
     QAudio::State state_priv;               //!< Current state of the device
-    quint32 samplesToWait_priv;             //!< Number of samples that should be bundled together for FFTW execution
-
-    // Necessary for FFTW
-    double *in;        //!< Pointer to the double array that stores the values read from the audio input device
-    fftw_complex *out; //!< Pointer to the fftw_complex array that stores the result of the fftw execution
-    fftw_plan my_plan; //!< The fftw_plan that is executed whenever FFTW is used
-    unsigned int currentSampleCount; //!< Variable that keeps track of how many samples have been collected from the
-                                     //!< audio input device
-
-    // Amplitudes after FFTW
-    QScopedArrayPointer<double>
-        AmplitudeArray; //!< Pointer to the array that contains the amplitudes for the frequency segments
-
-    bool packetsAreBeingRead_priv = false; //!< True if packages are being demodulated
-    bool waterfallRunning_priv = false;    //!< True if the waterfall diagram is running
 
 public:
     explicit AudioSampler(QObject *parent = 0);
-    ~AudioSampler();
 
-    bool start(int deviceIndex);
+    Q_INVOKABLE bool start(int deviceIndex);
     bool isStarted() const;
-    void stop();
+    Q_INVOKABLE void stop();
     quint32 samplingFrequency() const;
     quint32 samplesToWait() const;
 
@@ -73,16 +53,6 @@ protected:
     qint64 writeData(const char *data, qint64 len);
 
 signals:
-    /**
-     * @brief Signal that is emitted whenever a new batch of data has been processed with FFTW
-     *
-     * \p amplitudeArray contains the amplitudes and should be deleted by the function that receives the signal.
-     *
-     * @param amplitudeArray The pointer to the array of amplitudes for the frequency segments
-     * @param size The number of frequency segments in \p ampliteArray
-     */
-    void samplesCollected(double *amplitudeArray, unsigned int size);
-
     /**
      * @brief Signal that is emitted to the thread that demodulates at 1250 bps.
      *
@@ -93,13 +63,10 @@ signals:
      */
     void audioSamplesReadyFor1250(std::int16_t *samples, int numberOfSamples);
 
+    void audioSamples(std::int16_t *samples, int sampleCount);
+
 private slots:
-    void elapsed();
     void audioInputStateChanged(QAudio::State state);
-public slots:
-    void samplesToWaitChanged(int value);
-    void packetsAreBeingReadChangedSlot(bool value);
-    void waterfallRunningChangedSlot(bool value);
 };
 
 #endif // AUDIOSAMPLER_H

@@ -22,20 +22,23 @@ public:
     Q_INVOKABLE void sendCustomCommand(QByteArray command);
 
 protected:
+    static constexpr int PREPOSITIONING_SECONDS = 180;
+
     QScopedPointer<SerialPortHandler> sph_prot; //!< SerialPortHandler object that handles the serial port
     SerialPortSettings portSettings_prot;       //!< The current serial port settings as a SerialPortSettings object
     QString portName_prot;                      //!< Name of the currently used serial port
-    QTimer prePositionTimer_prot;  //!< Timer that starts makes sure that control is established 3 mins. before AOS
-    bool isRunning_prot = false;   //!< Variable that holds whether the rotator is running
-    unsigned int parkingAz_prot;   //!< Parking azimuth
-    unsigned int parkingElev_prot; //!< Parking elevation
-    int stoppingPositionAz_prot;   //!< Azimuth point that the rotator can not cross
-    bool shouldPark_prot;          //!< True if the rotator should park between passes
-    bool isElev180Capable_prot;    //!< True is the rotator is capable of 180° elevation
-    bool passCrossesStopPoint_prot = false; //!< True if the next pass crosses \p stoppingPositionAz_prot
-    bool isCurrentlyFollowing_prot = false; //!< True if the rotator is following the satellite ATM
-    int lastElevation_prot = -181;          //!< Previous elevation received from predicter
-    int lastAzimuth_prot = -361;            //!< Previous azimuth received from predicter
+    QTimer prePositionTimer_prot;               //!< Timer that starts makes sure that control is established before AOS
+    bool isPrepositioning_prot = false;         //!< True if prepositioning should start
+    bool isRunning_prot = false;                //!< Variable that holds whether the rotator is running
+    unsigned int parkingAz_prot;                //!< Parking azimuth
+    unsigned int parkingElev_prot;              //!< Parking elevation
+    int stoppingPositionAz_prot;                //!< Azimuth point that the rotator can not cross
+    bool shouldPark_prot;                       //!< True if the rotator should park between passes
+    bool isElev180Capable_prot;                 //!< True is the rotator is capable of 180° elevation
+    bool passCrossesStopPoint_prot = false;     //!< True if the next pass crosses \p stoppingPositionAz_prot
+    bool isCurrentlyFollowing_prot = false;     //!< True if the rotator is following the satellite ATM
+    int lastElevation_prot = -181;              //!< Previous elevation received from predicter
+    int lastAzimuth_prot = -361;                //!< Previous azimuth received from predicter
 
     bool isRunning() const;
     void setIsRunning(bool newValue);
