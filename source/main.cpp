@@ -1,4 +1,3 @@
-
 #include "dependencies/obc-packet-helpers/packethelper.h"
 #include "source/audio/audioindemodulatorthread.h"
 #include "source/audio/audiosampler.h"
@@ -113,6 +112,10 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     DeviceDiscovery deviceDiscovery;
     EventFilter eventFilter(&deviceDiscovery);
     app.installNativeEventFilter(&eventFilter);
+
+    qDebug() << "The system supports SSL:" << QSslSocket::supportsSsl();
+    qDebug() << "The system's SSL library version:" << QSslSocket::sslLibraryVersionString();
+    qDebug() << "The SSL library version used at compile time:" << QSslSocket::sslLibraryBuildVersionString();
 
     QString gndIp("192.168.0.106");
     int gndIpIndex = app.arguments().indexOf(QStringLiteral("-gnd_ip"));
