@@ -41,7 +41,6 @@ void PacketsJSONWrapper::requeuePacket(int index) {
     }
     else {
         packets_priv.append(packets_priv.at(index));
-        packets_priv.removeAt(index);
     }
 }
 
