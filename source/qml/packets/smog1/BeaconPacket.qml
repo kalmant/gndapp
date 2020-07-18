@@ -83,6 +83,16 @@ PacketDetailsTable {
             group: "Diag"
             description: "TCXO works"
             content: packet.diag.status.tcxoWorks ? "OK" : "NO"
+        },
+        TelemetryObject {
+            group: "Diag"
+            description: "Filesystem"
+            content: packet.diag.status.filesystemOk ? "OK" : "NO"
+        },
+        TelemetryObject {
+            group: "Diag"
+            description: "Current flash"
+            content: packet.diag.status.filesystemUsesFlash2 ? "Flash 2" : "Flash 1"
         }
     ]
 }

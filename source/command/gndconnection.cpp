@@ -184,8 +184,14 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
         case s1obc::UplinkToggleType_SDC:
             unit = QString("SDC");
             break;
-        case s1obc::UplinkToggleType_Battery:
-            unit = QString("Battery");
+        case s1obc::UplinkToggleType_BatteryDischarge:
+            unit = QString("BatteryDischarge");
+            break;
+        case s1obc::UplinkToggleType_BatteryCharge:
+            unit = QString("BatteryCharge");
+            break;
+        case s1obc::UplinkToggleType_Flash:
+            unit = QString("Flash");
             break;
         }
         commandString = QStringLiteral("Toggle ") + unit;
@@ -215,6 +221,9 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
             break;
         case s1obc::UplinkResetType_ExitSilentMode:
             unit = QString("Exit silent mode");
+            break;
+        case s1obc::UplinkResetType_FileSystem:
+            unit = QString("Filesystem");
             break;
         }
         commandString = QStringLiteral("Reset ") + unit;

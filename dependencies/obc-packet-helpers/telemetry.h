@@ -84,7 +84,9 @@ namespace s1obc {
         UplinkToggleType_SDC,
         UplinkToggleType_OBC,
         UplinkToggleType_COM,
-        UplinkToggleType_Battery,
+        UplinkToggleType_BatteryDischarge,
+        UplinkToggleType_BatteryCharge,
+        UplinkToggleType_Flash,
     } S1_PACKED;
     Q_ENUM_NS(UplinkToggleType)
     static_assert(1 == sizeof(UplinkToggleType), "enum must be 1 byte long.");
@@ -1393,11 +1395,13 @@ namespace s1obc {
     };
     static_assert(13 == sizeof(PcuBusTelemetry), "PCU bus telemetry must be 13 byte long.");
 
-    class DiagnosticStatus : public s1utils::Bitfield<uint8_t, 3, 1, 4> {
+    class DiagnosticStatus : public s1utils::Bitfield<uint8_t, 3, 1, 1, 1, 2> {
     private:
         Q_GADGET
         Q_PROPERTY(int energyMode READ energyMode WRITE setEnergyMode)
         Q_PROPERTY(bool tcxoWorks READ tcxoWorks WRITE setTcxoWorks)
+        Q_PROPERTY(bool filesystemOk READ filesystemOk WRITE setFilesystemOk)
+        Q_PROPERTY(bool filesystemUsesFlash2 READ filesystemUsesFlash2 WRITE setFilesystemUsesFlash2)
 
     public:
         EnergyMode energyMode() const {
@@ -1414,6 +1418,18 @@ namespace s1obc {
         }
         void setTcxoWorks(bool val) {
             set<1>(val);
+        }
+        bool filesystemOk() const {
+            return get<2>();
+        }
+        void setFilesystemOk(bool val) {
+            set<2>(val);
+        }
+        bool filesystemUsesFlash2() const {
+            return get<3>();
+        }
+        void setFilesystemUsesFlash2(bool val) {
+            set<3>(val);
         }
     };
     static_assert(1 == sizeof(DiagnosticStatus), "DiagnosticStatus must be 1 byte long.");
