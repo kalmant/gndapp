@@ -233,7 +233,7 @@ void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteAr
     uint16_t u16;
     s1_uint24_t u24;
 
-    for (uint32_t elapsedMs = 0; elapsedMs <= durationMs; elapsedMs += interval) {
+    for (uint32_t elapsedMs = interval; elapsedMs <= durationMs; elapsedMs += interval) {
         bool processSolar = (hasSolar && (elapsedMs % intervalSolarMs) == 0);
         bool processPcu = (hasPcu && (elapsedMs % intervalPcuMs) == 0);
         bool processMpu = (hasMpu && (elapsedMs % intervalMpuMs) == 0);
