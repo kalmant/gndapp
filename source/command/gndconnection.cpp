@@ -426,6 +426,11 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
         }
         commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
     }
+    else if (command.canConvert<s1obc::UplinkMorseRequestPacket>()) {
+        auto packet = command.value<s1obc::UplinkMorseRequestPacket>();
+        commandString = QStringLiteral("Morse request: ") + packet.morseMessage_qt();
+        commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
+    }
 
     if (commandBytes.length() == 0) {
         qWarning() << "unknown command";

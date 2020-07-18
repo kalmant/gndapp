@@ -61,5 +61,6 @@
         <file>packets/atl1/BatteryPacket.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>SpectogramComponent.qml</file>
+        <file>commands/MorseRequestCommand.qml</file>
     </qresource>
 </RCC>

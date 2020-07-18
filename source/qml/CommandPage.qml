@@ -179,6 +179,10 @@ Column {
                         onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_FileDelete)
                     }
                     MenuItem {
+                        text: "Morse request"
+                        onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_MorseRequest)
+                    }
+                    MenuItem {
                         text: "Custom"
                         onTriggered: commandTypesMenu.openCommand(0)
                     }

@@ -72,6 +72,8 @@ ApplicationWindow {
                     return measurementRequestComponent
                 case OBC.UplinkPacketType_FileDelete:
                     return fileDeleteComponent
+                case OBC.UplinkPacketType_MorseRequest:
+                    return morseRequestComponent
                 default:
                     return null
                 }
@@ -161,6 +163,14 @@ ApplicationWindow {
                 id: fileDeleteComponent
 
                 FileDeleteCommand {
+                    packet: commandDialog.packet
+                }
+            }
+
+            Component {
+                id: morseRequestComponent
+
+                MorseRequestCommand {
                     packet: commandDialog.packet
                 }
             }

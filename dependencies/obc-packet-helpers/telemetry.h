@@ -71,6 +71,9 @@ namespace s1obc {
         UplinkPacketType_FileDelete,
         UplinkPacketType_FileDownloadRequest,
         UplinkPacketType_MeasurementRequest,
+        UplinkPacketType_MorseRequest,
+        UplinkPacketType_HamRepeaterMessage,
+        UplinkPacketType_SetHamRepeaterMode,
     } S1_PACKED;
     Q_ENUM_NS(UplinkPacketType)
     static_assert(1 == sizeof(UplinkPacketType), "enum must be 1 byte long.");
