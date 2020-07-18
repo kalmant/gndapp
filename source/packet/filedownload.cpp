@@ -1,6 +1,6 @@
-#include <QDataStream>
 #include "filedownload.h"
 #include "dependencies/obc-packet-helpers/uplink.h"
+#include <QDataStream>
 
 using namespace s1utils;
 using namespace s1obc;
@@ -37,8 +37,7 @@ void FileDownload::reset() {
  * @param fragmentCount Number of fragments expected to be in the file
  * @param fileType the type of file that is being downloaded
  */
-FileDownload::FileDownload(
-    QString fileName, uint16_t fragmentCount, s1obc::FileType fileType, QObject *parent)
+FileDownload::FileDownload(QString fileName, uint16_t fragmentCount, s1obc::FileType fileType, QObject *parent)
 : QObject(parent) {
     fragmentCount_priv = fragmentCount;
     dataVector_priv.fill(MISSINGFRAGMENT_PRIV, fragmentCount);
@@ -87,13 +86,11 @@ void FileDownload::writePartialFile() const {
     }
 }
 
-void FileDownload::writeTextFile(QTextStream &out, const QByteArray &data)
-{
+void FileDownload::writeTextFile(QTextStream &out, const QByteArray &data) {
     out << QString::fromLatin1(data);
 }
 
-void FileDownload::writeSpectrumFile(QTextStream &out, const QByteArray &data)
-{
+void FileDownload::writeSpectrumFile(QTextStream &out, const QByteArray &data) {
     struct SpectrumFileHeader {
         uint32_t timestamp;
         uint32_t startFrequency;
@@ -122,16 +119,12 @@ void FileDownload::writeSpectrumFile(QTextStream &out, const QByteArray &data)
     }
     else {
         out << QStringLiteral("time stamp: ") + QString::number(header->timestamp) << QStringLiteral("\n");
-        out << QStringLiteral("start frequency: ") + QString::number(header->startFrequency)
-            << QStringLiteral("\n");
-        out << QStringLiteral("stop frequency: ") + QString::number(header->stopFrequency)
-            << QStringLiteral("\n");
+        out << QStringLiteral("start frequency: ") + QString::number(header->startFrequency) << QStringLiteral("\n");
+        out << QStringLiteral("stop frequency: ") + QString::number(header->stopFrequency) << QStringLiteral("\n");
         out << QStringLiteral("step size: ") + QString::number(header->stepSize) << QStringLiteral("\n");
         out << QStringLiteral("rbw: ") + QString::number(header->rbw) << QStringLiteral("\n");
-        out << QStringLiteral("uplink serial: ") + QString::number(header->uplinkSerial)
-            << QStringLiteral("\n");
-        out << QStringLiteral("measurement id: ") + QString::number(header->measurementId)
-            << QStringLiteral("\n");
+        out << QStringLiteral("uplink serial: ") + QString::number(header->uplinkSerial) << QStringLiteral("\n");
+        out << QStringLiteral("measurement id: ") + QString::number(header->measurementId) << QStringLiteral("\n");
     }
     rawbytes += sizeof(SpectrumFileHeader); // The header will be skipped
     int len = data.length() - static_cast<int>(sizeof(SpectrumFileHeader));
@@ -141,9 +134,7 @@ void FileDownload::writeSpectrumFile(QTextStream &out, const QByteArray &data)
     }
 
     for (unsigned int i = 0; i < static_cast<unsigned int>(len); i++) {
-        out << QString("%1: %2")
-                   .arg(startFrequency + i * stepSize)
-                   .arg((static_cast<uint8_t>(rawbytes[i]) / 2) - 131)
+        out << QString("%1: %2").arg(startFrequency + i * stepSize).arg((static_cast<uint8_t>(rawbytes[i]) / 2) - 131)
             << "\n";
     }
 
@@ -159,13 +150,25 @@ void FileDownload::writeSpectrumFile(QTextStream &out, const QByteArray &data)
             rbw);
     }
     else {
-        qWarning()
-            << "The downloaded spectrum measurement has not been printed to a file since its header is missing";
+        qWarning() << "The downloaded spectrum measurement has not been printed to a file since its header is missing";
     }
 }
 
-void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteArray &data)
-{
+QDataStream &operator>>(QDataStream &stream, s1_uint24_t &u24) {
+    u24 = 0;
+    uint8_t u8 = 0;
+
+    stream >> u8;
+    u24.setByte(0, u8);
+    stream >> u8;
+    u24.setByte(1, u8);
+    stream >> u8;
+    u24.setByte(2, u8);
+
+    return stream;
+}
+
+void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteArray &data) {
     QDataStream stream(data);
     stream.setByteOrder(QDataStream::LittleEndian);
 
@@ -183,6 +186,8 @@ void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteAr
     stream >> mpuBits;
     MeasurementSelectionObcCom::BasicType obcComBits;
     stream >> obcComBits;
+    MeasurementSelectionTid::BasicType tidBits;
+    stream >> tidBits;
     uint8_t intervalSolarSec;
     stream >> intervalSolarSec;
     uint8_t intervalPcuSec;
@@ -191,15 +196,19 @@ void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteAr
     stream >> intervalMpuDecisec;
     uint8_t intervalObcComSec;
     stream >> intervalObcComSec;
+    uint8_t intervalTid5Min;
+    stream >> intervalTid5Min;
 
     bool hasSolar = solarBits && intervalSolarSec;
     bool hasPcu = pcuBits && intervalPcuSec;
     bool hasMpu = mpuBits && intervalMpuDecisec;
     bool hasObcCom = obcComBits && intervalObcComSec;
+    bool hasTid = tidBits && intervalTid5Min;
     uint32_t intervalSolarMs = intervalSolarSec * 1000;
     uint32_t intervalPcuMs = intervalPcuSec * 1000;
     uint32_t intervalMpuMs = intervalMpuDecisec * 100;
     uint32_t intervalObcComMs = intervalObcComSec * 1000;
+    uint32_t intervalTidMs = intervalTid5Min * 5 * 60 * 1000;
 
     MeasurementSelectionSolar solar;
     solar.load(solarBits);
@@ -209,6 +218,8 @@ void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteAr
     mpu.load(mpuBits);
     MeasurementSelectionObcCom obcCom;
     obcCom.load(obcComBits);
+    MeasurementSelectionTid tid;
+    tid.load(tidBits);
 
     uint32_t interval = 1000;
     if (hasMpu && (intervalMpuMs % 1000) != 0) {
@@ -220,14 +231,16 @@ void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteAr
     uint8_t u8;
     int16_t i16;
     uint16_t u16;
+    s1_uint24_t u24;
 
     for (uint32_t elapsedMs = interval; elapsedMs < durationMs; elapsedMs += interval) {
         bool processSolar = (hasSolar && (elapsedMs % intervalSolarMs) == 0);
         bool processPcu = (hasPcu && (elapsedMs % intervalPcuMs) == 0);
         bool processMpu = (hasMpu && (elapsedMs % intervalMpuMs) == 0);
         bool processObcCom = (hasObcCom && (elapsedMs % intervalObcComMs) == 0);
+        bool processTid = (hasTid && (elapsedMs % intervalTidMs) == 0);
 
-        bool processAnything = processSolar || processPcu || processMpu || processObcCom;
+        bool processAnything = processSolar || processPcu || processMpu || processObcCom || processTid;
 
         if (processAnything) {
             out << QStringLiteral("========== Elapsed time: ") << elapsedMs << "\n";
@@ -392,15 +405,56 @@ void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteAr
             }
         }
 
+        if (processTid) {
+            if (tid.selectTid1Temperature()) {
+                stream >> i16;
+                out << QStringLiteral("TID1 temperature: ") << i16 / 10.0 << " C\n";
+            }
+            if (tid.selectTid1Serial()) {
+                stream >> u16;
+                out << QStringLiteral("TID1 serial: ") << u16 << "\n";
+            }
+            if (tid.selectTid1Radfet1()) {
+                stream >> u24;
+                out << QStringLiteral("TID1 RADFET1: ") << u24 << "uV\n";
+            }
+            if (tid.selectTid1Radfet2()) {
+                stream >> u24;
+                out << QStringLiteral("TID1 RADFET2: ") << u24 << "uV\n";
+            }
+            if (tid.selectTid1Voltage()) {
+                stream >> u16;
+                out << QStringLiteral("TID2 voltage: ") << u16 << "mV\n";
+            }
+            if (tid.selectTid2Temperature()) {
+                stream >> i16;
+                out << QStringLiteral("TID2 temperature: ") << i16 / 10.0 << " C\n";
+            }
+            if (tid.selectTid2Serial()) {
+                stream >> u16;
+                out << QStringLiteral("TID2 serial: ") << u16 << "\n";
+            }
+            if (tid.selectTid2Radfet1()) {
+                stream >> u24;
+                out << QStringLiteral("TID2 RADFET1: ") << u24 << "uV\n";
+            }
+            if (tid.selectTid2Radfet2()) {
+                stream >> u24;
+                out << QStringLiteral("TID2 RADFET2: ") << u24 << "uV\n";
+            }
+            if (tid.selectTid2Voltage()) {
+                stream >> u16;
+                out << QStringLiteral("TID2 voltage: ") << u16 << "mV\n";
+            }
+        }
+
         out.flush();
     }
 }
 
-void FileDownload::writeInfoTableFile(QTextStream &out, const QByteArray &data)
-{
+void FileDownload::writeInfoTableFile(QTextStream &out, const QByteArray &data) {
     // Struct copied from SMOG OBC source and replaced size_t with uint32_t
-    struct s1fs_fileinfo_data
-    {
+    struct s1fs_fileinfo_data {
         char name[FileName::length];
         uint8_t type;
         uint32_t timestamp;
