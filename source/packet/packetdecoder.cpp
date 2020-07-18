@@ -1587,22 +1587,12 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
     switch (received.length()) {
     case s1sync::syncPacketLength: {
         // Validate sync packet
-        unsigned syncErrors = 0;
-        const char *syncStartBytes = reinterpret_cast<const char *>(s1sync::syncBytes);
-        for (unsigned i = 0; i < sizeof(s1sync::syncBytes); i++) {
-            char expected = syncStartBytes[i];
-            char actual = received.at(i);
-            if (actual != expected) {
-                syncErrors += __builtin_popcount(actual ^ expected);
-            }
-        }
-
-        if (syncErrors > 200) {
+        auto res = s1sync::getSyncContents(received, currentSatellite);
+        if (res.second == s1sync::OperatingMode::Invalid) {
             // Too many sync errors
             break;
         }
         emit resetDemodulators();
-        auto res = s1sync::getSyncContents(received, currentSatellite);
         processSyncContents(res.first, res.second);
 
         QDateTime datetime = QDateTime::currentDateTimeUtc();
