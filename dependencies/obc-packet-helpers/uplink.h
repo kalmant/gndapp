@@ -87,8 +87,8 @@ namespace s1obc {
     static_assert(sizeof(UplinkResetPacket) == MaxUplinkPayloadSize,
         "UplinkResetPacket MUST be exactly MaxUplinkPayloadSize bytes.");
 
-    using UplinkSetComParametersPacketBase =
-        s1utils::Pack<UplinkPacketType, ComTxPowerLevel, ComTxDatarate, uint16_t, uint16_t, uint16_t, uint8_t[13]>;
+    using UplinkSetComParametersPacketBase = s1utils::
+        Pack<UplinkPacketType, ComTxPowerLevel, ComTxDatarate, uint16_t, uint16_t, uint16_t, uint16_t, uint8_t[11]>;
 
     class UplinkSetComParametersPacket : public UplinkSetComParametersPacketBase {
     private:
@@ -98,12 +98,17 @@ namespace s1obc {
         Q_PROPERTY(quint32 idleTimeNormal READ idleTimeNormal WRITE setIdleTimeNormal)
         Q_PROPERTY(quint32 idleTimeSaving READ idleTimeSaving WRITE setIdleTimeSaving)
         Q_PROPERTY(quint32 idleTimeEmergency READ idleTimeEmergency WRITE setIdleTimeEmergency)
+        Q_PROPERTY(quint32 idleIsOffLimit READ idleIsOffLimit WRITE setIdleIsOffLimit)
 
     public:
         UplinkSetComParametersPacket() {
             set<0>(UplinkPacketType_SetComParameters);
             setTxPowerLevel(ComTxPowerLevel_1);
             setTxDataRate(ComTxDatarate_5000bps);
+            setIdleTimeNormal(2000);
+            setIdleTimeSaving(6000);
+            setIdleTimeEmergency(12000);
+            setIdleIsOffLimit(4000);
         }
 
         ComTxPowerLevel txPowerLevel() const {
@@ -135,6 +140,12 @@ namespace s1obc {
         }
         void setIdleTimeEmergency(uint16_t val) {
             set<5>(val);
+        }
+        uint16_t idleIsOffLimit() const {
+            return get<6>();
+        }
+        void setIdleIsOffLimit(uint16_t val) {
+            set<6>(val);
         }
     };
     static_assert(sizeof(UplinkSetComParametersPacket) == MaxUplinkPayloadSize,
