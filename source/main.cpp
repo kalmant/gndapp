@@ -252,6 +252,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
         &packetDecoder, &PacketDecoder::newCommandIdSignal, &gndConnection, &GNDConnection::newCommandIdSlot);
     QObject::connect(&packetDecoder, &PacketDecoder::newPacketLength, &gndConnection, &GNDConnection::setPacketLength);
     QObject::connect(&packetDecoder, &PacketDecoder::newDataRate, &gndConnection, &GNDConnection::setDatarate);
+    QObject::connect(
+        &satelliteChanger, &SatelliteChanger::newSatellite, &gndConnection, &GNDConnection::changeSatellite);
 
     CommandTracker commandTracker;
     engine.rootContext()->setContextProperty("commandTracker", &commandTracker);
