@@ -97,6 +97,7 @@ namespace s1obc {
         UplinkResetType_TID,
         UplinkResetType_OBC_UserData,
         UplinkResetType_ExitSilentMode,
+        UplinkResetType_FileSystem,
     } S1_PACKED;
     Q_ENUM_NS(UplinkResetType)
     static_assert(1 == sizeof(UplinkResetType), "enum must be 1 byte long.");

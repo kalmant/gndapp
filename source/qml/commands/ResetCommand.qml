@@ -87,6 +87,11 @@ Column {
                     value: OBC.UplinkResetType_ExitSilentMode
                     info: "Commands the OBC to exit silent mode."
                 }
+                ListElement {
+                    text: "File system"
+                    value: OBC.UplinkResetType_FileSystem
+                    info: "Commands the OBC to reset the file system."
+                }
             }
         }
     }
