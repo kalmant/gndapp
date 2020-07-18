@@ -1602,7 +1602,7 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
             break;
         }
         emit resetDemodulators();
-        auto res = s1sync::getSyncContents(received);
+        auto res = s1sync::getSyncContents(received, currentSatellite);
         processSyncContents(res.first, res.second);
 
         QDateTime datetime = QDateTime::currentDateTimeUtc();

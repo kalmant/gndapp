@@ -115,7 +115,6 @@ namespace s1obc {
         DownlinkPacketType_Telemetry1_A = 129,
         DownlinkPacketType_Telemetry2_A = 130,
         DownlinkPacketType_Telemetry3_A = 131,
-        DownlinkPacketType_Sync = 0x97,
     } S1_PACKED;
     Q_ENUM_NS(DownlinkPacketType)
     static_assert(1 == sizeof(DownlinkPacketType), "enum must be 1 byte long.");
