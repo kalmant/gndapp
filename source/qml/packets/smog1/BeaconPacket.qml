@@ -46,8 +46,18 @@ PacketDetailsTable {
         // ========== Diagnostic info
         TelemetryObject {
             group: "Diag"
-            description: "OBC flash checksum"
-            content: String(packet.diag.flashChecksum)
+           description: "RX garbage packets"
+           content: String(packet.diag.receivedGarbagePackets)
+       },
+       TelemetryObject {
+           group: "Diag"
+           description: "RX bad serial packets"
+           content: String(packet.diag.receivedBadSerialPackets)
+       },
+       TelemetryObject {
+           group: "Diag"
+           description: "RX invalid packets"
+           content: String(packet.diag.receivedInvalidPackets)
         },
         TelemetryObject {
             group: "Diag"

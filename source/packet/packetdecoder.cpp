@@ -673,7 +673,9 @@ QString PacketDecoder::extractTIDTelemetry(const s1obc::TidTelemetry &tid) {
 QString PacketDecoder::extractDiagnosticTelemetry(const s1obc::DiagnosticInfo &diagnostic) {
     using namespace s1obc;
     QString ret;
-    ret += ";Flashchecksum:" + QString::number(diagnostic.flashChecksum());
+    ret += ";receivedGarbagePackets:" + QString::number(diagnostic.receivedGarbagePackets());
+    ret += ";receivedBadSerialPackets:" + QString::number(diagnostic.receivedBadSerialPackets());
+    ret += ";receivedInvalidPackets:" + QString::number(diagnostic.receivedInvalidPackets());
     ret += ";LastUplinkTimestamp:" + getDTSFromUint32UTC(diagnostic.lastUplinkTimestamp());
     ret += ";OBCUptime[Min]:" + QString::number(diagnostic.obcUptimeMin());
     ret += ";COMUptime[Min]:" + QString::number(diagnostic.comUptimeMin());

@@ -1434,12 +1434,23 @@ namespace s1obc {
     };
     static_assert(1 == sizeof(DiagnosticStatus), "DiagnosticStatus must be 1 byte long.");
 
-    using DiagnosticInfoBase = s1utils::
-        Pack<uint32_t, uint32_t, s1utils::s1_uint24_t, s1utils::s1_uint24_t, uint8_t, uint8_t, DiagnosticStatus>;
+    using DiagnosticInfoBase = s1utils::Pack<uint8_t,
+        uint8_t,
+        uint8_t,
+        uint8_t,
+        uint32_t,
+        s1utils::s1_uint24_t,
+        s1utils::s1_uint24_t,
+        uint8_t,
+        uint8_t,
+        DiagnosticStatus>;
     class DiagnosticInfo : public DiagnosticInfoBase {
     private:
         Q_GADGET
-        Q_PROPERTY(quint32 flashChecksum READ flashChecksum WRITE setFlashChecksum)
+        Q_PROPERTY(quint32 unused8bits READ unused8bits WRITE setUnused8bits)
+        Q_PROPERTY(quint32 receivedGarbagePackets READ receivedGarbagePackets WRITE setReceivedGarbagePackets)
+        Q_PROPERTY(quint32 receivedBadSerialPackets READ receivedBadSerialPackets WRITE setReceivedBadSerialPackets)
+        Q_PROPERTY(quint32 receivedInvalidPackets READ receivedInvalidPackets WRITE setReceivedInvalidPackets)
         Q_PROPERTY(quint32 lastUplinkTimestamp READ lastUplinkTimestamp WRITE setLastUplinkTimestamp)
         Q_PROPERTY(quint32 obcUptimeMin READ obcUptimeMin WRITE setObcUptimeMin)
         Q_PROPERTY(quint32 comUptimeMin READ comUptimeMin WRITE setComUptimeMin)
@@ -1448,47 +1459,65 @@ namespace s1obc {
         Q_PROPERTY(s1obc::DiagnosticStatus status READ diagnosticStatus WRITE setDiagnosticStatus)
 
     public:
-        uint32_t flashChecksum() const {
+        uint8_t unused8bits() const {
             return get<0>();
         }
-        void setFlashChecksum(uint32_t val) {
+        void setUnused8bits(uint8_t val) {
             set<0>(val);
         }
-        uint32_t lastUplinkTimestamp() const {
+        uint8_t receivedGarbagePackets() const {
             return get<1>();
         }
-        void setLastUplinkTimestamp(uint32_t val) {
+        void setReceivedGarbagePackets(uint8_t val) {
             set<1>(val);
         }
-        s1utils::s1_uint24_t obcUptimeMin() const {
+        uint8_t receivedBadSerialPackets() const {
             return get<2>();
         }
-        void setObcUptimeMin(s1utils::s1_uint24_t val) {
+        void setReceivedBadSerialPackets(uint8_t val) {
             set<2>(val);
         }
-        s1utils::s1_uint24_t comUptimeMin() const {
+        uint8_t receivedInvalidPackets() const {
             return get<3>();
         }
-        void setComUptimeMin(s1utils::s1_uint24_t val) {
+        void setReceivedInvalidPackets(uint8_t val) {
             set<3>(val);
         }
-        uint8_t txVoltageDrop_10mV() const {
+        uint32_t lastUplinkTimestamp() const {
             return get<4>();
         }
-        void setTxVoltageDrop_10mV(uint8_t val) {
+        void setLastUplinkTimestamp(uint32_t val) {
             set<4>(val);
         }
-        uint8_t taskCount() const {
+        s1utils::s1_uint24_t obcUptimeMin() const {
             return get<5>();
         }
-        void setTaskCount(uint8_t val) {
+        void setObcUptimeMin(s1utils::s1_uint24_t val) {
             set<5>(val);
         }
-        DiagnosticStatus diagnosticStatus() const {
+        s1utils::s1_uint24_t comUptimeMin() const {
             return get<6>();
         }
-        void setDiagnosticStatus(DiagnosticStatus val) {
+        void setComUptimeMin(s1utils::s1_uint24_t val) {
             set<6>(val);
+        }
+        uint8_t txVoltageDrop_10mV() const {
+            return get<7>();
+        }
+        void setTxVoltageDrop_10mV(uint8_t val) {
+            set<7>(val);
+        }
+        uint8_t taskCount() const {
+            return get<8>();
+        }
+        void setTaskCount(uint8_t val) {
+            set<8>(val);
+        }
+        DiagnosticStatus diagnosticStatus() const {
+            return get<9>();
+        }
+        void setDiagnosticStatus(DiagnosticStatus val) {
+            set<9>(val);
         }
     };
     static_assert(17 == sizeof(DiagnosticInfo), "DiagnosticInfo must be 17 byte long.");
