@@ -950,6 +950,10 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
     case DownlinkPacketType_FileDownload:
         packetTypeSize = sizeof(FileDownloadPacket);
         break;
+    case DownlinkPacketType_HamRepeater1:
+    case DownlinkPacketType_HamRepeater2:
+        packetTypeSize = sizeof(HamRepeaterPacket);
+        break;
     case DownlinkPacketType_FileInfo:
     case DownlinkPacketType_Telemetry1_B:
     case DownlinkPacketType_Telemetry2_B:
@@ -1176,6 +1180,27 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
         auto pc = p.count();
         auto pi = p.index();
         if (pi == pc - 1) {
+            waitForSyncPacket();
+            return; // Returning so that the sync packet timer does not restart
+        }
+    }
+    else if (DownlinkPacketType_HamRepeater1 == packetType || DownlinkPacketType_HamRepeater2 == packetType) {
+        HamRepeaterPacket p;
+        p.loadBinary(reinterpret_cast<uint8_t *>(decodedPacket.data()));
+        QByteArray auth = QByteArray(reinterpret_cast<char *>(p.signature().bytes), sizeof(DownlinkSignature));
+        QString readableQString = QStringLiteral("HAM repeater packet");
+        QString packetName = QStringLiteral("HAM repeater");
+        packetSuccessfullyDecoded(timestamp,
+            source,
+            packetName,
+            encoding,
+            auth,
+            decodedPacket,
+            readableQString,
+            QVariant::fromValue(p),
+            rssi);
+
+        if (DownlinkPacketType_HamRepeater2 == packetType) {
             waitForSyncPacket();
             return; // Returning so that the sync packet timer does not restart
         }

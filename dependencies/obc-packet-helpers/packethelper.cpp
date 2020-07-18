@@ -71,6 +71,8 @@ void s1obc::registerObcPacketTypesQt() {
     qRegisterMetaType<s1obc::BeaconPacketPA>();
     qRegisterMetaType<s1obc::BatteryPacketA>();
     qRegisterMetaType<s1obc::FileDownloadPacket>();
+    qRegisterMetaType<s1obc::HamRepeaterMessage>();
+    qRegisterMetaType<s1obc::HamRepeaterPacket>();
     qRegisterMetaType<s1obc::SpectrumPacket>();
 
     const char *import = "s1obc";
@@ -140,6 +142,8 @@ void s1obc::registerObcPacketTypesQt() {
     qmlRegisterUncreatableType<s1obc::BeaconPacketPA>(import, 1, 0, "BeaconPacketPA", msg);
     qmlRegisterUncreatableType<s1obc::BatteryPacketA>(import, 1, 0, "BatteryPacketA", msg);
     qmlRegisterUncreatableType<s1obc::FileDownloadPacket>(import, 1, 0, "FileDownloadPacket", msg);
+    qmlRegisterUncreatableType<s1obc::HamRepeaterMessage>(import, 1, 0, "HamRepeaterMessage", msg);
+    qmlRegisterUncreatableType<s1obc::HamRepeaterPacket>(import, 1, 0, "HamRepeaterPacket", msg);
     qmlRegisterUncreatableType<s1obc::SpectrumPacket>(import, 1, 0, "SpectrumPacket", msg);
 
     qmlRegisterUncreatableType<s1obc::PacketHelper>(import, 1, 0, "UplinkHelper", msg);

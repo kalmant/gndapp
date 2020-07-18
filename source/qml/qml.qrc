@@ -64,5 +64,6 @@
         <file>commands/MorseRequestCommand.qml</file>
         <file>commands/SilentModeCommand.qml</file>
         <file>commands/SetHamRepeaterModeCommand.qml</file>
+        <file>packets/smog1/HamRepeaterPacket.qml</file>
     </qresource>
 </RCC>

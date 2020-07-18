@@ -110,6 +110,8 @@ namespace s1obc {
         DownlinkPacketType_SpectrumResult = 5,
         DownlinkPacketType_FileInfo = 6,
         DownlinkPacketType_FileDownload = 7,
+        DownlinkPacketType_HamRepeater1 = 8,
+        DownlinkPacketType_HamRepeater2 = 9,
         DownlinkPacketType_Telemetry1_B = 33,
         DownlinkPacketType_Telemetry2_B = 34,
         DownlinkPacketType_Telemetry1_A = 129,
