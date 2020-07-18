@@ -105,6 +105,7 @@ namespace s1sync {
             auto xored = data[i] ^ syncBytes[i];
             matches += (8 - count_ones(static_cast<uint8_t>(xored)));
         }
+        // Fix sync packet detection so it doesn't confuse the different sync packet types
         return matches >= ((syncBytesLength * 8) / 3 * 2);
     }
 
