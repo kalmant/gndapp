@@ -123,6 +123,7 @@ void s1obc::registerObcPacketTypesQt() {
     qmlRegisterUncreatableType<s1obc::MeasurementSelectionPcu>(import, 1, 0, "MeasurementSelectionPcu", msg);
     qmlRegisterUncreatableType<s1obc::MeasurementSelectionMpu>(import, 1, 0, "MeasurementSelectionMpu", msg);
     qmlRegisterUncreatableType<s1obc::MeasurementSelectionObcCom>(import, 1, 0, "MeasurementSelectionObcCom", msg);
+    qmlRegisterUncreatableType<s1obc::MeasurementSelectionTid>(import, 1, 0, "MeasurementSelectionTid", msg);
     qmlRegisterUncreatableType<s1obc::UplinkMeasurementRequestPacket>(
         import, 1, 0, "UplinkMeasurementRequestPacket", msg);
     qmlRegisterUncreatableType<s1obc::UplinkMorseRequestPacket>(import, 1, 0, "UplinkMorseRequestPacket", msg);

@@ -639,7 +639,7 @@ Column {
                             to: 2 * 60
                             stepSize: 5
                             value: packet.intervalTid5min * 5
-                            onValueChanged: packet.intervalTid5min = value * 5
+                            onValueChanged: packet.intervalTid5min = value / 5
                             editable: true
                             Component.onCompleted: contentItem.selectByMouse = true
                             anchors.verticalCenter: parent.verticalCenter
