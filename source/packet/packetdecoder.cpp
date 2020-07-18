@@ -1627,6 +1627,9 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         if (res.second == s1sync::OperatingMode::Receive) {
             packetName = QStringLiteral("RX Sync");
         }
+        else if (res.second == s1sync::OperatingMode::HamReceive) {
+            packetName = QStringLiteral("HR Sync");
+        }
         else {
             packetName = QStringLiteral("TX Sync");
         }
