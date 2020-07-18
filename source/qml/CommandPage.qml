@@ -183,6 +183,10 @@ Column {
                         onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_MorseRequest)
                     }
                     MenuItem {
+                        text: "Silent mode"
+                        onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_SilentMode)
+                    }
+                    MenuItem {
                         text: "Custom"
                         onTriggered: commandTypesMenu.openCommand(0)
                     }

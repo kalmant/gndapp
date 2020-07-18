@@ -62,5 +62,6 @@
         <file>qtquickcontrols2.conf</file>
         <file>SpectogramComponent.qml</file>
         <file>commands/MorseRequestCommand.qml</file>
+        <file>commands/SilentModeCommand.qml</file>
     </qresource>
 </RCC>

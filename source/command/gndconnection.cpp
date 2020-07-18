@@ -202,6 +202,12 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
         case s1obc::UplinkResetType_TID:
             unit = QString("TID");
             break;
+        case s1obc::UplinkResetType_OBC_UserData:
+            unit = QString("OBC user data");
+            break;
+        case s1obc::UplinkResetType_ExitSilentMode:
+            unit = QString("Exit silent mode");
+            break;
         }
         commandString = QStringLiteral("Reset ") + unit;
         commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
@@ -431,6 +437,11 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
         commandString = QStringLiteral("Morse request: ") + packet.morseMessage_qt();
         commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
     }
+    else if (command.canConvert<s1obc::UplinkSilentModePacket>()) {
+        auto packet = command.value<s1obc::UplinkSilentModePacket>();
+        commandString = QStringLiteral("Silent mode: ") + packet.silentDuration();
+        commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
+    }
 
     if (commandBytes.length() == 0) {
         qWarning() << "unknown command";
@@ -441,6 +452,7 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
         return;
     }
 
+    qWarning() << QString::fromLatin1(commandBytes.toHex(' '));
     queueCommand(repeat, commandBytes, commandString, sendTimestamp);
 }
 

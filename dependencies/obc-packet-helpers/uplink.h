@@ -307,7 +307,7 @@ namespace s1obc {
         char characters[length];
     } S1_PACKED;
 
-    using UplinkMorseRequestPacketBase = s1utils::Pack<UplinkPacketType, Timestamp, MorseMessage>;
+    using UplinkMorseRequestPacketBase = s1utils::Pack<UplinkPacketType, Timestamp, MorseMessage, uint8_t[5]>;
     class UplinkMorseRequestPacket : public UplinkMorseRequestPacketBase {
     private:
         Q_GADGET
@@ -348,8 +348,36 @@ namespace s1obc {
             setMorseMessage(message);
         }
     };
-    static_assert(sizeof(UplinkSetBeaconPacket) == MaxUplinkPayloadSize,
-        "UplinkSetBeaconPacket MUST be exactly MaxUplinkPayloadSize bytes.");
+    static_assert(sizeof(UplinkMorseRequestPacket) == MaxUplinkPayloadSize,
+        "UplinkMorseRequestPacket MUST be exactly MaxUplinkPayloadSize bytes.");
+
+    using UplinkSilentModePacketBase = s1utils::Pack<UplinkPacketType, Timestamp, uint32_t, uint8_t[13]>;
+    class UplinkSilentModePacket : public UplinkSilentModePacketBase {
+    private:
+        Q_GADGET
+        Q_PROPERTY(quint32 startTimestamp READ startTimestamp WRITE setStartTimestamp)
+        Q_PROPERTY(quint32 silentDuration READ silentDuration WRITE setSilentDuration)
+
+    public:
+        UplinkSilentModePacket() {
+            set<0>(UplinkPacketType_SilentMode);
+        }
+
+        Timestamp startTimestamp() const {
+            return get<1>();
+        }
+        void setStartTimestamp(Timestamp val) {
+            set<1>(val);
+        }
+        uint32_t silentDuration() const {
+            return get<2>();
+        }
+        void setSilentDuration(const uint32_t val) {
+            set<2>(val);
+        }
+    };
+    static_assert(sizeof(UplinkSilentModePacket) == MaxUplinkPayloadSize,
+        "UplinkSilentModePacket MUST be exactly MaxUplinkPayloadSize bytes.");
 
     class FileDownloadFlags : public s1utils::Bitfield<uint8_t, 1, 3, 4> {
     private:
@@ -947,5 +975,6 @@ Q_DECLARE_METATYPE(s1obc::MeasurementSelectionObcCom)
 Q_DECLARE_METATYPE(s1obc::UplinkMeasurementRequestPacket)
 Q_DECLARE_METATYPE(s1obc::UplinkFileDeletePacket)
 Q_DECLARE_METATYPE(s1obc::UplinkMorseRequestPacket)
+Q_DECLARE_METATYPE(s1obc::UplinkSilentModePacket)
 
 #endif // S1OBC_UPLINK_H

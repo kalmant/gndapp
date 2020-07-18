@@ -74,6 +74,7 @@ namespace s1obc {
         UplinkPacketType_MorseRequest,
         UplinkPacketType_HamRepeaterMessage,
         UplinkPacketType_SetHamRepeaterMode,
+        UplinkPacketType_SilentMode,
     } S1_PACKED;
     Q_ENUM_NS(UplinkPacketType)
     static_assert(1 == sizeof(UplinkPacketType), "enum must be 1 byte long.");
@@ -94,6 +95,8 @@ namespace s1obc {
         UplinkResetType_OBC,
         UplinkResetType_COM,
         UplinkResetType_TID,
+        UplinkResetType_OBC_UserData,
+        UplinkResetType_ExitSilentMode,
     } S1_PACKED;
     Q_ENUM_NS(UplinkResetType)
     static_assert(1 == sizeof(UplinkResetType), "enum must be 1 byte long.");

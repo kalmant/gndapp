@@ -74,6 +74,8 @@ ApplicationWindow {
                     return fileDeleteComponent
                 case OBC.UplinkPacketType_MorseRequest:
                     return morseRequestComponent
+                case OBC.UplinkPacketType_SilentMode:
+                    return silentModeComponent
                 default:
                     return null
                 }
@@ -171,6 +173,14 @@ ApplicationWindow {
                 id: morseRequestComponent
 
                 MorseRequestCommand {
+                    packet: commandDialog.packet
+                }
+            }
+
+            Component {
+                id: silentModeComponent
+
+                SilentModeCommand {
                     packet: commandDialog.packet
                 }
             }
