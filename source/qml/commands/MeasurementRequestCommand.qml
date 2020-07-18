@@ -74,6 +74,7 @@ Column {
         obcCom.selectComVoltage = comVoltageBox.checked ? 1 : 0
         obcCom.selectComTemperature = comTemperatureBox.checked ? 1 : 0
         obcCom.selectSpectrumTemperature = spectrumTemperatureBox.checked ? 1 : 0
+        obcCom.silentMode = silentModeBox.checked ? 1 : 0
 
         packet.solar = solar;
         packet.pcu = pcu;
@@ -580,6 +581,12 @@ Column {
                             id: spectrumTemperatureBox
                             text: "Spectrum temperature"
                             checked: packet.obcCom.selectSpectrumTemperature
+                        }
+
+                        CheckBox {
+                            id: silentModeBox
+                            text: "Silent mode"
+                            checked: packet.obcCom.silentMode
                         }
 
                     }

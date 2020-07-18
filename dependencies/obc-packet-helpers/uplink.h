@@ -705,7 +705,7 @@ namespace s1obc {
         }
     };
 
-    class MeasurementSelectionObcCom : public s1utils::Bitfield<uint16_t, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7> {
+    class MeasurementSelectionObcCom : public s1utils::Bitfield<uint16_t, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6> {
     private:
         Q_GADGET
         Q_PROPERTY(int selectRtcc1Temperature READ selectRtcc1Temperature WRITE setSelectRtcc1Temperature)
@@ -717,6 +717,7 @@ namespace s1obc {
         Q_PROPERTY(int selectComVoltage READ selectComVoltage WRITE setSelectComVoltage)
         Q_PROPERTY(int selectComTemperature READ selectComTemperature WRITE setSelectComTemperature)
         Q_PROPERTY(int selectSpectrumTemperature READ selectSpectrumTemperature WRITE setSelectSpectrumTemperature)
+        Q_PROPERTY(int silentMode READ silentMode WRITE setSilentMode)
 
     public:
         uint16_t selectRtcc1Temperature() const {
@@ -772,6 +773,12 @@ namespace s1obc {
         }
         void setSelectSpectrumTemperature(uint16_t val) {
             set<8>(val);
+        }
+        uint16_t silentMode() const {
+            return get<9>();
+        }
+        void setSilentMode(uint16_t val) {
+            set<9>(val);
         }
     };
 
