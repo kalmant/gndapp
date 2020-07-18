@@ -1,5 +1,5 @@
 #include "packetdecoder.h"
-
+#include "crc.h"
 #ifdef CHECK_SIGNATURE
 
 // Not included in this version
@@ -980,6 +980,7 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
 #ifdef CHECK_SIGNATURE
     if (!checkSignature(decodedPacket)) {
         // signature mismatch
+        qInfo() << "received packet had wrong signature";
         startSyncPacketTimeout(dataRate_priv, decodeMode_priv);
         return;
     }
@@ -1334,32 +1335,39 @@ void PacketDecoder::processSyncContents(unsigned int datarateBPS, s1sync::Operat
     emit newDataRate(datarateBPS);
     dataRate_priv = datarateBPS;
     decodeMode_priv = operatingMode;
+    unsigned int packetLength = 0;
+
     using namespace s1sync;
     switch (operatingMode) {
     case OperatingMode::AO40Short:
-        emit newPacketLength(333);
+        packetLength = 333;
         break;
     case OperatingMode::AO40:
-        emit newPacketLength(650);
+        packetLength = 650;
         break;
     case OperatingMode::RA_128_to_260:
-        emit newPacketLength(260);
+        packetLength = 260;
         break;
     case OperatingMode::RA_256_to_514:
-        emit newPacketLength(514);
+        packetLength = 514;
         break;
     case OperatingMode::RA_512_to_1028:
-        emit newPacketLength(1028);
+        packetLength = 1028;
         break;
     case OperatingMode::RA_1024_to_2050:
-        emit newPacketLength(2050);
+        packetLength = 2050;
         break;
     case OperatingMode::RA_2048_to_4100:
-        emit newPacketLength(4100);
+        packetLength = 4100;
         break;
     default:
         break;
     }
+
+    if (currentSatellite == SatelliteChanger::Satellites::SMOG1) {
+        packetLength += 8;
+    }
+    emit newPacketLength(packetLength);
     startSyncPacketTimeout(datarateBPS, operatingMode);
 }
 
@@ -1566,6 +1574,16 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         return;
     }
     QByteArray received = QByteArray::fromHex(packetUpperHexString.toLocal8Bit());
+
+    // For SMOG-1 drop the prefix and suffix unique words from the packet
+    if ((currentSatellite == SatelliteChanger::Satellites::SMOG1) && (received.length() != s1sync::syncPacketLength)) {
+        auto prefix = received.left(4);
+        auto suffix = received.right(4);
+        // TODO: check prefix and suffix
+
+        received = received.mid(4, received.length() - 8);
+    }
+
     switch (received.length()) {
     case s1sync::syncPacketLength: {
         // Validate sync packet
@@ -1689,4 +1707,5 @@ void PacketDecoder::changePrefix(QString prefix) {
  */
 void PacketDecoder::changeSatellite(SatelliteChanger::Satellites satellite) {
     this->currentSatellite = satellite;
+    emit newSatelliteEcho(satellite);
 }

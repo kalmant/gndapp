@@ -73,7 +73,7 @@ SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, P
     mutex_priv = mutex;
     canRun_priv = canRun;
     ds_priv = ds;
-    packet_length_ptr = pl;
+    packet_length_ptr = pl; // NOTE: This is not used anymore since we demodulate with every packet length
     datarate_ptr = dr;
     dev_index_priv = -1;
     dev_priv = nullptr;
@@ -99,6 +99,10 @@ SDRWorker::SDRWorker(QMutex *mutex, bool *canRun, int *ds, long *pl, long *dr, P
     QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_2500, &MagicDemodulator::reset);
     QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_5000, &MagicDemodulator::reset);
     QObject::connect(pd, &PacketDecoder::resetDemodulators, &magic_demod_12500, &MagicDemodulator::reset);
+    QObject::connect(pd, &PacketDecoder::newSatelliteEcho, &magic_demod_1250, &MagicDemodulator::newSatelliteSlot);
+    QObject::connect(pd, &PacketDecoder::newSatelliteEcho, &magic_demod_2500, &MagicDemodulator::newSatelliteSlot);
+    QObject::connect(pd, &PacketDecoder::newSatelliteEcho, &magic_demod_5000, &MagicDemodulator::newSatelliteSlot);
+    QObject::connect(pd, &PacketDecoder::newSatelliteEcho, &magic_demod_12500, &MagicDemodulator::newSatelliteSlot);
 }
 
 /**

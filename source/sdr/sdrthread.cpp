@@ -252,9 +252,7 @@ void SDRThread::newDataRateSlot(unsigned int newDataRateBPS) {
 void SDRThread::newPacketLengthSlot(unsigned int newPacketLengthBytes) {
     if (newPacketLengthBytes != packetLengthBytes_priv) {
         packetLengthBytes_priv = newPacketLengthBytes;
-        mut_priv.data()->lock();
-        *(pl_priv.data()) = packetLengthBytes_priv;
-        mut_priv.data()->unlock();
+        // NOTE: Packet length input is not used for demodulation anymore
     }
 }
 

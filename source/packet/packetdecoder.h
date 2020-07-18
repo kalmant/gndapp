@@ -221,6 +221,8 @@ signals:
      * But the beginning section of the packet after the sync packet is also included in that bigger demodulation.
      */
     void resetDemodulators();
+
+    void newSatelliteEcho(SatelliteChanger::Satellites satellite);
 };
 
 #endif // PACKETDECODER_H

@@ -40,6 +40,7 @@ AudioInDemodulator::AudioInDemodulator(QObject *parent) : QObject(parent) {
     change_cnco_offset_frequency(&cnco_vars, S1DEM_AUDIO_FREQ_CENTER_OFFSET); // We have an offset of 1.5 kHz
     // Forwarding the signal
     QObject::connect(&magic_demod, &MagicDemodulator::dataReady, this, &AudioInDemodulator::dataReady);
+    QObject::connect(this, &AudioInDemodulator::newSatellite, &magic_demod, &MagicDemodulator::newSatelliteSlot);
 }
 
 AudioInDemodulator::~AudioInDemodulator() {

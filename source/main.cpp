@@ -264,13 +264,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty(
         "defaultMonotypeFontFamily", QFontDatabase::systemFont(QFontDatabase::FixedFont).family());
 
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-
-    if (engine.rootObjects().isEmpty()) {
-        qWarning() << "Could not load QML file, quitting. Are you sure you are running a necessary Qt version?";
-        return 1;
-    }
-
     AudioSampler audioSampler;
     engine.rootContext()->setContextProperty("audioSampler", &audioSampler);
     QScopedPointer<AudioInDemodulatorThread> adem1250Thread(new AudioInDemodulatorThread(&packetDecoder));
@@ -279,6 +272,13 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
         adem1250Thread.data(),
         &AudioInDemodulatorThread::demodulate);
     adem1250Thread->start();
+
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+
+    if (engine.rootObjects().isEmpty()) {
+        qWarning() << "Could not load QML file, quitting. Are you sure you are running a necessary Qt version?";
+        return 1;
+    }
 
     Spectogram *spectogramptr =
         engine.rootObjects().at(0)->findChild<Spectogram *>("spectogramObject", Qt::FindChildrenRecursively);
