@@ -63,5 +63,6 @@
         <file>SpectogramComponent.qml</file>
         <file>commands/MorseRequestCommand.qml</file>
         <file>commands/SilentModeCommand.qml</file>
+        <file>commands/SetHamRepeaterModeCommand.qml</file>
     </qresource>
 </RCC>

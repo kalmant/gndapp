@@ -128,6 +128,8 @@ void s1obc::registerObcPacketTypesQt() {
         import, 1, 0, "UplinkMeasurementRequestPacket", msg);
     qmlRegisterUncreatableType<s1obc::UplinkMorseRequestPacket>(import, 1, 0, "UplinkMorseRequestPacket", msg);
     qmlRegisterUncreatableType<s1obc::UplinkSilentModePacket>(import, 1, 0, "UplinkSilentModePacket", msg);
+    qmlRegisterUncreatableType<s1obc::UplinkSetHamRepeaterModePacket>(
+        import, 1, 0, "UplinkSetHamRepeaterModePacket", msg);
 
     qmlRegisterUncreatableType<s1obc::AcknowledgedCommand>(import, 1, 0, "AcknowledgedCommand", msg);
     qmlRegisterUncreatableType<s1obc::SolarPanelTelemetryPacket>(import, 1, 0, "SolarPanelTelemetryPacket", msg);
@@ -174,6 +176,8 @@ QVariant s1obc::PacketHelper::createUplink(s1obc::UplinkPacketType packetType) {
         return QVariant::fromValue(UplinkMorseRequestPacket());
     case UplinkPacketType_SilentMode:
         return QVariant::fromValue(UplinkSilentModePacket());
+    case UplinkPacketType_SetHamRepeaterMode:
+        return QVariant::fromValue(UplinkSetHamRepeaterModePacket());
     default:
         return QVariant();
     }

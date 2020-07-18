@@ -1062,6 +1062,52 @@ namespace s1obc {
     static_assert(sizeof(UplinkFileDeletePacket) == MaxUplinkPayloadSize,
         "UplinkFileDeletePacket MUST be exactly MaxUplinkPayloadSize bytes.");
 
+    struct HamRepeaterAesKey {
+        static constexpr size_t length = 16;
+        char characters[length] = {0};
+    } S1_PACKED;
+
+    using UplinkSetHamRepeaterModePacketBase = s1utils::Pack<UplinkPacketType, uint8_t, HamRepeaterAesKey, uint8_t[4]>;
+    class UplinkSetHamRepeaterModePacket : public UplinkSetHamRepeaterModePacketBase {
+    private:
+        Q_GADGET
+        Q_PROPERTY(int enable READ enable WRITE setEnable)
+        Q_PROPERTY(QString aesKey READ aesKey_qt WRITE setAesKey_qt)
+
+    public:
+        UplinkSetHamRepeaterModePacket() {
+            set<0>(UplinkPacketType_SetHamRepeaterMode);
+        }
+
+        uint8_t enable() const {
+            return get<1>();
+        }
+        void setEnable(uint8_t val) {
+            set<1>(val);
+        }
+
+        HamRepeaterAesKey aesKey() const {
+            return get<2>();
+        }
+        void setAesKey(const HamRepeaterAesKey &val) {
+            set<2>(val);
+        }
+
+        QString aesKey_qt() const {
+            HamRepeaterAesKey n = aesKey();
+            return QString::fromLatin1(
+                n.characters, n.characters[HamRepeaterAesKey::length - 1] == 0 ? (-1) : HamRepeaterAesKey::length);
+        }
+
+        void setAesKey_qt(const QString &val) {
+            HamRepeaterAesKey n;
+            strncpy(n.characters, val.toLatin1().data(), HamRepeaterAesKey::length);
+            setAesKey(n);
+        }
+    };
+    static_assert(sizeof(UplinkSetHamRepeaterModePacket) == MaxUplinkPayloadSize,
+        "UplinkSetHamRepeaterModePacket MUST be exactly MaxUplinkPayloadSize bytes.");
+
 } // namespace s1obc
 
 Q_DECLARE_METATYPE(s1obc::UplinkPingPacket)
@@ -1082,5 +1128,6 @@ Q_DECLARE_METATYPE(s1obc::UplinkMeasurementRequestPacket)
 Q_DECLARE_METATYPE(s1obc::UplinkFileDeletePacket)
 Q_DECLARE_METATYPE(s1obc::UplinkMorseRequestPacket)
 Q_DECLARE_METATYPE(s1obc::UplinkSilentModePacket)
+Q_DECLARE_METATYPE(s1obc::UplinkSetHamRepeaterModePacket)
 
 #endif // S1OBC_UPLINK_H

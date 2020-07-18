@@ -76,6 +76,8 @@ ApplicationWindow {
                     return morseRequestComponent
                 case OBC.UplinkPacketType_SilentMode:
                     return silentModeComponent
+                case OBC.UplinkPacketType_SetHamRepeaterMode:
+                    return setHamRepeaterModeComponent
                 default:
                     return null
                 }
@@ -181,6 +183,14 @@ ApplicationWindow {
                 id: silentModeComponent
 
                 SilentModeCommand {
+                    packet: commandDialog.packet
+                }
+            }
+
+            Component {
+                id: setHamRepeaterModeComponent
+
+                SetHamRepeaterModeCommand {
                     packet: commandDialog.packet
                 }
             }

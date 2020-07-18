@@ -187,6 +187,10 @@ Column {
                         onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_SilentMode)
                     }
                     MenuItem {
+                        text: "Set HAM repeater mode"
+                        onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_SetHamRepeaterMode)
+                    }
+                    MenuItem {
                         text: "Custom"
                         onTriggered: commandTypesMenu.openCommand(0)
                     }
