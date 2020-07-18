@@ -50,6 +50,8 @@ ApplicationWindow {
                 switch (Number(packetType)) {
                 case 0:
                     return customComponent
+                case 999:
+                    return customHexComponent
                 case OBC.UplinkPacketType_Ping:
                     return pingComponent
                 case OBC.UplinkPacketType_Toggle:
@@ -199,6 +201,14 @@ ApplicationWindow {
                 id: customComponent
 
                 CustomCommand {
+                    packet: commandDialog.packet
+                }
+            }
+
+            Component {
+                id: customHexComponent
+
+                CustomHexCommand {
                     packet: commandDialog.packet
                 }
             }

@@ -155,6 +155,14 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
             commandBytes.append((OUTPUTLENGTH - commandBytes.length()), 0);
         }
     }
+    else if (command.type() == QVariant::ByteArray) {
+        commandString = QStringLiteral("Custom HEX");
+        commandBytes = command.toByteArray();
+
+        if (commandBytes.length() < OUTPUTLENGTH) {
+            commandBytes.append((OUTPUTLENGTH - commandBytes.length()), 0);
+        }
+    }
     else if (command.canConvert<s1obc::UplinkPingPacket>()) {
         auto packet = command.value<s1obc::UplinkPingPacket>();
         commandString = QStringLiteral("Ping");
@@ -439,7 +447,15 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
     }
     else if (command.canConvert<s1obc::UplinkSilentModePacket>()) {
         auto packet = command.value<s1obc::UplinkSilentModePacket>();
-        commandString = QStringLiteral("Silent mode: ") + packet.silentDuration();
+        commandString = QStringLiteral("Silent mode: ") + QString::number(packet.silentDuration());
+        commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
+    }
+    else if (command.canConvert<s1obc::UplinkSetHamRepeaterModePacket>()) {
+        auto packet = command.value<s1obc::UplinkSetHamRepeaterModePacket>();
+        commandString = QStringLiteral("Set HAM repeater, en=");
+        commandString += QString::number(packet.enable());
+        commandString += QStringLiteral(", key=");
+        commandString += packet.aesKey_qt();
         commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
     }
 

@@ -194,6 +194,10 @@ Column {
                         text: "Custom"
                         onTriggered: commandTypesMenu.openCommand(0)
                     }
+                    MenuItem {
+                        text: "Custom HEX"
+                        onTriggered: commandTypesMenu.openCommand(999)
+                    }
                 }
 
                 Component {
