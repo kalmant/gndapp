@@ -810,6 +810,85 @@ namespace s1obc {
         }
     };
 
+    class MeasurementSelectionTid : public s1utils::Bitfield<uint16_t, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6> {
+    private:
+        Q_GADGET
+        Q_PROPERTY(int selectTid1Temperature READ selectTid1Temperature WRITE setSelectTid1Temperature)
+        Q_PROPERTY(int selectTid1Serial READ selectTid1Serial WRITE setSelectTid1Serial)
+        Q_PROPERTY(int selectTid1Radfet1 READ selectTid1Radfet1 WRITE setSelectTid1Radfet1)
+        Q_PROPERTY(int selectTid1Radfet2 READ selectTid1Radfet2 WRITE setSelectTid1Radfet2)
+        Q_PROPERTY(int selectTid1Voltage READ selectTid1Voltage WRITE setSelectTid1Voltage)
+
+        Q_PROPERTY(int selectTid2Temperature READ selectTid2Temperature WRITE setSelectTid2Temperature)
+        Q_PROPERTY(int selectTid2Serial READ selectTid2Serial WRITE setSelectTid2Serial)
+        Q_PROPERTY(int selectTid2Radfet1 READ selectTid2Radfet1 WRITE setSelectTid2Radfet1)
+        Q_PROPERTY(int selectTid2Radfet2 READ selectTid2Radfet2 WRITE setSelectTid2Radfet2)
+        Q_PROPERTY(int selectTid2Voltage READ selectTid2Voltage WRITE setSelectTid2Voltage)
+
+    public:
+        uint16_t selectTid1Temperature() const {
+            return get<0>();
+        }
+        void setSelectTid1Temperature(uint16_t val) {
+            set<0>(val);
+        }
+        uint16_t selectTid1Serial() const {
+            return get<1>();
+        }
+        void setSelectTid1Serial(uint16_t val) {
+            set<1>(val);
+        }
+        uint16_t selectTid1Radfet1() const {
+            return get<2>();
+        }
+        void setSelectTid1Radfet1(uint16_t val) {
+            set<2>(val);
+        }
+        uint16_t selectTid1Radfet2() const {
+            return get<3>();
+        }
+        void setSelectTid1Radfet2(uint16_t val) {
+            set<3>(val);
+        }
+        uint16_t selectTid1Voltage() const {
+            return get<4>();
+        }
+        void setSelectTid1Voltage(uint16_t val) {
+            set<4>(val);
+        }
+
+        uint16_t selectTid2Temperature() const {
+            return get<5>();
+        }
+        void setSelectTid2Temperature(uint16_t val) {
+            set<5>(val);
+        }
+        uint16_t selectTid2Serial() const {
+            return get<6>();
+        }
+        void setSelectTid2Serial(uint16_t val) {
+            set<6>(val);
+        }
+        uint16_t selectTid2Radfet1() const {
+            return get<7>();
+        }
+        void setSelectTid2Radfet1(uint16_t val) {
+            set<7>(val);
+        }
+        uint16_t selectTid2Radfet2() const {
+            return get<8>();
+        }
+        void setSelectTid2Radfet2(uint16_t val) {
+            set<8>(val);
+        }
+        uint16_t selectTid2Voltage() const {
+            return get<9>();
+        }
+        void setSelectTid2Voltage(uint16_t val) {
+            set<9>(val);
+        }
+    };
+
     using UplinkMeasurementRequestPacketBase = s1utils::Pack<UplinkPacketType,
         uint32_t,
         uint16_t,
@@ -818,11 +897,12 @@ namespace s1obc {
         MeasurementSelectionPcu,
         MeasurementSelectionMpu,
         MeasurementSelectionObcCom,
+        MeasurementSelectionTid,
         uint8_t,
         uint8_t,
         uint8_t,
         uint8_t,
-        uint8_t[3]>;
+        uint8_t>;
     class UplinkMeasurementRequestPacket : public UplinkMeasurementRequestPacketBase {
     private:
         Q_GADGET
@@ -835,11 +915,13 @@ namespace s1obc {
         Q_PROPERTY(s1obc::MeasurementSelectionPcu pcu READ pcu WRITE setPcu)
         Q_PROPERTY(s1obc::MeasurementSelectionMpu mpu READ mpu WRITE setMpu)
         Q_PROPERTY(s1obc::MeasurementSelectionObcCom obcCom READ obcCom WRITE setObcCom)
+        Q_PROPERTY(s1obc::MeasurementSelectionTid tid READ tid WRITE setTid)
 
         Q_PROPERTY(int intervalSolarSec READ intervalSolarSec WRITE setIntervalSolarSec)
         Q_PROPERTY(int intervalPcuSec READ intervalPcuSec WRITE setIntervalPcuSec)
         Q_PROPERTY(int intervalMpuDecisec READ intervalMpuDecisec WRITE setIntervalMpuDecisec)
         Q_PROPERTY(int intervalObcComSec READ intervalObcComSec WRITE setIntervalObcComSec)
+        Q_PROPERTY(int intervalTid5min READ intervalTid5min WRITE setIntervalTid5min)
 
     public:
         UplinkMeasurementRequestPacket() {
@@ -889,30 +971,42 @@ namespace s1obc {
         void setObcCom(const MeasurementSelectionObcCom &val) {
             set<7>(val);
         }
-
-        uint8_t intervalSolarSec() const {
+        MeasurementSelectionTid tid() const {
             return get<8>();
         }
-        void setIntervalSolarSec(uint8_t val) {
+        void setTid(const MeasurementSelectionTid &val) {
             set<8>(val);
         }
-        uint8_t intervalPcuSec() const {
+
+        uint8_t intervalSolarSec() const {
             return get<9>();
         }
-        void setIntervalPcuSec(uint8_t val) {
+        void setIntervalSolarSec(uint8_t val) {
             set<9>(val);
         }
-        uint8_t intervalMpuDecisec() const {
+        uint8_t intervalPcuSec() const {
             return get<10>();
         }
-        void setIntervalMpuDecisec(uint8_t val) {
+        void setIntervalPcuSec(uint8_t val) {
             set<10>(val);
         }
-        uint8_t intervalObcComSec() const {
+        uint8_t intervalMpuDecisec() const {
             return get<11>();
         }
-        void setIntervalObcComSec(uint8_t val) {
+        void setIntervalMpuDecisec(uint8_t val) {
             set<11>(val);
+        }
+        uint8_t intervalObcComSec() const {
+            return get<12>();
+        }
+        void setIntervalObcComSec(uint8_t val) {
+            set<12>(val);
+        }
+        uint8_t intervalTid5min() const {
+            return get<13>();
+        }
+        void setIntervalTid5min(uint8_t val) {
+            set<13>(val);
         }
     };
     static_assert(sizeof(UplinkMeasurementRequestPacket) == MaxUplinkPayloadSize,
