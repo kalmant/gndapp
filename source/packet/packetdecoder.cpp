@@ -147,11 +147,54 @@ QString PacketDecoder::processTelemetry1(const s1obc::SolarPanelTelemetryPacket 
 }
 
 /**
- * @brief Takes an s1obc::PcuTelemetryPacket and processes it, returning the resulting QString
+ * @brief Takes an s1obc::PcuTelemetryPacket and processes it for SMOG1, returning the resulting QString
  * @param packet The packet
  * @return The QString that represents the packet's contents in an easily readable format.
  */
 QString PacketDecoder::processTelemetry2(const s1obc::PcuTelemetryPacket &packet) {
+    using namespace s1obc;
+    Q_ASSERT(static_cast<char>(s1obc::DownlinkPacketType_Telemetry2) == packet.packetType());
+    QString zeroth = getDTSFromUint32UTC(packet.timestamp()) + " === Telemetry2 ===";
+    PcuDeploymentTelemetry pcu1D = packet.deployment1();
+    PcuDeploymentTelemetry pcu2D = packet.deployment2();
+    PcuBatteryTelemetry pcu1Ba = packet.battery1();
+    PcuBatteryTelemetry pcu2Ba = packet.battery2();
+    PcuBusTelemetry pcu1Bu = packet.bus1();
+    PcuBusTelemetry pcu2Bu = packet.bus2();
+    PcuSdcTelemetry pcu1S = packet.sdc1();
+    PcuSdcTelemetry pcu2S = packet.sdc2();
+
+    QString first = QString(
+        "--- PCU1Depl " + getDTSFromUint32UTC(pcu1D.timestamp()) + " ---\n" + extractPCUDeploymentTelemetry(pcu1D));
+    QString second = QString(
+        "--- PCU2Depl " + getDTSFromUint32UTC(pcu2D.timestamp()) + " ---\n" + extractPCUDeploymentTelemetry(pcu2D));
+    QString third = QString(
+        "--- PCU1Battery " + getDTSFromUint32UTC(pcu1Ba.timestamp()) + " ---\n" + extractPCUBatteryTelemetry(pcu1Ba));
+    QString fourth = QString(
+        "--- PCU2Battery " + getDTSFromUint32UTC(pcu2Ba.timestamp()) + " ---\n" + extractPCUBatteryTelemetry(pcu2Ba));
+    QString fifth =
+        QString("--- PCU1Bus " + getDTSFromUint32UTC(pcu1Bu.timestamp()) + " ---\n" + extractPCUBusTelemetry(pcu1Bu));
+    QString sixth =
+        QString("--- PCU2Bus " + getDTSFromUint32UTC(pcu2Bu.timestamp()) + " ---\n" + extractPCUBusTelemetry(pcu2Bu));
+    QString seventh =
+        QString("--- PCU1SDC " + getDTSFromUint32UTC(pcu1S.timestamp()) + " ---\n" + extractPCUSDCTelemetry(pcu1S));
+    QString eighth =
+        QString("--- PCU2SDC " + getDTSFromUint32UTC(pcu2S.timestamp()) + " ---\n" + extractPCUSDCTelemetry(pcu2S));
+    QString ninth = "PCU1V[mV]:" + QString::number(packet.pcu1Voltage());
+    QString tenth = "PCU2V[mV]:" + QString::number(packet.pcu2Voltage());
+    auto ack = packet.acknowledgedCommands();
+    QString ackLine = "ACK: " + processAcknowledgedCommands(ack);
+    QString allLines = zeroth + "\n\n" + first + "\n" + second + "\n" + third + "\n" + fourth + "\n" + fifth + "\n" +
+                       sixth + "\n" + seventh + "\n" + eighth + "\n" + ninth + "\n" + tenth + "\n\n" + ackLine;
+    return allLines;
+}
+
+/**
+ * @brief Takes an s1obc::PcuTelemetryPacket and processes it for SMOGP, returning the resulting QString
+ * @param packet The packet
+ * @return The QString that represents the packet's contents in an easily readable format.
+ */
+QString PacketDecoder::processTelemetry2P(const s1obc::PcuTelemetryPacket &packet) {
     using namespace s1obc;
     Q_ASSERT(static_cast<char>(s1obc::DownlinkPacketType_Telemetry2) == packet.packetType());
     QString zeroth = getDTSFromUint32UTC(packet.timestamp()) + " === Telemetry2 ===";
@@ -1015,8 +1058,7 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
     }
     else if (DownlinkPacketType_Telemetry2 == packetType) {
         switch (currentSatellite) {
-        case SatelliteChanger::Satellites::SMOG1:
-        case SatelliteChanger::Satellites::SMOGP: {
+        case SatelliteChanger::Satellites::SMOG1: {
             PcuTelemetryPacket p;
             p.loadBinary(reinterpret_cast<uint8_t *>(decodedPacket.data()));
             QByteArray auth = QByteArray(reinterpret_cast<char *>(p.signature().bytes), sizeof(DownlinkSignature));
@@ -1029,6 +1071,22 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
                 decodedPacket,
                 readableQString,
                 QVariant::fromValue(p),
+                rssi);
+            break;
+        }
+        case SatelliteChanger::Satellites::SMOGP: {
+            PcuTelemetryPacket pp;
+            pp.loadBinary(reinterpret_cast<uint8_t *>(decodedPacket.data()));
+            QByteArray auth = QByteArray(reinterpret_cast<char *>(pp.signature().bytes), sizeof(DownlinkSignature));
+            QString readableQString = processTelemetry2P(pp);
+            packetSuccessfullyDecoded(timestamp,
+                source,
+                "Telemetry 2/4",
+                encoding,
+                auth,
+                decodedPacket,
+                readableQString,
+                QVariant::fromValue(pp),
                 rssi);
             break;
         }

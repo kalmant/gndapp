@@ -208,7 +208,8 @@ namespace s1obc {
         PcuBusTelemetry,
         PcuBusTelemetry,
         AcknowledgedCommands,
-        uint8_t[4],
+        uint16_t,
+        uint16_t,
         DownlinkSignature>;
     class PcuTelemetryPacket : public PcuTelemetryPacketBase {
     private:
@@ -225,6 +226,8 @@ namespace s1obc {
         Q_PROPERTY(s1obc::PcuBatteryTelemetry battery2 READ battery2 WRITE setBattery2)
         Q_PROPERTY(s1obc::PcuBusTelemetry bus1 READ bus1 WRITE setBus1)
         Q_PROPERTY(s1obc::PcuBusTelemetry bus2 READ bus2 WRITE setBus2)
+        Q_PROPERTY(quint16 pcu1Voltage READ pcu1Voltage WRITE setPcu1Voltage)
+        Q_PROPERTY(quint16 pcu2Voltage READ pcu2Voltage WRITE setPcu2Voltage)
 
     public:
         DownlinkPacketType packetType() const {
@@ -247,10 +250,10 @@ namespace s1obc {
             set<10>(val);
         }
         DownlinkSignature signature() const {
-            return get<12>();
+            return get<13>();
         }
         void setSignature(const DownlinkSignature &val) {
-            set<12>(val);
+            set<13>(val);
         }
 
         PcuDeploymentTelemetry deployment1() const {
@@ -300,6 +303,19 @@ namespace s1obc {
         }
         void setBus2(const PcuBusTelemetry &val) {
             set<9>(val);
+        }
+
+        uint16_t pcu1Voltage() const {
+            return get<11>();
+        }
+        void setPcu1Voltage(uint16_t val) {
+            set<11>(val);
+        }
+        uint16_t pcu2Voltage() const {
+            return get<12>();
+        }
+        void setPcu2Voltage(uint16_t val) {
+            set<12>(val);
         }
 
         QByteArray signature_qt() const {

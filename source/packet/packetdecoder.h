@@ -62,6 +62,7 @@ private:
     s1sync::OperatingMode decodeMode_priv;
     QString processTelemetry1(const s1obc::SolarPanelTelemetryPacket &packet);
     QString processTelemetry2(const s1obc::PcuTelemetryPacket &packet);
+    QString processTelemetry2P(const s1obc::PcuTelemetryPacket &packet);
     QString processTelemetry2A(const s1obc::PcuTelemetryPacket &packet);
     QString processTelemetry3(const s1obc::OnboardTelemetryPacket &packet);
     QString processTelemetry3P(const s1obc::OnboardTelemetryPacketPA &packet);

@@ -415,6 +415,19 @@ Subsystem {
             content: String(telemetry2packet.bus2.obc2CurrentConsumption_mA) + " mA"
                      + " (OC=" + String(telemetry2packet.bus2.status.obc2Overcurrent) + ")"
             ok: !telemetry2packet.bus2.status.obc2Overcurrent && (telemetry2packet.bus2.obc2CurrentConsumption_mA < 15)
+        },
+        // PCU Voltage
+        TelemetryObject {
+            group: "PCU-V"
+            description: "PCU1 voltage"
+            content: String(telemetry2packet.pcu1Voltage) + " mV"
+            // TODO: add correct range for value
+        },
+        TelemetryObject {
+            group: "PCU-V"
+            description: "PCU2 voltage"
+            content: String(telemetry2packet.pcu2Voltage) + " mV"
+            // TODO: add correct range for value
         }
     ]
 }
