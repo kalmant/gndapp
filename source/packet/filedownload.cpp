@@ -232,6 +232,7 @@ void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteAr
     int16_t i16;
     uint16_t u16;
     s1_uint24_t u24;
+    uint32_t u32;
 
     for (uint32_t elapsedMs = interval; elapsedMs <= durationMs; elapsedMs += interval) {
         bool processSolar = (hasSolar && (elapsedMs % intervalSolarMs) == 0);
@@ -278,6 +279,12 @@ void FileDownload::writeUniversalMeasurementFile(QTextStream &out, const QByteAr
                 if (solar.selectOutputVoltage()) {
                     stream >> u16;
                     out << QStringLiteral("Solar panel ") << solarid << " output voltage: " << u16 << " mV\n";
+                }
+                if (solar.selectTimestamp()) {
+                    stream >> u32;
+                    QDateTime dt = QDateTime::fromSecsSinceEpoch(u32, Qt::UTC);
+                    out << QStringLiteral("Solar panel ") << solarid << " timestamp: " << u32 << " " << dt.toString()
+                        << " mV\n";
                 }
             }
         }
