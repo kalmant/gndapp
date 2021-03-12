@@ -1,4 +1,5 @@
 #include "packetsjsonwrapper.h"
+#include <QFile>
 
 PacketsJSONWrapper::PacketsJSONWrapper() {
 }
