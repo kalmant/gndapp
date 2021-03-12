@@ -1674,8 +1674,9 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         // Validate sync packet
         auto res = s1sync::getSyncContents(received, currentSatellite);
         if (res.second == s1sync::OperatingMode::Invalid) {
-            // Too many sync errors
-            break;
+            qWarning() << "invalid sync packet, dropping it";
+            waitForSyncPacket();
+            return;
         }
         emit resetDemodulators();
         processSyncContents(res.first, res.second);
