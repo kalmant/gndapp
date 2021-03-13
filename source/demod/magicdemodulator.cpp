@@ -10,10 +10,6 @@ MagicDemodulator::MagicDemodulator(long sampling_rate, long datarate, QString so
         qCritical() << "Invalid sampling_rate and datarate pair:" << sampling_rate << " - " << datarate;
     }
 
-    for (int i = 0; i < (PACKET_SIZES_COUNT + SMOG1_OFFSET); i++) {
-        packet_buffers[i].reserve(packet_lengths[i]);
-    }
-
     reinitialize();
 }
 
@@ -32,8 +28,6 @@ void MagicDemodulator::addSample(std::complex<float> sample) {
             dem_b = demod_output;
             dem_a_set = false;
             for (int i = (current_offset + starting_index); i < (current_offset + PACKET_SIZES_COUNT); i++) {
-                packet_buffers[i].reserve(packet_lengths[i]);
-
                 auto decd = make_hard_decision(&dec_vars[i], dem_a, dem_b, packet_lengths[i]);
                 if (decd != -1) {
                     packet_buffers[i].append(char(decd));
@@ -44,6 +38,7 @@ void MagicDemodulator::addSample(std::complex<float> sample) {
                                                            .toUpper();
                         emit dataReady(timestamp, source_string, packetUpperHexString);
                         packet_buffers[i].clear();
+                        packet_buffers[i].reserve(packet_lengths[i]);
                     }
                 }
             }
@@ -62,6 +57,7 @@ void MagicDemodulator::clear() {
 void MagicDemodulator::reinitialize() {
     for (int i = 0; i < (PACKET_SIZES_COUNT + SMOG1_OFFSET); i++) {
         packet_buffers[i].clear();
+        packet_buffers[i].reserve(packet_lengths[i]);
     }
     reinitialize_avg_vars(&avg_vars, sampling_rate / datarate);
     reinitialize_avg_dec_vars(&avg_dec_vars, sampling_rate / datarate / 2); // 2 samples / bit

@@ -37,13 +37,11 @@ namespace s1sync {
             return std::make_pair(dr, om);
         }
 
-        if (smog1) {
-            if (shouldAccept(packet, syncDefaultArray)) {
-                return std::make_pair(5000, OperatingMode::Receive);
-            }
-            else if (shouldAccept(packet, syncSmog1HamRxArray)) {
-                return std::make_pair(5000, OperatingMode::HamReceive);
-            }
+        if (shouldAccept(packet, syncDefaultArray)) {
+            return std::make_pair(5000, OperatingMode::Receive);
+        }
+        else if (smog1 && shouldAccept(packet, syncSmog1HamRxArray)) {
+            return std::make_pair(5000, OperatingMode::HamReceive);
         }
 
         qWarning() << "Sync packet is invalid, perhaps does not start with the specified prefix";
@@ -68,6 +66,8 @@ namespace s1sync {
             return "RA2048";
         case OperatingMode::Receive:
             return "Receive";
+        case OperatingMode::HamReceive:
+            return "HAM receive";
         default:
             return "Invalid";
         }
