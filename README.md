@@ -7,3 +7,7 @@ We recommend at least Qt 5.12.6 if you want to build the project.
 Please note, that OpenSSL dlls are not included. You need to acquire those on your own (at least v.1.1) to build on Windows using OpenSSL.
 
 If you find any issues, feel free to open a pull request with the proposed fix. You may also open an issue, but due to the limited nature of our free time, we may not get to it anytime soon.
+
+
+
+**Please note that the repository has been archived and no further development is expected to take place. The most recent commit can be found on branch `smog1-updates`.**
