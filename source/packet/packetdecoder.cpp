@@ -1,5 +1,5 @@
 #include "packetdecoder.h"
-
+#include "crc.h"
 #ifdef CHECK_SIGNATURE
 
 // Not included in this version
@@ -147,11 +147,54 @@ QString PacketDecoder::processTelemetry1(const s1obc::SolarPanelTelemetryPacket 
 }
 
 /**
- * @brief Takes an s1obc::PcuTelemetryPacket and processes it, returning the resulting QString
+ * @brief Takes an s1obc::PcuTelemetryPacket and processes it for SMOG1, returning the resulting QString
  * @param packet The packet
  * @return The QString that represents the packet's contents in an easily readable format.
  */
 QString PacketDecoder::processTelemetry2(const s1obc::PcuTelemetryPacket &packet) {
+    using namespace s1obc;
+    Q_ASSERT(static_cast<char>(s1obc::DownlinkPacketType_Telemetry2) == packet.packetType());
+    QString zeroth = getDTSFromUint32UTC(packet.timestamp()) + " === Telemetry2 ===";
+    PcuDeploymentTelemetry pcu1D = packet.deployment1();
+    PcuDeploymentTelemetry pcu2D = packet.deployment2();
+    PcuBatteryTelemetry pcu1Ba = packet.battery1();
+    PcuBatteryTelemetry pcu2Ba = packet.battery2();
+    PcuBusTelemetry pcu1Bu = packet.bus1();
+    PcuBusTelemetry pcu2Bu = packet.bus2();
+    PcuSdcTelemetry pcu1S = packet.sdc1();
+    PcuSdcTelemetry pcu2S = packet.sdc2();
+
+    QString first = QString(
+        "--- PCU1Depl " + getDTSFromUint32UTC(pcu1D.timestamp()) + " ---\n" + extractPCUDeploymentTelemetry(pcu1D));
+    QString second = QString(
+        "--- PCU2Depl " + getDTSFromUint32UTC(pcu2D.timestamp()) + " ---\n" + extractPCUDeploymentTelemetry(pcu2D));
+    QString third = QString(
+        "--- PCU1Battery " + getDTSFromUint32UTC(pcu1Ba.timestamp()) + " ---\n" + extractPCUBatteryTelemetry(pcu1Ba));
+    QString fourth = QString(
+        "--- PCU2Battery " + getDTSFromUint32UTC(pcu2Ba.timestamp()) + " ---\n" + extractPCUBatteryTelemetry(pcu2Ba));
+    QString fifth =
+        QString("--- PCU1Bus " + getDTSFromUint32UTC(pcu1Bu.timestamp()) + " ---\n" + extractPCUBusTelemetry(pcu1Bu));
+    QString sixth =
+        QString("--- PCU2Bus " + getDTSFromUint32UTC(pcu2Bu.timestamp()) + " ---\n" + extractPCUBusTelemetry(pcu2Bu));
+    QString seventh =
+        QString("--- PCU1SDC " + getDTSFromUint32UTC(pcu1S.timestamp()) + " ---\n" + extractPCUSDCTelemetry(pcu1S));
+    QString eighth =
+        QString("--- PCU2SDC " + getDTSFromUint32UTC(pcu2S.timestamp()) + " ---\n" + extractPCUSDCTelemetry(pcu2S));
+    QString ninth = "PCU1V[mV]:" + QString::number(packet.pcu1Voltage());
+    QString tenth = "PCU2V[mV]:" + QString::number(packet.pcu2Voltage());
+    auto ack = packet.acknowledgedCommands();
+    QString ackLine = "ACK: " + processAcknowledgedCommands(ack);
+    QString allLines = zeroth + "\n\n" + first + "\n" + second + "\n" + third + "\n" + fourth + "\n" + fifth + "\n" +
+                       sixth + "\n" + seventh + "\n" + eighth + "\n" + ninth + "\n" + tenth + "\n\n" + ackLine;
+    return allLines;
+}
+
+/**
+ * @brief Takes an s1obc::PcuTelemetryPacket and processes it for SMOGP, returning the resulting QString
+ * @param packet The packet
+ * @return The QString that represents the packet's contents in an easily readable format.
+ */
+QString PacketDecoder::processTelemetry2P(const s1obc::PcuTelemetryPacket &packet) {
     using namespace s1obc;
     Q_ASSERT(static_cast<char>(s1obc::DownlinkPacketType_Telemetry2) == packet.packetType());
     QString zeroth = getDTSFromUint32UTC(packet.timestamp()) + " === Telemetry2 ===";
@@ -673,7 +716,9 @@ QString PacketDecoder::extractTIDTelemetry(const s1obc::TidTelemetry &tid) {
 QString PacketDecoder::extractDiagnosticTelemetry(const s1obc::DiagnosticInfo &diagnostic) {
     using namespace s1obc;
     QString ret;
-    ret += ";Flashchecksum:" + QString::number(diagnostic.flashChecksum());
+    ret += ";receivedGarbagePackets:" + QString::number(diagnostic.receivedGarbagePackets());
+    ret += ";receivedBadSerialPackets:" + QString::number(diagnostic.receivedBadSerialPackets());
+    ret += ";receivedInvalidPackets:" + QString::number(diagnostic.receivedInvalidPackets());
     ret += ";LastUplinkTimestamp:" + getDTSFromUint32UTC(diagnostic.lastUplinkTimestamp());
     ret += ";OBCUptime[Min]:" + QString::number(diagnostic.obcUptimeMin());
     ret += ";COMUptime[Min]:" + QString::number(diagnostic.comUptimeMin());
@@ -950,6 +995,10 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
     case DownlinkPacketType_FileDownload:
         packetTypeSize = sizeof(FileDownloadPacket);
         break;
+    case DownlinkPacketType_HamRepeater1:
+    case DownlinkPacketType_HamRepeater2:
+        packetTypeSize = sizeof(HamRepeaterPacket);
+        break;
     case DownlinkPacketType_FileInfo:
     case DownlinkPacketType_Telemetry1_B:
     case DownlinkPacketType_Telemetry2_B:
@@ -980,6 +1029,7 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
 #ifdef CHECK_SIGNATURE
     if (!checkSignature(decodedPacket)) {
         // signature mismatch
+        qInfo() << "received packet had wrong signature";
         startSyncPacketTimeout(dataRate_priv, decodeMode_priv);
         return;
     }
@@ -1008,8 +1058,7 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
     }
     else if (DownlinkPacketType_Telemetry2 == packetType) {
         switch (currentSatellite) {
-        case SatelliteChanger::Satellites::SMOG1:
-        case SatelliteChanger::Satellites::SMOGP: {
+        case SatelliteChanger::Satellites::SMOG1: {
             PcuTelemetryPacket p;
             p.loadBinary(reinterpret_cast<uint8_t *>(decodedPacket.data()));
             QByteArray auth = QByteArray(reinterpret_cast<char *>(p.signature().bytes), sizeof(DownlinkSignature));
@@ -1022,6 +1071,22 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
                 decodedPacket,
                 readableQString,
                 QVariant::fromValue(p),
+                rssi);
+            break;
+        }
+        case SatelliteChanger::Satellites::SMOGP: {
+            PcuTelemetryPacket pp;
+            pp.loadBinary(reinterpret_cast<uint8_t *>(decodedPacket.data()));
+            QByteArray auth = QByteArray(reinterpret_cast<char *>(pp.signature().bytes), sizeof(DownlinkSignature));
+            QString readableQString = processTelemetry2P(pp);
+            packetSuccessfullyDecoded(timestamp,
+                source,
+                "Telemetry 2/4",
+                encoding,
+                auth,
+                decodedPacket,
+                readableQString,
+                QVariant::fromValue(pp),
                 rssi);
             break;
         }
@@ -1175,6 +1240,27 @@ void PacketDecoder::processDecodedPacket(const QDateTime &timestamp,
         auto pc = p.count();
         auto pi = p.index();
         if (pi == pc - 1) {
+            waitForSyncPacket();
+            return; // Returning so that the sync packet timer does not restart
+        }
+    }
+    else if (DownlinkPacketType_HamRepeater1 == packetType || DownlinkPacketType_HamRepeater2 == packetType) {
+        HamRepeaterPacket p;
+        p.loadBinary(reinterpret_cast<uint8_t *>(decodedPacket.data()));
+        QByteArray auth = QByteArray(reinterpret_cast<char *>(p.signature().bytes), sizeof(DownlinkSignature));
+        QString readableQString = QStringLiteral("HAM repeater packet");
+        QString packetName = QStringLiteral("HAM repeater");
+        packetSuccessfullyDecoded(timestamp,
+            source,
+            packetName,
+            encoding,
+            auth,
+            decodedPacket,
+            readableQString,
+            QVariant::fromValue(p),
+            rssi);
+
+        if (DownlinkPacketType_HamRepeater2 == packetType) {
             waitForSyncPacket();
             return; // Returning so that the sync packet timer does not restart
         }
@@ -1334,32 +1420,39 @@ void PacketDecoder::processSyncContents(unsigned int datarateBPS, s1sync::Operat
     emit newDataRate(datarateBPS);
     dataRate_priv = datarateBPS;
     decodeMode_priv = operatingMode;
+    unsigned int packetLength = 0;
+
     using namespace s1sync;
     switch (operatingMode) {
     case OperatingMode::AO40Short:
-        emit newPacketLength(333);
+        packetLength = 333;
         break;
     case OperatingMode::AO40:
-        emit newPacketLength(650);
+        packetLength = 650;
         break;
     case OperatingMode::RA_128_to_260:
-        emit newPacketLength(260);
+        packetLength = 260;
         break;
     case OperatingMode::RA_256_to_514:
-        emit newPacketLength(514);
+        packetLength = 514;
         break;
     case OperatingMode::RA_512_to_1028:
-        emit newPacketLength(1028);
+        packetLength = 1028;
         break;
     case OperatingMode::RA_1024_to_2050:
-        emit newPacketLength(2050);
+        packetLength = 2050;
         break;
     case OperatingMode::RA_2048_to_4100:
-        emit newPacketLength(4100);
+        packetLength = 4100;
         break;
     default:
         break;
     }
+
+    if (currentSatellite == SatelliteChanger::Satellites::SMOG1) {
+        packetLength += 8;
+    }
+    emit newPacketLength(packetLength);
     startSyncPacketTimeout(datarateBPS, operatingMode);
 }
 
@@ -1566,25 +1659,26 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         return;
     }
     QByteArray received = QByteArray::fromHex(packetUpperHexString.toLocal8Bit());
+
+    // For SMOG-1 drop the prefix and suffix unique words from the packet
+    if ((currentSatellite == SatelliteChanger::Satellites::SMOG1) && (received.length() != s1sync::syncPacketLength)) {
+        auto prefix = received.left(4);
+        auto suffix = received.right(4);
+        // TODO: check prefix and suffix
+
+        received = received.mid(4, received.length() - 8);
+    }
+
     switch (received.length()) {
     case s1sync::syncPacketLength: {
         // Validate sync packet
-        unsigned syncErrors = 0;
-        const char *syncStartBytes = reinterpret_cast<const char *>(s1sync::syncBytes);
-        for (unsigned i = 0; i < sizeof(s1sync::syncBytes); i++) {
-            char expected = syncStartBytes[i];
-            char actual = received.at(i);
-            if (actual != expected) {
-                syncErrors += __builtin_popcount(actual ^ expected);
-            }
-        }
-
-        if (syncErrors > 200) {
-            // Too many sync errors
-            break;
+        auto res = s1sync::getSyncContents(received, currentSatellite);
+        if (res.second == s1sync::OperatingMode::Invalid) {
+            qWarning() << "invalid sync packet, dropping it";
+            waitForSyncPacket();
+            return;
         }
         emit resetDemodulators();
-        auto res = s1sync::getSyncContents(received);
         processSyncContents(res.first, res.second);
 
         QDateTime datetime = QDateTime::currentDateTimeUtc();
@@ -1593,6 +1687,9 @@ void PacketDecoder::decodablePacketReceivedWithRssi(
         QString packetName;
         if (res.second == s1sync::OperatingMode::Receive) {
             packetName = QStringLiteral("RX Sync");
+        }
+        else if (res.second == s1sync::OperatingMode::HamReceive) {
+            packetName = QStringLiteral("HR Sync");
         }
         else {
             packetName = QStringLiteral("TX Sync");
@@ -1689,4 +1786,5 @@ void PacketDecoder::changePrefix(QString prefix) {
  */
 void PacketDecoder::changeSatellite(SatelliteChanger::Satellites satellite) {
     this->currentSatellite = satellite;
+    emit newSatelliteEcho(satellite);
 }

@@ -46,8 +46,18 @@ PacketDetailsTable {
         // ========== Diagnostic info
         TelemetryObject {
             group: "Diag"
-            description: "OBC flash checksum"
-            content: String(packet.diag.flashChecksum)
+           description: "RX garbage packets"
+           content: String(packet.diag.receivedGarbagePackets)
+       },
+       TelemetryObject {
+           group: "Diag"
+           description: "RX bad serial packets"
+           content: String(packet.diag.receivedBadSerialPackets)
+       },
+       TelemetryObject {
+           group: "Diag"
+           description: "RX invalid packets"
+           content: String(packet.diag.receivedInvalidPackets)
         },
         TelemetryObject {
             group: "Diag"
@@ -83,6 +93,16 @@ PacketDetailsTable {
             group: "Diag"
             description: "TCXO works"
             content: packet.diag.status.tcxoWorks ? "OK" : "NO"
+        },
+        TelemetryObject {
+            group: "Diag"
+            description: "Filesystem"
+            content: packet.diag.status.filesystemOk ? "OK" : "NO"
+        },
+        TelemetryObject {
+            group: "Diag"
+            description: "Current flash"
+            content: packet.diag.status.filesystemUsesFlash2 ? "Flash 2" : "Flash 1"
         }
     ]
 }

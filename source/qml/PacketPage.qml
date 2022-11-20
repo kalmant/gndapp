@@ -309,6 +309,15 @@ Column {
             }
 
             Component {
+                id: hamRepeaterPacket_smog1
+
+                Smog1.HamRepeaterPacket {
+                    anchors.fill: parent
+                    packet: currentPacket
+                }
+            }
+
+            Component {
                 id: beaconComponent_smogp
 
                 SmogP.BeaconPacket {
@@ -409,6 +418,15 @@ Column {
                         switch (currentPacketSatelliteName){
                         case "ATL-1":
                             return batteryComponent_atl1
+                        default:
+                            return null
+                        }
+                    case OBC.DownlinkPacketType_HamRepeater1:
+                    case OBC.DownlinkPacketType_HamRepeater2:
+                        switch (currentPacketSatelliteName){
+                        case "SMOG-1":
+                            console.log(currentPacket)
+                            return hamRepeaterPacket_smog1
                         default:
                             return null
                         }

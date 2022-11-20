@@ -14,8 +14,17 @@ Column {
     width: 640
 
     function updatePacket() {
+        idleTimeNormalBox.focus = false
+        idleTimeSavingBox.focus = false
+        idleTimeEmergencyBox.focus = false
+        idleIsOffLimitBox.focus = false
+
         packet.txDataRate = dataRateModel.get(dataRateCombo.currentIndex).value
         packet.txPowerLevel = powerLevelModel.get(powerLevelCombo.currentIndex).value
+        packet.idleTimeNormal = idleTimeNormalBox.value
+        packet.idleTimeSaving = idleTimeSavingBox.value
+        packet.idleTimeEmergency = idleTimeEmergencyBox.value
+        packet.idleIsOffLimit = idleIsOffLimitBox.value
     }
 
     Label {
@@ -174,6 +183,90 @@ Column {
                     value: OBC.ComTxPowerLevel_100mW
                 }
             }
+        }
+    }
+
+    Row {
+        width: parent.width
+        spacing: parent.spacing
+
+        Label {
+            text: "Idle time (normal):"
+            width: leftColumnWidth
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        SpinBox {
+            id: idleTimeNormalBox
+            anchors.verticalCenter: parent.verticalCenter
+            from: 1000
+            to: 15000
+            stepSize: 200
+            value: packet.idleTimeNormal
+            editable: true
+        }
+    }
+
+    Row {
+        width: parent.width
+        spacing: parent.spacing
+
+        Label {
+            text: "Idle time (saving):"
+            width: leftColumnWidth
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        SpinBox {
+            id: idleTimeSavingBox
+            anchors.verticalCenter: parent.verticalCenter
+            from: 1000
+            to: 15000
+            stepSize: 200
+            value: packet.idleTimeSaving
+            editable: true
+        }
+    }
+
+    Row {
+        width: parent.width
+        spacing: parent.spacing
+
+        Label {
+            text: "Idle time (emerg.):"
+            width: leftColumnWidth
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        SpinBox {
+            id: idleTimeEmergencyBox
+            anchors.verticalCenter: parent.verticalCenter
+            from: 1000
+            to: 15000
+            stepSize: 200
+            value: packet.idleTimeEmergency
+            editable: true
+        }
+    }
+
+    Row {
+        width: parent.width
+        spacing: parent.spacing
+
+        Label {
+            text: "Idle OFF limit:"
+            width: leftColumnWidth
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        SpinBox {
+            id: idleIsOffLimitBox
+            anchors.verticalCenter: parent.verticalCenter
+            from: 500
+            to: 16000
+            stepSize: 100
+            value: packet.idleIsOffLimit
+            editable: true
         }
     }
 }

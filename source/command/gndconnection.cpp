@@ -155,6 +155,14 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
             commandBytes.append((OUTPUTLENGTH - commandBytes.length()), 0);
         }
     }
+    else if (command.type() == QVariant::ByteArray) {
+        commandString = QStringLiteral("Custom HEX");
+        commandBytes = command.toByteArray();
+
+        if (commandBytes.length() < OUTPUTLENGTH) {
+            commandBytes.append((OUTPUTLENGTH - commandBytes.length()), 0);
+        }
+    }
     else if (command.canConvert<s1obc::UplinkPingPacket>()) {
         auto packet = command.value<s1obc::UplinkPingPacket>();
         commandString = QStringLiteral("Ping");
@@ -176,8 +184,14 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
         case s1obc::UplinkToggleType_SDC:
             unit = QString("SDC");
             break;
-        case s1obc::UplinkToggleType_Battery:
-            unit = QString("Battery");
+        case s1obc::UplinkToggleType_BatteryDischarge:
+            unit = QString("BatteryDischarge");
+            break;
+        case s1obc::UplinkToggleType_BatteryCharge:
+            unit = QString("BatteryCharge");
+            break;
+        case s1obc::UplinkToggleType_Flash:
+            unit = QString("Flash");
             break;
         }
         commandString = QStringLiteral("Toggle ") + unit;
@@ -201,6 +215,15 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
             break;
         case s1obc::UplinkResetType_TID:
             unit = QString("TID");
+            break;
+        case s1obc::UplinkResetType_OBC_UserData:
+            unit = QString("OBC user data");
+            break;
+        case s1obc::UplinkResetType_ExitSilentMode:
+            unit = QString("Exit silent mode");
+            break;
+        case s1obc::UplinkResetType_FileSystem:
+            unit = QString("Filesystem");
             break;
         }
         commandString = QStringLiteral("Reset ") + unit;
@@ -426,6 +449,24 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
         }
         commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
     }
+    else if (command.canConvert<s1obc::UplinkMorseRequestPacket>()) {
+        auto packet = command.value<s1obc::UplinkMorseRequestPacket>();
+        commandString = QStringLiteral("Morse request: ") + packet.morseMessage_qt();
+        commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
+    }
+    else if (command.canConvert<s1obc::UplinkSilentModePacket>()) {
+        auto packet = command.value<s1obc::UplinkSilentModePacket>();
+        commandString = QStringLiteral("Silent mode: ") + QString::number(packet.silentDuration());
+        commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
+    }
+    else if (command.canConvert<s1obc::UplinkSetHamRepeaterModePacket>()) {
+        auto packet = command.value<s1obc::UplinkSetHamRepeaterModePacket>();
+        commandString = QStringLiteral("Set HAM repeater, en=");
+        commandString += QString::number(packet.enable());
+        commandString += QStringLiteral(", key=");
+        commandString += packet.aesKey_qt();
+        commandBytes = QByteArray(reinterpret_cast<const char *>(packet.binary()), s1obc::MaxUplinkPayloadSize);
+    }
 
     if (commandBytes.length() == 0) {
         qWarning() << "unknown command";
@@ -436,6 +477,7 @@ void GNDConnection::queueUplink(quint32 repeat, quint64 sendTimestamp64, QVarian
         return;
     }
 
+    qWarning() << QString::fromLatin1(commandBytes.toHex(' '));
     queueCommand(repeat, commandBytes, commandString, sendTimestamp);
 }
 

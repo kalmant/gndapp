@@ -1,4 +1,3 @@
-
 #include "dependencies/obc-packet-helpers/packethelper.h"
 #include "source/audio/audioindemodulatorthread.h"
 #include "source/audio/audiosampler.h"
@@ -113,6 +112,10 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     DeviceDiscovery deviceDiscovery;
     EventFilter eventFilter(&deviceDiscovery);
     app.installNativeEventFilter(&eventFilter);
+
+    qDebug() << "The system supports SSL:" << QSslSocket::supportsSsl();
+    qDebug() << "The system's SSL library version:" << QSslSocket::sslLibraryVersionString();
+    qDebug() << "The SSL library version used at compile time:" << QSslSocket::sslLibraryBuildVersionString();
 
     QString gndIp("192.168.0.106");
     int gndIpIndex = app.arguments().indexOf(QStringLiteral("-gnd_ip"));
@@ -249,6 +252,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
         &packetDecoder, &PacketDecoder::newCommandIdSignal, &gndConnection, &GNDConnection::newCommandIdSlot);
     QObject::connect(&packetDecoder, &PacketDecoder::newPacketLength, &gndConnection, &GNDConnection::setPacketLength);
     QObject::connect(&packetDecoder, &PacketDecoder::newDataRate, &gndConnection, &GNDConnection::setDatarate);
+    QObject::connect(
+        &satelliteChanger, &SatelliteChanger::newSatellite, &gndConnection, &GNDConnection::changeSatellite);
 
     CommandTracker commandTracker;
     engine.rootContext()->setContextProperty("commandTracker", &commandTracker);
@@ -261,13 +266,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty(
         "defaultMonotypeFontFamily", QFontDatabase::systemFont(QFontDatabase::FixedFont).family());
 
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-
-    if (engine.rootObjects().isEmpty()) {
-        qWarning() << "Could not load QML file, quitting. Are you sure you are running a necessary Qt version?";
-        return 1;
-    }
-
     AudioSampler audioSampler;
     engine.rootContext()->setContextProperty("audioSampler", &audioSampler);
     QScopedPointer<AudioInDemodulatorThread> adem1250Thread(new AudioInDemodulatorThread(&packetDecoder));
@@ -276,6 +274,13 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
         adem1250Thread.data(),
         &AudioInDemodulatorThread::demodulate);
     adem1250Thread->start();
+
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+
+    if (engine.rootObjects().isEmpty()) {
+        qWarning() << "Could not load QML file, quitting. Are you sure you are running a necessary Qt version?";
+        return 1;
+    }
 
     Spectogram *spectogramptr =
         engine.rootObjects().at(0)->findChild<Spectogram *>("spectogramObject", Qt::FindChildrenRecursively);

@@ -61,5 +61,10 @@
         <file>packets/atl1/BatteryPacket.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>SpectogramComponent.qml</file>
+        <file>commands/MorseRequestCommand.qml</file>
+        <file>commands/SilentModeCommand.qml</file>
+        <file>commands/SetHamRepeaterModeCommand.qml</file>
+        <file>packets/smog1/HamRepeaterPacket.qml</file>
+        <file>commands/CustomHexCommand.qml</file>
     </qresource>
 </RCC>

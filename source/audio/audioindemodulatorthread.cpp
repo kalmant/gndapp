@@ -24,6 +24,7 @@ AudioInDemodulatorThread::AudioInDemodulatorThread(PacketDecoder *pd) {
     QObject::connect(pd, &PacketDecoder::newPacketLength, this, &AudioInDemodulatorThread::changeSettings);
     QObject::connect(
         pd, &PacketDecoder::resetDemodulators, demodulatorObject.data(), &AudioInDemodulator::resetDemodulatorSlot);
+    QObject::connect(pd, &PacketDecoder::newSatelliteEcho, demodulatorObject.data(), &AudioInDemodulator::newSatellite);
 }
 
 /**

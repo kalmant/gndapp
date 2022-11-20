@@ -38,26 +38,24 @@ namespace s1utils {
     /**
      * @brief Unsigned 24-bit integer type.
      */
-    class s1_uint24_t final
-    {
+    class s1_uint24_t final {
 
     private:
         uint8_t m_bytes[3];
 
     public:
-        inline s1_uint24_t()
-            : m_bytes {0, 0, 0}
-        {
+        inline s1_uint24_t() : m_bytes{0, 0, 0} {
         }
 
-        inline s1_uint24_t(uint32_t u32) { this->operator=(u32); }
+        inline s1_uint24_t(uint32_t u32) {
+            this->operator=(u32);
+        }
 
         inline s1_uint24_t(const s1_uint24_t &other) = default;
 
         inline s1_uint24_t &operator=(const s1_uint24_t &other) = default;
 
-        s1_uint24_t &operator=(uint32_t u32)
-        {
+        s1_uint24_t &operator=(uint32_t u32) {
             assert(u32 <= 0x00ffffff);
 
             // Chop off the MSB
@@ -70,8 +68,7 @@ namespace s1utils {
             return *this;
         }
 
-        operator uint32_t() const
-        {
+        operator uint32_t() const {
             uint32_t result = 0;
 
             result |= this->m_bytes[0];
@@ -81,6 +78,11 @@ namespace s1utils {
             result |= this->m_bytes[2];
 
             return result;
+        }
+
+        void setByte(size_t index, uint8_t byte) {
+            assert(index < 3);
+            m_bytes[index] = byte;
         }
     } __attribute__((packed));
 

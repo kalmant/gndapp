@@ -77,6 +77,21 @@ Column {
                     value: OBC.UplinkResetType_TID
                     info: "Resets both total ionizing dose sensors (TID)."
                 }
+                ListElement {
+                    text: "OBC user data"
+                    value: OBC.UplinkResetType_OBC_UserData
+                    info: "Resets the current on-board computer (OBC) user data."
+                }
+                ListElement {
+                    text: "Exit silent mode"
+                    value: OBC.UplinkResetType_ExitSilentMode
+                    info: "Commands the OBC to exit silent mode."
+                }
+                ListElement {
+                    text: "File system"
+                    value: OBC.UplinkResetType_FileSystem
+                    info: "Commands the OBC to reset the file system."
+                }
             }
         }
     }

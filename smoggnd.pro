@@ -98,6 +98,7 @@ HEADERS += \
     source/demod/magicdemodulator.h \
     source/demod/newsmog1dem.h \
     source/packet/chartwindow.h \
+    source/packet/crc.h \
     source/packet/decodedpacket.h \
     source/packet/filedownload.h \
     source/packet/packetdecoder.h \
@@ -169,6 +170,7 @@ SOURCES += \
     source/demod/magicdemodulator.cpp \
     source/demod/newsmog1dem.cpp \
     source/packet/chartwindow.cpp \
+    source/packet/crc.c \
     source/packet/decodedpacket.cpp \
     source/packet/filedownload.cpp \
     source/packet/packetdecoder.cpp \

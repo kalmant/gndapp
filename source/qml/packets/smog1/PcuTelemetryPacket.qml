@@ -327,6 +327,17 @@ PacketDetailsTable {
             description: "OBC2 consumption"
             content: String(packet.bus2.obc2CurrentConsumption_mA) + " mA"
                      + " (OC=" + String(packet.bus2.status.obc2Overcurrent) + ")"
+        },
+        // PCU Voltage
+        TelemetryObject {
+            group: "PCU-V"
+            description: "PCU1 voltage"
+            content: String(packet.pcu1Voltage) + " mV"
+        },
+        TelemetryObject {
+            group: "PCU-V"
+            description: "PCU2 voltage"
+            content: String(packet.pcu2Voltage) + " mV"
         }
     ]
 }

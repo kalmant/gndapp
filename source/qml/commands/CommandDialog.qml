@@ -50,6 +50,8 @@ ApplicationWindow {
                 switch (Number(packetType)) {
                 case 0:
                     return customComponent
+                case 999:
+                    return customHexComponent
                 case OBC.UplinkPacketType_Ping:
                     return pingComponent
                 case OBC.UplinkPacketType_Toggle:
@@ -72,6 +74,12 @@ ApplicationWindow {
                     return measurementRequestComponent
                 case OBC.UplinkPacketType_FileDelete:
                     return fileDeleteComponent
+                case OBC.UplinkPacketType_MorseRequest:
+                    return morseRequestComponent
+                case OBC.UplinkPacketType_SilentMode:
+                    return silentModeComponent
+                case OBC.UplinkPacketType_SetHamRepeaterMode:
+                    return setHamRepeaterModeComponent
                 default:
                     return null
                 }
@@ -166,9 +174,41 @@ ApplicationWindow {
             }
 
             Component {
+                id: morseRequestComponent
+
+                MorseRequestCommand {
+                    packet: commandDialog.packet
+                }
+            }
+
+            Component {
+                id: silentModeComponent
+
+                SilentModeCommand {
+                    packet: commandDialog.packet
+                }
+            }
+
+            Component {
+                id: setHamRepeaterModeComponent
+
+                SetHamRepeaterModeCommand {
+                    packet: commandDialog.packet
+                }
+            }
+
+            Component {
                 id: customComponent
 
                 CustomCommand {
+                    packet: commandDialog.packet
+                }
+            }
+
+            Component {
+                id: customHexComponent
+
+                CustomHexCommand {
                     packet: commandDialog.packet
                 }
             }

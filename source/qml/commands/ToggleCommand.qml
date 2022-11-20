@@ -1,4 +1,3 @@
-
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 import s1obc 1.0
@@ -72,7 +71,21 @@ Column {
                     value: OBC.UplinkToggleType_COM
                     info: "Toggles the current communication subsystem (COM)."
                 }
-                // TODO: Battery is not properly implemented in the packet format, should it be charge/discharge, etc...?
+                ListElement {
+                    text: "Battery discharge"
+                    value: OBC.UplinkToggleType_BatteryDischarge
+                    info: "Toggles whether battery discharge is allowed."
+                }
+                ListElement {
+                    text: "Battery charge"
+                    value: OBC.UplinkToggleType_BatteryCharge
+                    info: "Toggles whether battery charge is allowed."
+                }
+                ListElement {
+                    text: "Flash"
+                    value: OBC.UplinkToggleType_Flash
+                    info: "Toggles the currently used flash chip."
+                }
             }
         }
     }

@@ -113,6 +113,8 @@ ScrollView {
                         return "PCU1 bus telemetry"
                     else if (section === "PCU2-Bus")
                         return "PCU2 bus telemetry"
+                    else if (section === "PCU-V")
+                        return "PCU voltage"
                     else if (section === "Diag")
                         return "Diagnostic info"
                     else if (section === "BATT")

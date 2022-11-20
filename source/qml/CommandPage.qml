@@ -179,8 +179,24 @@ Column {
                         onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_FileDelete)
                     }
                     MenuItem {
+                        text: "Morse request"
+                        onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_MorseRequest)
+                    }
+                    MenuItem {
+                        text: "Silent mode"
+                        onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_SilentMode)
+                    }
+                    MenuItem {
+                        text: "Set HAM repeater mode"
+                        onTriggered: commandTypesMenu.openCommand(OBC.UplinkPacketType_SetHamRepeaterMode)
+                    }
+                    MenuItem {
                         text: "Custom"
                         onTriggered: commandTypesMenu.openCommand(0)
+                    }
+                    MenuItem {
+                        text: "Custom HEX"
+                        onTriggered: commandTypesMenu.openCommand(999)
                     }
                 }
 

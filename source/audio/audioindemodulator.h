@@ -3,6 +3,7 @@
 
 #include "../demod/magicdemodulator.h"
 #include "../demod/newsmog1dem.h"
+#include "../utilities/satellitechanger.h"
 #include <QObject>
 #include <QScopedArrayPointer>
 #include <complex>
@@ -39,6 +40,8 @@ signals:
      * QString
      */
     void dataReady(QDateTime timestamp, QString source, QString packetUpperHexString);
+
+    void newSatellite(SatelliteChanger::Satellites satellite);
 public slots:
     void demodulateSlot(std::int16_t *samples, int len);
     void changeSettingsSlot(long new_packet_length);

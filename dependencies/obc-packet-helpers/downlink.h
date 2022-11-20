@@ -208,7 +208,8 @@ namespace s1obc {
         PcuBusTelemetry,
         PcuBusTelemetry,
         AcknowledgedCommands,
-        uint8_t[4],
+        uint16_t,
+        uint16_t,
         DownlinkSignature>;
     class PcuTelemetryPacket : public PcuTelemetryPacketBase {
     private:
@@ -225,6 +226,8 @@ namespace s1obc {
         Q_PROPERTY(s1obc::PcuBatteryTelemetry battery2 READ battery2 WRITE setBattery2)
         Q_PROPERTY(s1obc::PcuBusTelemetry bus1 READ bus1 WRITE setBus1)
         Q_PROPERTY(s1obc::PcuBusTelemetry bus2 READ bus2 WRITE setBus2)
+        Q_PROPERTY(quint16 pcu1Voltage READ pcu1Voltage WRITE setPcu1Voltage)
+        Q_PROPERTY(quint16 pcu2Voltage READ pcu2Voltage WRITE setPcu2Voltage)
 
     public:
         DownlinkPacketType packetType() const {
@@ -247,10 +250,10 @@ namespace s1obc {
             set<10>(val);
         }
         DownlinkSignature signature() const {
-            return get<12>();
+            return get<13>();
         }
         void setSignature(const DownlinkSignature &val) {
-            set<12>(val);
+            set<13>(val);
         }
 
         PcuDeploymentTelemetry deployment1() const {
@@ -300,6 +303,19 @@ namespace s1obc {
         }
         void setBus2(const PcuBusTelemetry &val) {
             set<9>(val);
+        }
+
+        uint16_t pcu1Voltage() const {
+            return get<11>();
+        }
+        void setPcu1Voltage(uint16_t val) {
+            set<11>(val);
+        }
+        uint16_t pcu2Voltage() const {
+            return get<12>();
+        }
+        void setPcu2Voltage(uint16_t val) {
+            set<12>(val);
         }
 
         QByteArray signature_qt() const {
@@ -852,6 +868,118 @@ namespace s1obc {
     };
     static_assert(256 == sizeof(FileDownloadPacket), "FileDownloadPacket size MUST be 256 bytes.");
 
+    class HamRepeaterMessage {
+    private:
+        Q_GADGET
+        Q_PROPERTY(QString content READ content WRITE setContent)
+        Q_PROPERTY(int rssi READ rssi WRITE setRssi)
+
+    public:
+        constexpr static size_t length = 29;
+
+        QString content() const {
+            return QString::fromLatin1(contentChars, contentChars[length - 1] == 0 ? (-1) : length);
+        }
+
+        void setContent(const QString &content) {
+            strncpy(contentChars, content.toLatin1().data(), length);
+        }
+
+        int rssi() const {
+            return rssiValue;
+        }
+
+        void setRssi(int val) {
+            rssiValue = static_cast<int8_t>(val);
+        }
+
+    private:
+        char contentChars[length] = {0};
+        int8_t rssiValue;
+    };
+
+    struct HamRepeaterMessageList {
+        constexpr static size_t length = 8;
+        HamRepeaterMessage messages[length];
+    };
+    static_assert(240 == sizeof(HamRepeaterMessageList), "HamRepeaterMessageList size MUST be 240 bytes.");
+
+    using HamRepeaterPacketBase =
+        s1utils::Pack<DownlinkPacketType, uint32_t, HamRepeaterMessageList, uint8_t, DownlinkSignature>;
+
+    class HamRepeaterPacket : public HamRepeaterPacketBase {
+    private:
+        Q_GADGET
+        Q_PROPERTY(s1obc::DownlinkPacketType packetType READ packetType CONSTANT)
+        Q_PROPERTY(quint32 timestamp READ timestamp WRITE setTimestamp)
+        Q_PROPERTY(int invalidMsgCount READ invalidMsgCount WRITE setInvalidMsgCount)
+        Q_PROPERTY(QVariantList messageList READ messageList_qt WRITE setMessageList_qt)
+        Q_PROPERTY(QByteArray signature READ signature_qt WRITE setSignature_qt)
+
+    public:
+        DownlinkPacketType packetType() const {
+            return get<0>();
+        }
+        void setPacketType(DownlinkPacketType val) {
+            set<0>(val);
+        }
+        Timestamp timestamp() const {
+            return get<1>();
+        }
+        void setTimestamp(Timestamp val) {
+            set<1>(val);
+        }
+        HamRepeaterMessageList messageList() const {
+            return get<2>();
+        }
+        void setMessageList(const HamRepeaterMessageList &lst) {
+            set<2>(lst);
+        }
+        uint8_t invalidMsgCount() const {
+            return get<3>();
+        }
+        void setInvalidMsgCount(uint8_t val) {
+            set<3>(val);
+        }
+        DownlinkSignature signature() const {
+            return get<4>();
+        }
+        void setSignature(const DownlinkSignature &val) {
+            set<4>(val);
+        }
+
+        QVariantList messageList_qt() const {
+            HamRepeaterMessageList lst = messageList();
+            QVariantList result;
+
+            for (auto &item : lst.messages) {
+                result.append(QVariant::fromValue<HamRepeaterMessage>(item));
+            }
+
+            return result;
+        }
+        void setMessageList_qt(const QVariantList &list) {
+            HamRepeaterMessageList lst;
+
+            for (size_t i = 0; i < HamRepeaterMessageList::length && i < (size_t) list.size(); i++) {
+                HamRepeaterMessage item = list[(int) i].value<HamRepeaterMessage>();
+                lst.messages[i] = item;
+            }
+
+            setMessageList(lst);
+        }
+
+        QByteArray signature_qt() const {
+            return QByteArray((const char *) signature().bytes, 10);
+        }
+        void setSignature_qt(const QByteArray &val) {
+            DownlinkSignature sig;
+            memcpy(sig.bytes, val.data(), 10);
+            setSignature(sig);
+        }
+    };
+    static_assert(256 == sizeof(HamRepeaterPacket), "HamRepeaterPacket size MUST be 256 bytes.");
+
     struct SpectrumData {
         static constexpr size_t maxLengthPerPacket = 224;
         uint8_t bytes[maxLengthPerPacket];
@@ -1060,6 +1188,8 @@ Q_DECLARE_METATYPE(s1obc::BeaconPacket)
 Q_DECLARE_METATYPE(s1obc::BeaconPacketPA)
 Q_DECLARE_METATYPE(s1obc::BatteryPacketA)
 Q_DECLARE_METATYPE(s1obc::FileDownloadPacket)
+Q_DECLARE_METATYPE(s1obc::HamRepeaterMessage)
+Q_DECLARE_METATYPE(s1obc::HamRepeaterPacket)
 Q_DECLARE_METATYPE(s1obc::SpectrumPacket)
 
 #endif // S1OBC_DOWNLINK_H

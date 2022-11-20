@@ -18,6 +18,7 @@ Column {
         pcuIntervalBox.focus = false
         mpuIntervalBox.focus = false
         obcComIntervalBox.focus = false
+        tidIntervalBox.focus = false
 
         packet.measurementIdentifier = measurementIdBox.value
         packet.startTimestamp = scheduleTimeRow.when
@@ -32,6 +33,7 @@ Column {
         var pcu = packet.pcu;
         var mpu = packet.mpu;
         var obcCom = packet.obcCom;
+        var tid = packet.tid;
 
         solar.selectTemperature = solarTemperatureBox.checked ? 1 : 0
         solar.selectLightSensor = solarLightSensorBox.checked ? 1 : 0
@@ -74,11 +76,24 @@ Column {
         obcCom.selectComVoltage = comVoltageBox.checked ? 1 : 0
         obcCom.selectComTemperature = comTemperatureBox.checked ? 1 : 0
         obcCom.selectSpectrumTemperature = spectrumTemperatureBox.checked ? 1 : 0
+        obcCom.silentMode = silentModeBox.checked ? 1 : 0
+
+        tid.selectTid1Temperature = tid1TemperatureBox.checked ? 1 : 0
+        tid.selectTid1Serial = tid1SerialBox.checked ? 1 : 0
+        tid.selectTid1Radfet1 = tid1Radfet1Box.checked ? 1 : 0
+        tid.selectTid1Radfet2 = tid1Radfet2Box.checked ? 1 : 0
+        tid.selectTid1Voltage = tid1VoltageBox.checked ? 1 : 0
+        tid.selectTid2Temperature = tid2TemperatureBox.checked ? 1 : 0
+        tid.selectTid2Serial = tid2SerialBox.checked ? 1 : 0
+        tid.selectTid2Radfet1 = tid2Radfet1Box.checked ? 1 : 0
+        tid.selectTid2Radfet2 = tid2Radfet2Box.checked ? 1 : 0
+        tid.selectTid2Voltage = tid2VoltageBox.checked ? 1 : 0
 
         packet.solar = solar;
         packet.pcu = pcu;
         packet.mpu = mpu;
         packet.obcCom = obcCom;
+        packet.tid = tid;
     }
 
     Label {
@@ -169,6 +184,11 @@ Column {
 
             TabButton {
                 text: "OBC / COM"
+                width: implicitWidth + 20
+            }
+
+            TabButton {
+                text: "TID"
                 width: implicitWidth + 20
             }
         }
@@ -582,9 +602,116 @@ Column {
                             checked: packet.obcCom.selectSpectrumTemperature
                         }
 
+                        CheckBox {
+                            id: silentModeBox
+                            text: "Silent mode"
+                            checked: packet.obcCom.silentMode
+                        }
+
                     }
                 }
 
+                Column {
+                    id: tidMeasurementColumn
+                    spacing: parent.spacing
+                    visible: measurementSelectionTabBar.currentIndex === 4
+
+                    Row {
+                        spacing: parent.spacing
+
+                        Switch {
+                            id: enableTidSwitch
+                            text: "Collect TID data"
+                            checked: packet.intervalTid5min > 0
+                            onCheckedChanged: tidIntervalBox.value = tidIntervalBox.from = checked ? (packet.intervalTid5min * 5) : 0
+                        }
+
+                        Label {
+                            text: "Interval in minutes"
+                            enabled: enableTidSwitch.checked
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        SpinBox {
+                            id: tidIntervalBox
+                            enabled: enableTidSwitch.checked
+                            from: enableTidSwitch.checked ? 1 : 0
+                            to: 2 * 60
+                            stepSize: 5
+                            value: packet.intervalTid5min * 5
+                            onValueChanged: packet.intervalTid5min = value / 5
+                            editable: true
+                            Component.onCompleted: contentItem.selectByMouse = true
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
+                    Grid {
+                        columns: 3
+                        enabled: enableTidSwitch.checked
+
+                        CheckBox {
+                            id: tid1TemperatureBox
+                            text: "TID1 temperature"
+                            checked: packet.tid.selectTid1Temperature
+                        }
+
+                        CheckBox {
+                            id: tid1SerialBox
+                            text: "TID1 serial"
+                            checked: packet.tid.selectTid1Serial
+                        }
+
+                        CheckBox {
+                            id: tid1Radfet1Box
+                            text: "TID1 RADFET1"
+                            checked: packet.tid.selectTid1Radfet1
+                        }
+
+                        CheckBox {
+                            id: tid1Radfet2Box
+                            text: "TID1 RADFET2"
+                            checked: packet.tid.selectTid1Radfet2
+                        }
+
+                        CheckBox {
+                            id: tid1VoltageBox
+                            text: "TID1 voltage"
+                            checked: packet.tid.selectTid1Voltage
+                        }
+
+                        CheckBox {
+                            id: tid2TemperatureBox
+                            text: "TID2 temperature"
+                            checked: packet.tid.selectTid2Temperature
+                        }
+
+                        CheckBox {
+                            id: tid2SerialBox
+                            text: "TID2 serial"
+                            checked: packet.tid.selectTid2Serial
+                        }
+
+                        CheckBox {
+                            id: tid2Radfet1Box
+                            text: "TID2 RADFET1"
+                            checked: packet.tid.selectTid2Radfet1
+                        }
+
+                        CheckBox {
+                            id: tid2Radfet2Box
+                            text: "TID2 RADFET2"
+                            checked: packet.tid.selectTid2Radfet2
+                        }
+
+                        CheckBox {
+                            id: tid2VoltageBox
+                            text: "TID2 voltage"
+                            checked: packet.tid.selectTid2Voltage
+                        }
+
+                    }
+                }
             }
         }
     }
